@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules;
+use Illuminate\Support\Facades\DB;
 
 class RegisteredUserController extends Controller
 {
