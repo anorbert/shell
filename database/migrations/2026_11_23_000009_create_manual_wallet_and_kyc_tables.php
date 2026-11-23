@@ -46,7 +46,7 @@ return new class extends Migration
             $table->string('asset', 20);
             $table->string('network', 40);
             $table->string('wallet_address', 255)->nullable();
-            $table->string('transaction_hash', 255)->nullable()->unique();
+            $table->string('transaction_hash', 255)->nullable();
             $table->string('client_reference', 100)->nullable();
             $table->text('client_note')->nullable();
             $table->text('admin_note')->nullable();
@@ -57,6 +57,7 @@ return new class extends Migration
             $table->timestamps();
             $table->index(['type', 'status', 'created_at']);
             $table->index(['user_id', 'created_at']);
+            $table->unique(['transaction_hash', 'network'], 'wallet_req_tx_network_unique');
         });
     }
 
