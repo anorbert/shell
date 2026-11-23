@@ -29,7 +29,7 @@ class ClientController extends Controller
         $accounts = DB::table('ledger_accounts')->where('owner_key', 'USER:'.$user->id)
             ->orderBy('code')->orderBy('currency')->get()->map(function ($account) {
                 $account->balance = DB::table('ledger_entries')->where('ledger_account_id', $account->id)
-                    ->selectRaw("COALESCE(SUM(CASE WHEN side = 'credit' THEN amount ELSE -amount END), 0)")
+                    ->selectRaw("COALESCE(SUM(CASE WHEN side = 'credit' THEN amount ELSE -amount END), 0) as balance")
                     ->value('balance');
                 return $account;
             });
