@@ -1,5 +1,6 @@
 <?php
 use App\Http\Controllers\Client\ActivityController;
+use App\Http\Controllers\Client\DemoWalletController;
 use App\Http\Controllers\Client\MarketController;
 use App\Http\Controllers\Client\NotificationController;
 use App\Http\Controllers\Client\PaperConversionController;
@@ -15,6 +16,7 @@ Route::middleware(['auth','client','verified'])->group(function(){
  Route::get('/trading',[PaperTradingController::class,'index'])->name('trading.index');
  Route::post('/trading/paper',[PaperTradingController::class,'store'])->middleware('throttle:20,1')->name('trading.store');
  Route::get('/portfolio',PortfolioController::class)->name('portfolio.index');
+ Route::post('/portfolio/demo/top-up',[DemoWalletController::class,'topUp'])->middleware('throttle:5,1')->name('portfolio.demo.top-up');
  Route::get('/activity',ActivityController::class)->name('activity.index');
  Route::get('/activity/export',[ActivityController::class,'export'])->name('activity.export');
  Route::get('/notifications',[NotificationController::class,'index'])->name('notifications.index');
