@@ -87,3 +87,23 @@ test('paper conversion rejects a changed market quote and leaves balances untouc
     expect($ledger->balanceUnits($ledger->wallet($user, 'USDT')))->toBe(1000000000)
         ->and(DB::table('paper_conversions')->where('request_key', 'stale-conversion-key')->exists())->toBeFalse();
 });
+
+test('paper conversion idempotency key cannot be reused with different inputs', function () {
+    $user = User::factory()->create();
+    app(LedgerService::class)->creditPaperWallet($user, '20.00000000');
+    $capturedAt = now()->startOfSecond();
+    DB::table('market_quotes')->insert([
+        'symbol' => 'BTCUSDT',
+        'price' => '50000.000000000000',
+        'provider' => 'Test provider',
+        'captured_at' => $capturedAt,
+        'created_at' => $capturedAt,
+        'updated_at' => $capturedAt,
+    ]);
+    $service = app(PaperConversionService::class);
+    $quote = $service->quote('USDT', 'BTC', '10.00000000');
+    $service->convert($user, 'USDT', 'BTC', '10.00000000', '', $quote['target_quote_at'], 'reused-key');
+
+    expect(fn () => $service->convert($user, 'USDT', 'BTC', '9.00000000', '', $quote['target_quote_at'], 'reused-key'))
+        ->toThrow(RuntimeException::class, 'different conversion');
+});
