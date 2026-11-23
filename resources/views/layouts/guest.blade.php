@@ -11,5 +11,6 @@
 <body class="shell-body">
     @yield('content')
     <div id="toast-region" class="toast-region" aria-live="polite"></div>
+    @stack('scripts')
 </body>
 </html>
