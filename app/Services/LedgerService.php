@@ -49,8 +49,8 @@ class LedgerService
             if (!$existing) {
                 $capital = $this->system('DEMO_PROMOTIONAL_CAPITAL', $currency, 'debit');
                 $this->post($welcomeKey, 'Initial demo wallet welcome credit', [
-                    ['account_id' => $capital, 'side' => 'debit', 'amount' => '20000.00000000'],
-                    ['account_id' => $demo, 'side' => 'credit', 'amount' => '20000.00000000'],
+                    ['account_id' => $capital, 'side' => 'debit', 'amount' => (string) config('shell.paper.welcome_balance', '20000.00000000')],
+                    ['account_id' => $demo, 'side' => 'credit', 'amount' => (string) config('shell.paper.welcome_balance', '20000.00000000')],
                 ], ['user_id' => $user->id, 'environment' => 'demo', 'grant_type' => 'welcome', 'cash_value' => false]);
             }
 
@@ -137,7 +137,7 @@ class LedgerService
     {
         if (!preg_match('/^[0-9a-f-]{36}$/i', $requestKey)) throw new RuntimeException('Invalid demo top-up request key.');
         $units = Decimal::units($amount);
-        if ($units < Decimal::units('100.00000000') || $units > Decimal::units('20000.00000000')) {
+        if ($units < Decimal::units((string) config('shell.paper.topup_min', '100.00000000')) || $units > Decimal::units((string) config('shell.paper.topup_max', '20000.00000000'))) {
             throw new RuntimeException('Demo top-ups must be between $100 and $20,000.');
         }
 
