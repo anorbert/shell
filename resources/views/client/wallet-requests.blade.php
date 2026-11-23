@@ -29,7 +29,8 @@
 <form method="POST" action="{{ route('wallet-requests.deposit') }}" class="form-stack">@csrf
 <label>Asset / network<select name="method_id" id="deposit-method" required><option value="">Choose network</option>@foreach($methods->where('deposits_enabled', true) as $method)<option value="{{ $method->id }}" data-address="{{ $method->wallet_address }}" data-memo-label="{{ $method->memo_label }}" data-memo="{{ $method->memo_value }}" data-instructions="{{ $method->instructions }}">{{ $method->asset }} · {{ $method->network }}</option>@endforeach</select></label>
 <div class="notice-banner" id="deposit-address-box" hidden><div><strong>Deposit address</strong><p id="deposit-address" style="overflow-wrap:anywhere"></p><p id="deposit-memo"></p><p id="deposit-instructions"></p></div><button class="button button-secondary" type="button" id="copy-deposit-address">Copy</button></div>
-<label>Amount to credit (USD)<input name="amount_usd" type="number" min="1" step="0.00000001" required></label>
+<label>Crypto amount sent<input name="asset_amount" type="number" min="0.00000001" step="0.000000000001" required></label>
+<label>Estimated USD value<input name="amount_usd" type="number" min="1" step="0.00000001" required></label>
 <label>Transaction hash / TxID<input name="transaction_hash" maxlength="255" required></label>
 <label>Note (optional)<textarea name="client_note" maxlength="1000"></textarea></label>
 <button class="button button-primary" type="submit">Submit deposit for confirmation</button>
