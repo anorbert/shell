@@ -45,11 +45,11 @@
     <form method="POST" action="{{ route('admin.wallet-operations.kyc.review',$kyc->id) }}" class="form-stack">
         @csrf
         <label class="checkbox-row"><input type="checkbox" name="checks[identity_legible]" value="1"> Identity document is authentic-looking, legible and all key fields are visible</label>
-        <label class="checkbox-row"><input type="checkbox" name="checks[details_match]" value="1" required> Client name and identity details match the submitted account information</label>
-        <label class="checkbox-row"><input type="checkbox" name="checks[document_valid]" value="1" required> Document is current, not expired, and is an accepted identity document</label>
-        <label class="checkbox-row"><input type="checkbox" name="checks[selfie_match]" value="1" required> Selfie is clear and the person reasonably matches the document portrait</label>
-        <label class="checkbox-row"><input type="checkbox" name="checks[duplicate_check]" value="1" required> Duplicate-account and repeat-submission checks have been completed</label>
-        <label class="checkbox-row"><input type="checkbox" name="checks[risk_screened]" value="1" required> Required risk / sanctions screening has been completed using the organisation's approved process</label>
+        <label class="checkbox-row"><input type="checkbox" name="checks[details_match]" value="1"> Client name and identity details match the submitted account information</label>
+        <label class="checkbox-row"><input type="checkbox" name="checks[document_valid]" value="1"> Document is current, not expired, and is an accepted identity document</label>
+        <label class="checkbox-row"><input type="checkbox" name="checks[selfie_match]" value="1"> Selfie is clear and the person reasonably matches the document portrait</label>
+        <label class="checkbox-row"><input type="checkbox" name="checks[duplicate_check]" value="1"> Duplicate-account and repeat-submission checks have been completed</label>
+        <label class="checkbox-row"><input type="checkbox" name="checks[risk_screened]" value="1"> Required risk / sanctions screening has been completed using the organisation's approved process</label>
         <label>Reviewer notes (required; record evidence or rejection reason)<textarea name="review_note" rows="4" minlength="5" maxlength="2000" required>{{ old('review_note') }}</textarea></label>
         <div class="notice-banner"><div><strong>Approval is a compliance decision</strong><p>Do not tick checks you did not perform. If evidence is unclear, reject the submission and explain exactly what the client must correct. This screen does not perform automated document authenticity or sanctions checks.</p></div></div>
         <div class="content-grid">
