@@ -69,6 +69,13 @@ test('paper trade opening is blocked when quote is missing', function () {
 test('paper trade cannot be opened without sufficient simulation funds', function () {
     $user = User::factory()->create();
     $user->markEmailAsVerified();
+    $ledger = app(LedgerService::class);
+    $wallets = $ledger->provisionClientWallets($user);
+    $capital = $ledger->system('TEST_EMPTY_DEMO_CAPITAL', 'USD', 'credit');
+    $ledger->post('empty-demo-before-trade', 'Test: clear demo wallet', [
+        ['account_id' => $wallets['demo'], 'side' => 'debit', 'amount' => '20000.00000000'],
+        ['account_id' => $capital, 'side' => 'credit', 'amount' => '20000.00000000'],
+    ]);
     DB::table('market_quotes')->insert([
         'symbol' => 'BTCUSDT',
         'price' => '90000.000000000000',
@@ -113,7 +120,7 @@ test('paper trade opens and reserves the stake from the client wallet', function
     ])->assertCreated();
 
     expect(DB::table('paper_trades')->where('user_id', $user->id)->count())->toBe(1)
-        ->and($ledger->balanceUnits($ledger->wallet($user)))->toBe(9000000000);
+        ->and($ledger->balanceUnits($ledger->wallet($user)))->toBe(2009000000000);
 });
 
 test('a trade is not settled using a quote captured before expiry', function () {
@@ -180,7 +187,7 @@ test('an expired winning paper trade settles once using a post-expiry quote', fu
 
     expect(app(PaperTradingService::class)->settleDue())->toBe(1)
         ->and(DB::table('paper_trades')->where('id', $tradeId)->value('status'))->toBe('won')
-        ->and($ledger->balanceUnits($ledger->wallet($user)))->toBe(10800000000)
+        ->and($ledger->balanceUnits($ledger->wallet($user)))->toBe(2010800000000)
         ->and(app(PaperTradingService::class)->settleDue())->toBe(0)
         ->and(DB::table('ledger_transactions')->where('idempotency_key', 'paper-settle:' . $tradeId)->count())->toBe(1);
 });
@@ -191,7 +198,7 @@ test('ledger refuses a posting that would make a paper wallet negative', functio
     $user->markEmailAsVerified();
     $ledger = app(LedgerService::class);
     $wallet = $ledger->wallet($user);
-    $capital = $ledger->system('NEGATIVE_TEST_CAPITAL', 'USDT', 'debit');
+    $capital = $ledger->system('NEGATIVE_TEST_CAPITAL', 'USD', 'debit');
     $ledger->creditPaperWallet($user, '5.00000000');
 
     expect(fn () => $ledger->post('negative-wallet-test', 'Invalid overdraw', [
@@ -219,7 +226,7 @@ test('every client receives separate demo and real wallets with independent bala
     expect($ledger->balanceUnits($wallets['demo']))->toBe(7500000000)
         ->and($ledger->balanceUnits($wallets['real']))->toBe(0);
 
-    $realCapital = $ledger->system('TEST_REAL_CAPITAL', 'USDT', 'debit');
+    $realCapital = $ledger->system('TEST_REAL_CAPITAL', 'USD', 'debit');
     $ledger->post('test-real-wallet-credit', 'Test real wallet ledger funding', [
         ['account_id' => $realCapital, 'side' => 'debit', 'amount' => '20.00000000'],
         ['account_id' => $wallets['real'], 'side' => 'credit', 'amount' => '20.00000000'],
@@ -233,7 +240,7 @@ test('real wallet cannot be overdrawn by a ledger posting', function () {
     $user = User::factory()->create();
     $ledger = app(LedgerService::class);
     $realWallet = $ledger->realWallet($user);
-    $capital = $ledger->system('REAL_OVERDRAW_TEST', 'USDT', 'debit');
+    $capital = $ledger->system('REAL_OVERDRAW_TEST', 'USD', 'debit');
 
     expect(fn () => $ledger->post('real-wallet-overdraw-test', 'Invalid real wallet debit', [
         ['account_id' => $realWallet, 'side' => 'debit', 'amount' => '1.00000000'],
