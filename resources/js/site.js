@@ -12,10 +12,17 @@ document.addEventListener('click', (event) => {
         }
     }
 
-    if (event.target.matches('[data-modal-close]') || event.target.classList.contains('modal-backdrop')) {
-        const modal = event.target.closest('.modal') || event.target;
-        modal.classList.remove('is-open');
-        modal.setAttribute('aria-hidden', 'true');
+    const close = event.target.closest('[data-modal-close]');
+    if (close) {
+        const modal = close.closest('.modal');
+        modal?.classList.remove('is-open');
+        modal?.setAttribute('aria-hidden', 'true');
+    }
+
+    if (event.target.classList.contains('modal-backdrop')) {
+        const modal = event.target.closest('.modal');
+        modal?.classList.remove('is-open');
+        modal?.setAttribute('aria-hidden', 'true');
     }
 });
 
