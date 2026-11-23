@@ -151,7 +151,8 @@ class LedgerService
                 }
                 return (int) $existing->id;
             }
-            $wallet = $this->demoWallet($user, $currency);
+            $wallets = $this->provisionClientWallets($user, $currency);
+            $wallet = $wallets['demo'];
             $capital = $this->system('DEMO_TOPUP_CAPITAL', $currency, 'debit');
             return $this->post($key, 'Client-requested demo wallet top-up', [
                 ['account_id' => $capital, 'side' => 'debit', 'amount' => $amount],
