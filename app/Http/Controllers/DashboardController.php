@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\MarketQuoteService;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    public function __invoke(Request $request)
+    public function __invoke(Request $request, MarketQuoteService $markets)
     {
         $user = $request->user();
 
@@ -16,9 +17,13 @@ class DashboardController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
+        $quotes = $markets->freshQuotes();
+
         return view('client.dashboard', [
             'user' => $user,
             'accountStatus' => 'paper',
+            'quotes' => $quotes,
+            'marketConnected' => $quotes->isNotEmpty(),
         ]);
     }
 }
