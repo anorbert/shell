@@ -3,7 +3,7 @@
 @section('eyebrow', 'ADMINISTRATION')
 @section('heading', 'Platform overview')
 @section('content')
-<div class="notice-banner"><span class="notice-icon">!</span><div><strong>Simulation environment only</strong><p>Real crypto deposits and withdrawals use manual admin review. Do not credit deposits before on-chain verification or mark withdrawals paid before sending funds. Real-money trading and automated custody remain disabled.</p></div><span class="mode-tag">PAPER ONLY</span></div>
+<div class="notice-banner"><span class="notice-icon">!</span><div><strong>Simulation environment only</strong><p>Real crypto deposits and withdrawals use manual admin review. Do not credit deposits before on-chain verification or mark withdrawals paid before sending funds. Real-money trading and automated custody remain disabled.</p></div><span class="mode-tag">MANUAL FUNDING · PAPER TRADING</span></div>
 <div class="metric-grid">
     <article class="metric-card"><span class="metric-label">CLIENT ACCOUNTS</span><strong>{{ number_format($clientCount) }}</strong><small>Registered clients</small></article>
     <article class="metric-card"><span class="metric-label">ADMIN ACCOUNTS</span><strong>{{ number_format($adminCount) }}</strong><small>Privileged operators</small></article>
