@@ -87,6 +87,13 @@ class LedgerService
                 throw new RuntimeException('Ledger account missing.');
             }
 
+            // Another request may have posted this key while this transaction
+            // waited for the account locks.
+            $existing = DB::table('ledger_transactions')->where('idempotency_key', $key)->value('id');
+            if ($existing) {
+                return (int) $existing;
+            }
+
             $debit = 0;
             $credit = 0;
             $currency = null;

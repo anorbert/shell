@@ -141,3 +141,37 @@ test('a trade is not settled using a quote captured before expiry', function () 
     expect(app(PaperTradingService::class)->settleDue())->toBe(0)
         ->and(DB::table('paper_trades')->where('open_idempotency_key', 'old-trade-waits-for-post-expiry-price')->value('status'))->toBe('open');
 });
+
+test('an expired winning paper trade settles once using a post-expiry quote', function () {
+    $user = User::factory()->create();
+    $ledger = app(LedgerService::class);
+    $ledger->creditPaperWallet($user, '100.00000000');
+
+    $openingAt = now()->subMinutes(3);
+    DB::table('market_quotes')->insert([
+        'symbol' => 'BTCUSDT',
+        'price' => '90000.000000000000',
+        'provider' => 'Test provider',
+        'captured_at' => $openingAt,
+        'created_at' => $openingAt,
+        'updated_at' => $openingAt,
+    ]);
+
+    $tradeId = app(PaperTradingService::class)->open($user, 'BTCUSDT', 'UP', '10.00000000', 60, 'test-winning-trade');
+    $expiredAt = now()->subMinute();
+    DB::table('paper_trades')->where('id', $tradeId)->update([
+        'expires_at' => $expiredAt,
+        'opened_at' => $expiredAt->copy()->subMinute(),
+    ]);
+    DB::table('market_quotes')->where('symbol', 'BTCUSDT')->update([
+        'price' => '91000.000000000000',
+        'captured_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    expect(app(PaperTradingService::class)->settleDue())->toBe(1)
+        ->and(DB::table('paper_trades')->where('id', $tradeId)->value('status'))->toBe('won')
+        ->and($ledger->balanceUnits($ledger->wallet($user)))->toBe(10800000000)
+        ->and(app(PaperTradingService::class)->settleDue())->toBe(0)
+        ->and(DB::table('ledger_transactions')->where('idempotency_key', 'paper-settle:' . $tradeId)->count())->toBe(1);
+});
