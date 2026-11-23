@@ -103,7 +103,7 @@ test('rejecting a withdrawal releases its reserved balance', function () {
     $client = User::factory()->create();
     $client->markEmailAsVerified();
     $method = createCryptoMethodForTest();
-    DB::table('kyc_submissions')->insert([
+    $submission = DB::table('kyc_submissions')->insertGetId([
         'user_id' => $client->id, 'document_type' => 'passport',
         'document_path' => 'kyc/test/passport.pdf', 'status' => 'verified',
         'created_at' => now(), 'updated_at' => now(),
@@ -144,7 +144,7 @@ test('admin can search KYC cases and open a dedicated case file', function () {
 
     $this->actingAs($admin)->get('/admin/kyc?status=pending&q='.urlencode($client->email))
         ->assertOk()->assertSee($client->email);
-    $this->actingAs($admin)->get('/admin/kyc/1')
+    $this->actingAs($admin)->get('/admin/kyc/'.$submission)
         ->assertOk()->assertSee('Verification checklist')->assertSee('Identity evidence');
 });
 
