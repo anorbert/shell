@@ -116,9 +116,9 @@ class ManualWalletService
         }, 3);
     }
 
-    public function markWithdrawalPaid(int $requestId, User $admin, string $transactionHash, string $note): void
+    public function markWithdrawalPaid(int $requestId, User $admin, string $transactionHash, string $settlementAmount, string $note, ?string $feeUsd = null): void
     {
-        DB::transaction(function () use ($requestId, $admin, $transactionHash, $note) {
+        DB::transaction(function () use ($requestId, $admin, $transactionHash, $settlementAmount, $note, $feeUsd) {
             $request = DB::table('wallet_requests')->where('id', $requestId)->lockForUpdate()->first();
             if (!$request || $request->type !== 'withdrawal' || $request->status !== 'pending') {
                 throw new RuntimeException('This withdrawal is no longer awaiting payment.');
@@ -128,9 +128,9 @@ class ManualWalletService
             $this->ledger->post('withdrawal-paid:'.$requestId, 'Settle paid withdrawal #'.$requestId, [
                 ['account_id' => $liability, 'side' => 'debit', 'amount' => $request->amount_usd],
                 ['account_id' => $settlement, 'side' => 'credit', 'amount' => $request->amount_usd],
-            ], ['user_id' => $request->user_id, 'wallet_request_id' => $requestId, 'admin_id' => $admin->id, 'transaction_hash' => $transactionHash]);
+            ], ['user_id' => $request->user_id, 'wallet_request_id' => $requestId, 'admin_id' => $admin->id, 'transaction_hash' => $transactionHash, 'settlement_amount' => $settlementAmount, 'fee_usd' => $feeUsd]);
             DB::table('wallet_requests')->where('id', $requestId)->update([
-                'status' => 'paid', 'transaction_hash' => $transactionHash, 'admin_note' => $note,
+                'status' => 'paid', 'transaction_hash' => $transactionHash, 'settlement_amount' => $settlementAmount, 'fee_usd' => $feeUsd, 'admin_note' => $note,
                 'reviewed_by' => $admin->id, 'reviewed_at' => now(), 'paid_at' => now(), 'updated_at' => now(),
             ]);
             $user = User::findOrFail($request->user_id);
