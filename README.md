@@ -1,27 +1,20 @@
 # Shell
 
-Shell is an independent Laravel application for a client-facing market and trading workspace with a separate administrator console.
+Shell is an independent Laravel trading-platform project. The active customer and administrator interface is Blade-rendered with vanilla JavaScript/AJAX.
 
-## Current foundation
+## Market data and paper trading
 
-- Laravel 12 / PHP 8.2+
-- Blade-rendered public, authentication, client and administrator pages
-- Small vanilla JavaScript layer for AJAX requests, toast feedback and modal behaviour
-- Exactly two account roles: `client` and `admin`
-- Public registration always creates a client account
-- Administrator access is granted only from the server/CLI
-- Financial modules are deliberately unavailable until their data providers, ledger rules, compliance controls and tests are implemented
+- Configure `SHELL_MARKET_BASE_URL` and `SHELL_MARKET_MAX_AGE` in the environment. The current adapter reads Binance Spot public ticker data for the allow-listed USDT pairs in `config/shell.php`.
+- Run `php artisan migrate`.
+- Refresh quotes manually with `php artisan shell:markets:refresh`.
+- Start the Laravel scheduler in production (for example, configure cron to run `php artisan schedule:run` every minute). The scheduler refreshes market quotes and settles eligible expired paper trades.
+- Issue non-withdrawable simulation credits only from the server CLI: `php artisan shell:paper-credit client@example.com 1000`.
+- Paper trading is not real-money trading. The ledger stores balanced entries and posted transactions are not edited or deleted by application workflows.
 
-## Setup
+## Important limits
 
-1. Configure the database and mail transport in `.env`.
-2. Run `composer install`.
-3. Run `npm install`.
-4. Run `php artisan migrate`.
-5. Run `npm run build`.
-6. Create a client account through the public registration page.
-7. Grant administrator access to an existing account with `php artisan shell:grant-admin admin@example.com` and confirm the prompt.
+Live deposits, withdrawals, conversions, custody, investment products and redeemable balances are not implemented. Paper credits have no cash value. Market prices are provider-sourced and trades are blocked when a quote is stale or missing. A provider outage leaves expired paper trades open until a valid post-expiry quote is available.
 
-## Important operating boundary
+## Verification
 
-The current dashboard is not a live exchange. Market data, live execution, deposits, withdrawals, conversions and investment returns are not enabled. Never use real customer funds until provider approval, regulatory review, custody design, immutable double-entry accounting, reconciliation, security review and end-to-end tests are complete.
+Run `composer install`, `php artisan migrate`, `npm install`, `npm run build`, and `php artisan test` in a configured local environment. Repository edits alone do not prove the application is runtime-tested.
