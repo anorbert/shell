@@ -62,7 +62,7 @@ class PaperTradingService
                 return (int) $existing->id;
             }
 
-            $wallet = $this->ledger->wallet($user, $currency);
+            $wallet = $this->ledger->provisionClientWallets($user, $currency)['demo'];
             // LedgerService locks all affected accounts in a consistent order
             // and enforces the non-negative wallet invariant atomically.
 
