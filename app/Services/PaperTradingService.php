@@ -44,7 +44,7 @@ class PaperTradingService
 
         // Reject stale data before reserving any balance.
         $quote = $this->markets->freshQuote($symbol);
-        $currency = config('shell.paper.currency', 'USDT');
+        $currency = config('shell.paper.currency', 'USD');
 
         return DB::transaction(function () use ($user, $symbol, $direction, $stake, $duration, $key, $quote, $currency) {
             $existing = DB::table('paper_trades')->where('open_idempotency_key', $key)->first();
