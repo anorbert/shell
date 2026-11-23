@@ -17,7 +17,7 @@
 <label>Document type<select name="document_type" required><option value="national_id">National ID</option><option value="passport">Passport</option><option value="driving_licence">Driving licence</option></select></label>
 <label>Document number (optional)<input name="document_number" maxlength="120"></label>
 <label>Identity document (JPG, PNG or PDF; max 10 MB)<input type="file" name="document" accept=".jpg,.jpeg,.png,.pdf" required></label>
-<label>Selfie (optional; JPG or PNG; max 5 MB)<input type="file" name="selfie" accept=".jpg,.jpeg,.png"></label>
+<label>Selfie (optional; JPG or PNG; max 5 MB)<input type="file" name="selfie" accept=".jpg,.jpeg,.png" required></label>
 <button class="button button-primary" type="submit" {{ ($kyc?->status ?? '') === 'pending' ? 'disabled' : '' }}>Submit KYC for review</button>
 </form>
 @endif
