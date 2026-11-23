@@ -98,3 +98,19 @@ The admin Operations page shows the last recorded execution status. A successful
 ## Verification
 
 Run `php artisan test`, `vendor/bin/pint --test`, `npm run build` and the frontend lint command in a configured environment. GitHub Actions currently runs the test, formatting and frontend lint workflows on feature branches. CI passing is not a substitute for staging tests, production MySQL concurrency testing, external security review or deployment validation.
+
+
+## Trading terminal and market chart
+
+- The client terminal displays Binance Spot OHLCV candlesticks for configured market pairs and selectable 1m, 5m, 15m, 1h, 4h and 1d intervals.
+- Candle data is visual context only. The server independently checks a fresh stored ticker quote when a demo position opens and requires a fresh post-expiry ticker quote to settle it.
+- The demo ticket displays the wallet denomination, configured payout percentage, quick stake amounts and an estimated total return. The estimate is informational; the server remains authoritative.
+- Activity records and CSV exports use each trade's stored wallet_currency, preserving legacy USDT positions while new positions use USD.
+- The conversion workspace defaults to the funded USD demo wallet and displays available balances for each provisioned demo currency.
+- The first-session dashboard provides direct steps for exploring markets, reviewing wallets, opening a demo position and checking activity.
+
+## Operational checks
+
+- The administrator Operations screen highlights stale configured quotes, expired-but-unsettled positions, open positions and the last successful market refresh.
+- Review failed job heartbeat messages and application logs when market refresh or settlement is unsuccessful. A scheduled job heartbeat is operational evidence, not a guarantee that external providers or settlement will always be available.
+- Verify php artisan schedule:list during deployment and keep the single scheduler cron entry active. Laravel's withoutOverlapping scheduler locks require a functioning cache store. See the Laravel 12 task scheduling documentation: https://laravel.com/docs/12.x/scheduling.
