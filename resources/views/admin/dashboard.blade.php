@@ -9,6 +9,9 @@
     <article class="metric-card"><span class="metric-label">ADMIN ACCOUNTS</span><strong>{{ number_format($adminCount) }}</strong><small>Privileged operators</small></article>
     <article class="metric-card"><span class="metric-label">FRESH MARKET PAIRS</span><strong>{{ number_format($freshQuoteCount) }}/{{ number_format($configuredMarketCount) }}</strong><small>Quotes within freshness limit</small></article>
     <article class="metric-card"><span class="metric-label">OPEN PAPER TRADES</span><strong>{{ number_format($openTradeCount) }}</strong><small>{{ number_format($settledTradeCount) }} settled overall</small></article>
+    <article class="metric-card"><span class="metric-label">CLIENT DEMO WALLET BALANCES</span><strong>{{ number_format((float) ($demoWalletTotal ?? 0), 2) }} USD</strong><small>Non-cash simulation credits</small></article>
+    <article class="metric-card"><span class="metric-label">CLIENT REAL WALLET BALANCES</span><strong>{{ number_format((float) ($realWalletTotal ?? 0), 2) }} USD</strong><small>Ledger balances only; deposits are not enabled</small></article>
+    <article class="metric-card"><span class="metric-label">VERIFIED CLIENTS</span><strong>{{ number_format($verifiedCount) }}</strong><small>Email-verified client accounts</small></article>
 </div>
 <section class="panel"><div class="panel-head"><div><span class="eyebrow">OPERATIONS</span><h2>Administration tools</h2></div></div><div class="quick-links">
 <a href="{{ route('admin.clients') }}"><span class="quick-icon">◎</span><span><strong>Client accounts</strong><small>Review account status and access</small></span><b>→</b></a>
