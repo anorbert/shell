@@ -25,7 +25,7 @@
 </section>
 <section class="panel">
 <div class="panel-head"><div><span class="eyebrow">ADD REAL FUNDS</span><h2>Deposit crypto</h2></div></div>
-@if($methods->isEmpty())<p class="muted">No deposit networks are currently configured. Contact support; do not send funds to any address supplied outside this page.</p>@else
+@if($methods->where('deposits_enabled', true)->isEmpty())<p class="muted">No deposit network is currently enabled. Do not send funds to any address supplied outside this page.</p>@else
 <form method="POST" action="{{ route('wallet-requests.deposit') }}" class="form-stack">@csrf
 <label>Asset / network<select name="method_id" id="deposit-method" required><option value="">Choose network</option>@foreach($methods->where('deposits_enabled', true) as $method)<option value="{{ $method->id }}" data-address="{{ $method->wallet_address }}" data-memo-label="{{ $method->memo_label }}" data-memo="{{ $method->memo_value }}" data-instructions="{{ $method->instructions }}">{{ $method->asset }} · {{ $method->network }}</option>@endforeach</select></label>
 <div class="notice-banner" id="deposit-address-box" hidden><div><strong>Deposit address</strong><p id="deposit-address" style="overflow-wrap:anywhere"></p><p id="deposit-memo"></p><p id="deposit-instructions"></p></div><button class="button button-secondary" type="button" id="copy-deposit-address">Copy</button></div>
@@ -40,6 +40,7 @@
 <section class="panel">
 <div class="panel-head"><div><span class="eyebrow">PAYOUT</span><h2>Withdraw real funds</h2></div><span class="table-status {{ $kycVerified ? 'verified' : 'pending' }}">{{ $kycVerified ? 'KYC APPROVED' : 'KYC REQUIRED' }}</span></div>
 @if(!$kycVerified)<p class="muted">Complete KYC and wait for admin verification before requesting a withdrawal.</p>
+@elseif($methods->where('withdrawals_enabled', true)->isEmpty())<p class="muted">No withdrawal network is currently enabled. Contact support for assistance.</p>
 @else
 <form method="POST" action="{{ route('wallet-requests.withdraw') }}" class="form-stack">@csrf
 <label>Asset / network<select name="method_id" required><option value="">Choose network</option>@foreach($methods->where('withdrawals_enabled', true) as $method)<option value="{{ $method->id }}">{{ $method->asset }} · {{ $method->network }}</option>@endforeach</select></label>
