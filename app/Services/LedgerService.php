@@ -31,9 +31,31 @@ class LedgerService
         return (int) $id;
     }
 
-    public function wallet(User $user, string $currency = 'USDT'): int
+    /** Demo wallet retained under the original PAPER_WALLET ledger code for backward compatibility. */
+    public function demoWallet(User $user, string $currency = 'USDT'): int
     {
         return $this->account('USER:'.$user->id, 'PAPER_WALLET', $currency, 'credit');
+    }
+
+    /** Real-money wallet is a distinct ledger account and is never used by demo trading. */
+    public function realWallet(User $user, string $currency = 'USDT'): int
+    {
+        return $this->account('USER:'.$user->id, 'REAL_WALLET', $currency, 'credit');
+    }
+
+    /** @deprecated Use demoWallet() in new code. */
+    public function wallet(User $user, string $currency = 'USDT'): int
+    {
+        return $this->demoWallet($user, $currency);
+    }
+
+    /** Ensure every client has both independent wallet accounts provisioned. */
+    public function provisionClientWallets(User $user, string $currency = 'USDT'): array
+    {
+        return [
+            'demo' => $this->demoWallet($user, $currency),
+            'real' => $this->realWallet($user, $currency),
+        ];
     }
 
     public function system(string $code, string $currency = 'USDT', string $normal = 'credit'): int
@@ -87,8 +109,6 @@ class LedgerService
                 throw new RuntimeException('Ledger account missing.');
             }
 
-            // Another request may have posted this key while this transaction
-            // waited for the account locks.
             $existing = DB::table('ledger_transactions')->where('idempotency_key', $key)->value('id');
             if ($existing) {
                 return (int) $existing;
@@ -125,10 +145,9 @@ class LedgerService
                 throw new RuntimeException('Unbalanced ledger transaction.');
             }
 
-            // Paper wallets are credit-normal and must never become negative,
-            // regardless of which application service requests a posting.
+            // Both demo and real client wallets are credit-normal and cannot be overdrawn.
             foreach ($accounts as $account) {
-                if ($account->code !== 'PAPER_WALLET' || $account->normal_side !== 'credit') {
+                if (!in_array($account->code, ['PAPER_WALLET', 'REAL_WALLET'], true) || $account->normal_side !== 'credit') {
                     continue;
                 }
 
@@ -142,7 +161,7 @@ class LedgerService
                 }
 
                 if ($this->balanceUnits((int) $account->id) + $netChange < 0) {
-                    throw new RuntimeException('Insufficient paper balance; ledger posting would create a negative wallet balance.');
+                    throw new RuntimeException('Insufficient wallet balance; ledger posting would create a negative balance.');
                 }
             }
 
@@ -172,7 +191,7 @@ class LedgerService
 
     public function creditPaperWallet(User $user, string $amount, string $currency = 'USDT'): int
     {
-        $wallet = $this->wallet($user, $currency);
+        $wallet = $this->demoWallet($user, $currency);
         $capital = $this->system('PAPER_CAPITAL', $currency, 'debit');
 
         return $this->post(
@@ -182,7 +201,7 @@ class LedgerService
                 ['account_id' => $capital, 'side' => 'debit', 'amount' => $amount],
                 ['account_id' => $wallet, 'side' => 'credit', 'amount' => $amount],
             ],
-            ['user_id' => $user->id, 'environment' => 'paper']
+            ['user_id' => $user->id, 'environment' => 'demo']
         );
     }
 }
