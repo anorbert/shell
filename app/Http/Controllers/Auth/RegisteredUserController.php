@@ -35,7 +35,7 @@ class RegisteredUserController extends Controller
             ]);
 
             // Provision both independent wallets atomically. No real funds are created.
-            $ledger->provisionClientWallets($user, config('shell.paper.currency', 'USDT'));
+            $ledger->provisionClientWallets($user, config('shell.paper.currency', 'USD'));
 
             return $user;
         });
