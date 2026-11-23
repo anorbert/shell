@@ -177,6 +177,14 @@ class WalletOperationsController extends Controller
         $path = $kind === 'document' ? $record->document_path : $record->selfie_path;
         abort_unless($path && Storage::disk('local')->exists($path), 404);
         $mime = $kind === 'document' ? $record->document_mime : $record->selfie_mime;
+        $originalPath = preg_replace('/\\.enc$/', '', $path);
+        $extension = strtolower(pathinfo($originalPath, PATHINFO_EXTENSION) ?: 'bin');
+        $mime ??= match ($extension) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'pdf' => 'application/pdf',
+            default => null,
+        };
         abort_unless(in_array($mime, ['image/jpeg', 'image/png', 'application/pdf'], true), 415);
         $contents = Crypt::decryptString(Storage::disk('local')->get($path));
         $extension = pathinfo(preg_replace('/\.enc$/', '', $path), PATHINFO_EXTENSION) ?: 'bin';
