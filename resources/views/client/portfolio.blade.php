@@ -3,12 +3,12 @@
 @section('eyebrow','WALLET CENTER')
 @section('heading','My wallets')
 @section('content')
-<div class="notice-banner"><span class="notice-icon">i</span><div><strong>Two independent wallets</strong><p>Your demo wallet starts with $20,000 in non-withdrawable simulation credits. You can add demo credits. Real wallet funds can only arrive through confirmed real-money deposits; real-money services are not yet connected.</p></div><span class="mode-tag">SEPARATE LEDGERS</span></div>
+<div class="notice-banner"><span class="notice-icon">i</span><div><strong>Two independent wallets</strong><p>Your demo wallet starts with $20,000 in non-withdrawable simulation credits. You can add demo credits. Real wallet deposits and withdrawals are handled through manual crypto requests and admin confirmation.</p></div><span class="mode-tag">SEPARATE LEDGERS</span></div>
 <div class="metric-grid">
     <article class="metric-card"><span class="metric-label">DEMO WALLET · USD</span><strong>{{ $demoBalance }}</strong><small>Simulation credits only</small></article>
     <article class="metric-card"><span class="metric-label">REAL WALLET · USD</span><strong>{{ $realBalance }}</strong><small>Real deposit balance · starts at zero</small></article>
     <article class="metric-card"><span class="metric-label">DEMO WITHDRAWALS</span><strong>Not allowed</strong><small>Simulation credits have no cash value</small></article>
-    <article class="metric-card"><span class="metric-label">REAL DEPOSITS</span><strong>Coming after integration</strong><small>Only confirmed provider settlements count</small></article>
+    <article class="metric-card"><span class="metric-label">REAL FUNDING</span><strong>Manual review</strong><small>Deposits and withdrawals require admin confirmation</small></article>
 </div>
 <div class="content-grid">
     <section class="panel">
@@ -25,10 +25,10 @@
     </section>
     <section class="panel">
         <div class="panel-head"><div><span class="eyebrow">REAL-MONEY ENVIRONMENT</span><h2>Real wallet</h2></div><span class="table-status pending">NOT FUNDED</span></div>
-        <p class="muted">This wallet is independent of demo trading. Its opening balance is $0. It can only be credited after a real deposit is confirmed by an integrated payment provider.</p>
+        <p class="muted">This wallet is independent of demo trading. Its opening balance is $0. Submit a crypto deposit request and it will be credited only after an administrator verifies the transaction.</p>
         <div class="metric-card"><span class="metric-label">AVAILABLE USD</span><strong>{{ $realBalance }}</strong></div>
-        <div class="notice-banner"><span class="notice-icon">!</span><div><strong>Real deposits are not live yet</strong><p>Do not send funds to Shell until an official deposit method is displayed in the app. No demo top-up or manual balance adjustment should credit this wallet.</p></div></div>
-        <p class="muted">Real withdrawals and real-money trading remain disabled pending provider, custody, reconciliation and compliance controls.</p>
+        <a class="button button-primary" href="{{ route('wallet-requests.index') }}">Open deposit / withdrawal center</a>
+        <p class="muted">Withdrawals require approved KYC and are manually paid by an administrator. Real-money trading remains disabled.</p>
     </section>
 </div>
 <div class="modal" id="demo-topup-modal" aria-hidden="true">
