@@ -43,3 +43,13 @@ test('clients cannot revoke another users session', function () {
     $this->deleteJson('/security/sessions/private-owner-session')->assertNotFound();
     $this->assertDatabaseHas('sessions', ['id' => 'private-owner-session', 'user_id' => $owner->id]);
 });
+
+test('clients can view their account security page', function () {
+    $client = User::factory()->create();
+    $client->markEmailAsVerified();
+
+    $this->actingAs($client)->get('/security')
+        ->assertOk()
+        ->assertSee('Account protection')
+        ->assertSee('Login history');
+});

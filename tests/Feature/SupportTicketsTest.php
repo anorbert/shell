@@ -13,6 +13,7 @@ test('clients can create support tickets and cannot read another clients tickets
 
     $ticket = DB::table('support_tickets')->where('user_id', $owner->id)->first();
     expect($ticket)->not->toBeNull();
+    $this->actingAs($owner)->get('/support/'.$ticket->id)->assertOk()->assertSee('Unable to open a paper trade');
     $this->assertDatabaseHas('support_messages', [
         'support_ticket_id' => $ticket->id,
         'sender_role' => 'client',
@@ -46,4 +47,5 @@ test('administrators can reply to support tickets and notify the client', functi
     $this->assertDatabaseHas('support_tickets', ['id' => $ticketId, 'status' => 'closed']);
     $this->assertDatabaseHas('support_messages', ['support_ticket_id' => $ticketId, 'sender_role' => 'admin']);
     $this->assertDatabaseHas('user_notifications', ['user_id' => $client->id, 'type' => 'support_reply']);
+    $this->actingAs($admin)->get('/admin/support/'.$ticketId)->assertOk()->assertSee('Account question');
 });

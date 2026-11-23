@@ -107,3 +107,13 @@ test('paper conversion idempotency key cannot be reused with different inputs', 
     expect(fn () => $service->convert($user, 'USDT', 'BTC', '9.00000000', '', $quote['target_quote_at'], 'reused-key'))
         ->toThrow(RuntimeException::class, 'different conversion');
 });
+
+test('clients can open the paper conversion workspace', function () {
+    $client = User::factory()->create();
+    $client->markEmailAsVerified();
+
+    $this->actingAs($client)->get('/convert')
+        ->assertOk()
+        ->assertSee('Currency conversion')
+        ->assertSee('Paper conversion only');
+});
