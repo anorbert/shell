@@ -13,7 +13,7 @@ class PortfolioController extends Controller
     public function __invoke(Request $request, LedgerService $ledger)
     {
         $user = $request->user();
-        $currency = config('shell.paper.currency', 'USDT');
+        $currency = config('shell.paper.currency', 'USD');
         $wallets = $ledger->provisionClientWallets($user, $currency);
 
         $demoAccounts = DB::table('ledger_accounts')
