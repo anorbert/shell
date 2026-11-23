@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Settings;
+namespace App\Http\Controllers\Client\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
@@ -12,7 +12,7 @@ class ProfileController extends Controller
 {
     public function edit(Request $request)
     {
-        return view('settings.profile');
+        return view('client.settings.profile');
     }
 
     public function update(ProfileUpdateRequest $request): RedirectResponse

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Guests\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -14,7 +14,7 @@ class RegisteredUserController extends Controller
 {
     public function create()
     {
-        return view('auth.register');
+        return view('guests.auth.register');
     }
 
     public function store(Request $request): RedirectResponse
