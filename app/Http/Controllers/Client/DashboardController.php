@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Client;
 
+use App\Http\Controllers\Controller;
+
 use App\Services\MarketQuoteService;
 use Illuminate\Http\Request;
 
