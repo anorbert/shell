@@ -27,5 +27,20 @@ test('administrators can inspect market and paper trade operations', function ()
         ->assertOk()
         ->assertSee('Trading operations')
         ->assertSee('BTCUSDT')
-        ->assertSee('FRESH');
+        ->assertSee('FRESH')
+        ->assertSee('Background job health');
+
+    $this->assertDatabaseHas('admin_audit_logs', [
+        'actor_user_id' => $admin->id,
+        'path' => 'admin/operations',
+    ]);
+});
+
+test('paper settlement command records its execution heartbeat', function () {
+    $this->artisan('shell:paper:settle')->assertSuccessful();
+
+    $this->assertDatabaseHas('system_job_runs', [
+        'job_key' => 'paper_trade_settlement',
+        'status' => 'success',
+    ]);
 });
