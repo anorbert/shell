@@ -66,7 +66,9 @@ class PaperConversionService
             if (($quote['source_quote_at'] ?? '') !== $sourceQuoteAt || ($quote['target_quote_at'] ?? '') !== ($targetQuoteAt ?? '')) {
                 throw new RuntimeException('Market quote changed. Refresh the preview before confirming.');
             }
-            $sourceWallet = $this->ledger->wallet($user, $from); $targetWallet = $this->ledger->wallet($user, $to);
+            $wallets = $this->ledger->provisionClientWallets($user, config('shell.paper.currency', 'USD'));
+            $sourceWallet = $from === config('shell.paper.currency', 'USD') ? $wallets['demo'] : $this->ledger->demoWallet($user, $from);
+            $targetWallet = $to === config('shell.paper.currency', 'USD') ? $wallets['demo'] : $this->ledger->demoWallet($user, $to);
             $sourceClearing = $this->ledger->system('PAPER_FX_CLEARING', $from, 'credit');
             $targetClearing = $this->ledger->system('PAPER_FX_CLEARING', $to, 'debit');
             DB::table('ledger_accounts')->whereIn('id', [$sourceWallet, $targetWallet, $sourceClearing, $targetClearing])->orderBy('id')->lockForUpdate()->get();
