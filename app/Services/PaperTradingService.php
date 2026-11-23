@@ -180,6 +180,15 @@ class PaperTradingService
                     'updated_at' => now(),
                 ]);
 
+                DB::table('user_notifications')->insertOrIgnore([
+                    'user_id' => $trade->user_id,
+                    'event_key' => 'paper-trade-settled:' . $trade->id,
+                    'type' => 'paper_trade_settled',
+                    'title' => 'Paper trade settled: ' . $trade->symbol,
+                    'body' => 'Your ' . $trade->direction . ' paper trade settled as ' . strtoupper($status) . '. This is a simulation result, not a cash return.',
+                    'data' => json_encode(['trade_id' => $trade->id, 'status' => $status], JSON_THROW_ON_ERROR),
+                    'read_at' => null, 'created_at' => now(), 'updated_at' => now(),
+                ]);
                 $settled++;
             }, 3);
         }
