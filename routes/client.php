@@ -24,6 +24,7 @@ Route::middleware(['auth', 'client', 'verified'])->group(function () {
     Route::post('/portfolio/demo/top-up', [DemoWalletController::class, 'topUp'])->middleware('throttle:5,1')->name('portfolio.demo.top-up');
 
     Route::get('/activity', ActivityController::class)->name('activity.index');
+    Route::get('/statement', StatementController::class)->name('statement.index');
     Route::get('/activity/export', [ActivityController::class, 'export'])->name('activity.export');
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
