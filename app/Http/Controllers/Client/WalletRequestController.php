@@ -57,7 +57,7 @@ class WalletRequestController extends Controller
         $method = DB::table('crypto_payment_methods')->where('id', $data['method_id'])->where('deposits_enabled', true)->first();
         abort_unless($method, 404);
         $user = $request->user();
-        if (DB::table('wallet_requests')->where('type', 'deposit')->where('transaction_hash', $data['transaction_hash'])->exists()) {
+        if (DB::table('wallet_requests')->where('type', 'deposit')->where('transaction_hash', $data['transaction_hash'])->where('network', $method->network)->exists()) {
             return back()->withErrors(['transaction_hash' => 'This transaction hash has already been submitted.']);
         }
         $id = DB::table('wallet_requests')->insertGetId([
