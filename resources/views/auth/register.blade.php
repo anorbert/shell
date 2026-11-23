@@ -44,10 +44,13 @@
     const names = typeof Intl !== 'undefined' && Intl.DisplayNames
         ? new Intl.DisplayNames([document.documentElement.lang || navigator.language || 'en'], { type: 'region' })
         : null;
-    [...select.options].forEach(option => {
+    const options = [...select.options];
+    options.forEach(option => {
         const name = names?.of(option.value) || option.value;
         option.textContent = name + ' (' + option.dataset.dial + ')';
     });
+    options.sort((a, b) => a.textContent.localeCompare(b.textContent, navigator.language || 'en'));
+    options.forEach(option => select.appendChild(option));
     const updatePrefix = () => {
         prefix.textContent = select.selectedOptions[0]?.dataset.dial || '';
     };
