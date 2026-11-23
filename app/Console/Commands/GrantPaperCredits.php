@@ -1,0 +1,4 @@
+<?php
+namespace App\Console\Commands;
+use App\Models\User;use App\Services\LedgerService;use App\Support\Decimal;use Illuminate\Console\Command;use Throwable;
+class GrantPaperCredits extends Command{protected $signature='shell:paper-credit {email} {amount} {currency=USDT}';protected $description='Issue non-withdrawable simulation credits to a client';public function handle(LedgerService $s):int{try{$u=User::where('email',strtolower($this->argument('email')))->firstOrFail();$a=Decimal::fromUnits(Decimal::units((string)$this->argument('amount')));$c=strtoupper($this->argument('currency'));if($c!=='USDT')throw new \RuntimeException('Only USDT paper credits are configured.');if(!$this->confirm("Issue {$a} NON-WITHDRAWABLE paper credits to {$u->email}?"))return self::SUCCESS;$s->creditPaperWallet($u,$a,$c);$this->info('Paper credits posted to ledger.');return self::SUCCESS;}catch(Throwable $e){$this->error($e->getMessage());return self::FAILURE;}}}
