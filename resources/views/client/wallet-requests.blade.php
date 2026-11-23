@@ -15,9 +15,9 @@
 <p class="muted">Withdrawals are locked until an administrator reviews and verifies your identity documents. Email verification alone does not qualify as KYC.</p>
 <form method="POST" action="{{ route('wallet-requests.kyc') }}" enctype="multipart/form-data" class="form-stack">@csrf
 <label>Document type<select name="document_type" required><option value="national_id">National ID</option><option value="passport">Passport</option><option value="driving_licence">Driving licence</option></select></label>
-<label>Document number (optional)<input name="document_number" maxlength="120"></label>
+<label>Document number<input name="document_number" maxlength="120"></label>
 <label>Identity document (JPG, PNG or PDF; max 10 MB)<input type="file" name="document" accept=".jpg,.jpeg,.png,.pdf" required></label>
-<label>Selfie (optional; JPG or PNG; max 5 MB)<input type="file" name="selfie" accept=".jpg,.jpeg,.png" required></label>
+<label>Selfie (required; JPG or PNG; max 5 MB)<input type="file" name="selfie" accept=".jpg,.jpeg,.png" required></label>
 <button class="button button-primary" type="submit" {{ ($kyc?->status ?? '') === 'pending' ? 'disabled' : '' }}>Submit KYC for review</button>
 </form>
 @endif
