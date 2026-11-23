@@ -1,0 +1,5 @@
+@extends('layouts.guest')
+@section('title', 'Reset password · Shell')
+@section('content')
+<div class="auth-shell"><a class="brand auth-brand" href="{{ route('home') }}"><span class="brand-mark">S</span><span>SHELL<span class="brand-sub">FINANCIAL TERMINAL</span></span></a><div class="auth-card"><span class="eyebrow">ACCOUNT RECOVERY</span><h1>Reset your password</h1><p class="muted">Enter your account email and we will send a reset link if it exists.</p>@if(session('status'))<div class="alert alert-success">{{ session('status') }}</div>@endif@if($errors->any())<div class="alert alert-error">{{ $errors->first() }}</div>@endif<form method="POST" action="{{ route('password.email') }}" class="form-stack">@csrf<label>Email address<input type="email" name="email" value="{{ old('email') }}" required autocomplete="email"></label><button class="button button-primary button-full" type="submit">Send reset link</button></form><div class="auth-bottom"><a href="{{ route('login') }}">Back to sign in</a></div></div></div>
+@endsection
