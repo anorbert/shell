@@ -13,6 +13,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin', 'verified']
     Route::get('/clients/{client}', [ClientController::class, 'show'])->whereNumber('client')->name('clients.show');
     Route::get('/operations', OperationsController::class)->name('operations');
     Route::get('/wallet-operations', [WalletOperationsController::class, 'index'])->name('wallet-operations.index');
+    Route::get('/kyc', [WalletOperationsController::class, 'kycIndex'])->name('kyc.index');
+    Route::get('/kyc/{submission}', [WalletOperationsController::class, 'kycShow'])->whereNumber('submission')->name('kyc.show');
     Route::post('/wallet-operations/methods', [WalletOperationsController::class, 'saveMethod'])->name('wallet-operations.methods.store');
     Route::post('/wallet-operations/methods/{method}', [WalletOperationsController::class, 'toggleMethod'])->whereNumber('method')->name('wallet-operations.methods.update');
     Route::post('/wallet-operations/{walletRequest}/confirm-deposit', [WalletOperationsController::class, 'confirmDeposit'])->whereNumber('walletRequest')->name('wallet-operations.deposit.confirm');
