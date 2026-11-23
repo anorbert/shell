@@ -8,6 +8,8 @@ use App\Services\ManualWalletService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class WalletRequestController extends Controller
