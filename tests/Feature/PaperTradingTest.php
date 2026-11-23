@@ -156,7 +156,7 @@ test('an expired winning paper trade settles once using a post-expiry quote', fu
     $ledger = app(LedgerService::class);
     $ledger->creditPaperWallet($user, '100.00000000');
 
-    $openingAt = now()->subMinutes(3);
+    $openingAt = now();
     DB::table('market_quotes')->insert([
         'symbol' => 'BTCUSDT',
         'price' => '90000.000000000000',
