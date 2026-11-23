@@ -3,10 +3,10 @@
 @section('eyebrow', 'CLIENT WORKSPACE')
 @section('heading', 'Good day, '.explode(' ', $user->name)[0])
 @section('content')
-<div class="notice-banner"><span class="notice-icon">i</span><div><strong>Two independent wallets</strong><p>Your demo and real wallets are separate. Demo trading uses simulated credits only. Real-money transactions are unavailable until approved payment and custody services are integrated.</p></div><span class="mode-tag">DUAL WALLET</span></div>
+<div class="notice-banner"><span class="notice-icon">i</span><div><strong>Two independent wallets</strong><p>Your demo wallet starts with $20,000 in non-withdrawable simulation credits. You can add demo funds. The real wallet starts at $0 and will only be credited after a confirmed real-money deposit.</p></div><span class="mode-tag">DUAL WALLET</span></div>
 <div class="metric-grid">
-    <article class="metric-card"><span class="metric-label">DEMO WALLET · {{ $walletCurrency }}</span><strong>{{ $demoBalance }}</strong><small>Active · simulated funds</small></article>
-    <article class="metric-card"><span class="metric-label">REAL WALLET · {{ $walletCurrency }}</span><strong>{{ $realBalance }}</strong><small>Separate ledger · not funded</small></article>
+    <article class="metric-card"><span class="metric-label">DEMO WALLET · USD</span><strong>{{ $demoBalance }}</strong><small>Active · simulated funds</small></article>
+    <article class="metric-card"><span class="metric-label">REAL WALLET · USD</span><strong>{{ $realBalance }}</strong><small>Separate ledger · not funded</small></article>
     <article class="metric-card"><span class="metric-label">FRESH MARKET PAIRS</span><strong>{{ $quotes->count() }}</strong><small>{{ $marketConnected ? 'Provider quotes available' : 'No fresh provider quotes' }}</small></article>
     <article class="metric-card"><span class="metric-label">REAL-MONEY STATUS</span><strong>Disabled</strong><small>Deposits and withdrawals unavailable</small></article>
 </div>
