@@ -1,0 +1,7 @@
+@extends('layouts.app')
+@section('title', 'Client accounts')
+@section('eyebrow', 'ADMINISTRATION')
+@section('heading', 'Client accounts')
+@section('content')
+<section class="panel"><div class="panel-head"><div><span class="eyebrow">ACCOUNT DIRECTORY</span><h2>Registered clients</h2></div><span class="count-chip">{{ $clients->total() }} total</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>CLIENT</th><th>EMAIL</th><th>STATUS</th><th>JOINED</th></tr></thead><tbody>@forelse($clients as $client)<tr><td><strong>{{ $client->name }}</strong><small>#{{ $client->id }}</small></td><td>{{ $client->email }}</td><td><span class="table-status {{ $client->email_verified_at ? 'verified' : 'pending' }}">{{ $client->email_verified_at ? 'Verified' : 'Unverified' }}</span></td><td>{{ $client->created_at->format('d M Y') }}</td></tr>@empty<tr><td colspan="4" class="table-empty">No client accounts found.</td></tr>@endforelse</tbody></table></div><div class="pagination-wrap">{{ $clients->links() }}</div></section>
+@endsection
