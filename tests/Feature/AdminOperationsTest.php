@@ -12,7 +12,7 @@ test('clients cannot access administration operations', function () {
 
 test('administrators can inspect market and paper trade operations', function () {
     $admin = User::factory()->create();
-    $admin->forceFill(['role' => 'admin'])->save();
+    $admin->forceFill(['role' => 'admin', 'email_verified_at' => now()])->save();
 
     DB::table('market_quotes')->insert([
         'symbol' => 'BTCUSDT',

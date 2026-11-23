@@ -125,6 +125,27 @@ class LedgerService
                 throw new RuntimeException('Unbalanced ledger transaction.');
             }
 
+            // Paper wallets are credit-normal and must never become negative,
+            // regardless of which application service requests a posting.
+            foreach ($accounts as $account) {
+                if ($account->code !== 'PAPER_WALLET' || $account->normal_side !== 'credit') {
+                    continue;
+                }
+
+                $netChange = 0;
+                foreach ($entries as $entry) {
+                    if ((int) $entry['account_id'] !== (int) $account->id) {
+                        continue;
+                    }
+                    $units = Decimal::units((string) $entry['amount']);
+                    $netChange += $entry['side'] === 'credit' ? $units : -$units;
+                }
+
+                if ($this->balanceUnits((int) $account->id) + $netChange < 0) {
+                    throw new RuntimeException('Ledger posting would create a negative paper wallet balance.');
+                }
+            }
+
             $transactionId = DB::table('ledger_transactions')->insertGetId([
                 'idempotency_key' => $key,
                 'description' => $description,

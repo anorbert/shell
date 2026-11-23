@@ -7,6 +7,7 @@ use Illuminate\\Support\\Facades\\DB;
 
 test('paper wallet credits create balanced ledger entries', function () {
     $user = User::factory()->create();
+    $user->markEmailAsVerified();
     app(LedgerService::class)->creditPaperWallet($user, '100.00000000');
 
     $wallet = app(LedgerService::class)->wallet($user);
@@ -174,4 +175,20 @@ test('an expired winning paper trade settles once using a post-expiry quote', fu
         ->and($ledger->balanceUnits($ledger->wallet($user)))->toBe(10800000000)
         ->and(app(PaperTradingService::class)->settleDue())->toBe(0)
         ->and(DB::table('ledger_transactions')->where('idempotency_key', 'paper-settle:' . $tradeId)->count())->toBe(1);
+});
+
+
+test('ledger refuses a posting that would make a paper wallet negative', function () {
+    $user = User::factory()->create();
+    $ledger = app(LedgerService::class);
+    $wallet = $ledger->wallet($user);
+    $capital = $ledger->system('NEGATIVE_TEST_CAPITAL', 'USDT', 'debit');
+    $ledger->creditPaperWallet($user, '5.00000000');
+
+    expect(fn () => $ledger->post('negative-wallet-test', 'Invalid overdraw', [
+        ['account_id' => $wallet, 'side' => 'debit', 'amount' => '6.00000000'],
+        ['account_id' => $capital, 'side' => 'credit', 'amount' => '6.00000000'],
+    ]))->toThrow(RuntimeException::class, 'Ledger posting would create a negative paper wallet balance.');
+
+    expect($ledger->balanceUnits($wallet))->toBe(500000000);
 });
