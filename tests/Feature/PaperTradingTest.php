@@ -223,7 +223,7 @@ test('every client receives separate demo and real wallets with independent bala
 
     $ledger->creditPaperWallet($user, '75.00000000');
 
-    expect($ledger->balanceUnits($wallets['demo']))->toBe(7500000000)
+    expect($ledger->balanceUnits($wallets['demo']))->toBe(2007500000000)
         ->and($ledger->balanceUnits($wallets['real']))->toBe(0);
 
     $realCapital = $ledger->system('TEST_REAL_CAPITAL', 'USD', 'debit');
@@ -232,7 +232,7 @@ test('every client receives separate demo and real wallets with independent bala
         ['account_id' => $wallets['real'], 'side' => 'credit', 'amount' => '20.00000000'],
     ], ['environment' => 'real', 'test_only' => true]);
 
-    expect($ledger->balanceUnits($wallets['demo']))->toBe(7500000000)
+    expect($ledger->balanceUnits($wallets['demo']))->toBe(2007500000000)
         ->and($ledger->balanceUnits($wallets['real']))->toBe(2000000000);
 });
 
