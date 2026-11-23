@@ -1,5 +1,7 @@
 <?php
 namespace App\Http\Controllers\Client;
+
+use App\Http\Controllers\Controller;
 use App\Services\LedgerService;use App\Services\PaperTradingService;use App\Support\Decimal;use Illuminate\Http\Request;use Illuminate\Support\Str;use Illuminate\Support\Facades\DB;
 class PaperTradingController extends Controller{
 public function index(Request $r,LedgerService $l){$w=$l->wallet($r->user(),config('shell.paper.currency'));return view('client.trading',['balance'=>Decimal::fromUnits($l->balanceUnits($w)),'trades'=>DB::table('paper_trades')->where('user_id',$r->user()->id)->latest()->paginate(12),'symbols'=>config('shell.market.symbols'),'durations'=>config('shell.paper.durations')]);}
