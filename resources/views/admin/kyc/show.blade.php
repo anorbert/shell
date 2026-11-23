@@ -44,7 +44,7 @@
     <div class="panel-head"><div><span class="eyebrow">MANDATORY REVIEW CONTROLS</span><h2>Verification checklist</h2><p class="muted">Every item must be checked before approval. Complete any required external identity, duplicate-account and risk screening separately.</p></div></div>
     <form method="POST" action="{{ route('admin.wallet-operations.kyc.review',$kyc->id) }}" class="form-stack">
         @csrf
-        <label class="checkbox-row"><input type="checkbox" name="checks[identity_legible]" value="1" required> Identity document is authentic-looking, legible and all key fields are visible</label>
+        <label class="checkbox-row"><input type="checkbox" name="checks[identity_legible]" value="1"> Identity document is authentic-looking, legible and all key fields are visible</label>
         <label class="checkbox-row"><input type="checkbox" name="checks[details_match]" value="1" required> Client name and identity details match the submitted account information</label>
         <label class="checkbox-row"><input type="checkbox" name="checks[document_valid]" value="1" required> Document is current, not expired, and is an accepted identity document</label>
         <label class="checkbox-row"><input type="checkbox" name="checks[selfie_match]" value="1" required> Selfie is clear and the person reasonably matches the document portrait</label>
