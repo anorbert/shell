@@ -44,10 +44,10 @@ test('market and trading screens require authentication', function () {
     $this->get('/portfolio')->assertRedirect('/login');
 });
 
-test('client portfolio displays zero until simulation credits are issued', function () {
+test('client portfolio starts with a $20,000 demo balance and an empty real wallet', function () {
     $user = User::factory()->create();
     $user->markEmailAsVerified();
-    $this->actingAs($user)->get('/portfolio')->assertOk()->assertSee('0.00000000')->assertSee('Two independent wallets');
+    $this->actingAs($user)->get('/portfolio')->assertOk()->assertSee('20000.00000000')->assertSee('0.00000000')->assertSee('Add demo funds');
 });
 
 test('paper trade opening is blocked when quote is missing', function () {
@@ -211,7 +211,7 @@ test('every client receives separate demo and real wallets with independent bala
     $wallets = $ledger->provisionClientWallets($user);
 
     expect($wallets['demo'])->not->toBe($wallets['real'])
-        ->and($ledger->balanceUnits($wallets['demo']))->toBe(0)
+        ->and($ledger->balanceUnits($wallets['demo']))->toBe(2000000000000)
         ->and($ledger->balanceUnits($wallets['real']))->toBe(0);
 
     $ledger->creditPaperWallet($user, '75.00000000');
@@ -239,4 +239,40 @@ test('real wallet cannot be overdrawn by a ledger posting', function () {
         ['account_id' => $realWallet, 'side' => 'debit', 'amount' => '1.00000000'],
         ['account_id' => $capital, 'side' => 'credit', 'amount' => '1.00000000'],
     ]))->toThrow(RuntimeException::class, 'Insufficient real wallet balance; ledger posting would create a negative balance.');
+});
+
+
+test('client can top up demo funds but the real wallet remains unchanged', function () {
+    $user = User::factory()->create();
+    $user->markEmailAsVerified();
+
+    $this->actingAs($user)->postJson('/portfolio/demo/top-up', [
+        'amount' => '500.00',
+        'request_key' => '2c6e3b4a-1c2d-4a5b-9c7d-8e9f0a1b2c3d',
+    ])->assertCreated()->assertJsonPath('balance', '20500.00000000');
+
+    $ledger = app(LedgerService::class);
+    $wallets = $ledger->provisionClientWallets($user);
+
+    expect($ledger->balanceUnits($wallets['demo']))->toBe(2050000000000)
+        ->and($ledger->balanceUnits($wallets['real']))->toBe(0);
+});
+
+test('client cannot top up below the demo minimum and has no real withdrawal route', function () {
+    $user = User::factory()->create();
+    $user->markEmailAsVerified();
+
+    $this->actingAs($user)->postJson('/portfolio/demo/top-up', [
+        'amount' => '50',
+        'request_key' => '3d6e3b4a-1c2d-4a5b-9c7d-8e9f0a1b2c3d',
+    ])->assertUnprocessable();
+
+    $this->actingAs($user)->postJson('/portfolio/real/withdraw', [
+        'amount' => '1',
+    ])->assertNotFound();
+
+    $ledger = app(LedgerService::class);
+    $wallets = $ledger->provisionClientWallets($user);
+    expect($ledger->balanceUnits($wallets['demo']))->toBe(2000000000000)
+        ->and($ledger->balanceUnits($wallets['real']))->toBe(0);
 });
