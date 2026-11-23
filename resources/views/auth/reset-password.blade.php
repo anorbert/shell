@@ -1,0 +1,5 @@
+@extends('layouts.guest')
+@section('title', 'Choose a new password · Shell')
+@section('content')
+<div class="auth-shell"><a class="brand auth-brand" href="{{ route('home') }}"><span class="brand-mark">S</span><span>SHELL<span class="brand-sub">FINANCIAL TERMINAL</span></span></a><div class="auth-card"><span class="eyebrow">ACCOUNT RECOVERY</span><h1>Choose a new password</h1>@if($errors->any())<div class="alert alert-error">{{ $errors->first() }}</div>@endif<form method="POST" action="{{ route('password.store') }}" class="form-stack">@csrf<input type="hidden" name="token" value="{{ $token }}"><label>Email address<input type="email" name="email" value="{{ old('email', $email) }}" required></label><label>New password<input type="password" name="password" required autocomplete="new-password"></label><label>Confirm new password<input type="password" name="password_confirmation" required autocomplete="new-password"></label><button class="button button-primary button-full" type="submit">Update password</button></form></div></div>
+@endsection
