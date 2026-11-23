@@ -58,21 +58,8 @@ class PaperTradingService
             }
 
             $wallet = $this->ledger->wallet($user, $currency);
-            DB::table('ledger_accounts')->where('id', $wallet)->lockForUpdate()->first();
-
-            // Recheck after serializing on the wallet row so a retried request
-            // cannot reserve the same stake twice.
-            $existing = DB::table('paper_trades')->where('open_idempotency_key', $key)->first();
-            if ($existing) {
-                if ((int) $existing->user_id !== $user->id) {
-                    throw new RuntimeException('Request key already used.');
-                }
-                return (int) $existing->id;
-            }
-
-            if ($this->ledger->balanceUnits($wallet) < Decimal::units($stake)) {
-                throw new RuntimeException('Insufficient paper balance. Ask an administrator to issue simulation credits.');
-            }
+            // LedgerService locks all affected accounts in a consistent order
+            // and enforces the non-negative wallet invariant atomically.
 
             $escrow = $this->ledger->system('PAPER_ESCROW', $currency);
             $this->ledger->post(
