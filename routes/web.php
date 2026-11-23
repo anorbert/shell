@@ -13,7 +13,8 @@ Route::middleware('auth')->get('/dashboard', function () {
 
     abort_unless(auth()->user()->role === 'client', 403);
 
-    return app()->call([ClientDashboardController::class, '__invoke']);
+    $controller = app(ClientDashboardController::class);
+    return app()->call([$controller, '__invoke']);
 })->name('dashboard');
 
 require __DIR__.'/auth.php';
