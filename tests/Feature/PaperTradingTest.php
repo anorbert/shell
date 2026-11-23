@@ -8,6 +8,7 @@ use Illuminate\\Support\\Facades\\DB;
 test('paper wallet credits create balanced ledger entries', function () {
     $user = User::factory()->create();
     $user->markEmailAsVerified();
+    $user->markEmailAsVerified();
     app(LedgerService::class)->creditPaperWallet($user, '100.00000000');
 
     $wallet = app(LedgerService::class)->wallet($user);
@@ -20,6 +21,7 @@ test('paper wallet credits create balanced ledger entries', function () {
 
 test('ledger idempotency key returns the original transaction without reposting', function () {
     $user = User::factory()->create();
+    $user->markEmailAsVerified();
     $ledger = app(LedgerService::class);
     $wallet = $ledger->wallet($user);
     $capital = $ledger->system('TEST_CAPITAL', 'USDT', 'debit');
@@ -44,11 +46,13 @@ test('market and trading screens require authentication', function () {
 
 test('client portfolio displays zero until simulation credits are issued', function () {
     $user = User::factory()->create();
+    $user->markEmailAsVerified();
     $this->actingAs($user)->get('/portfolio')->assertOk()->assertSee('0.00000000')->assertSee('Paper wallet only');
 });
 
 test('paper trade opening is blocked when quote is missing', function () {
     $user = User::factory()->create();
+    $user->markEmailAsVerified();
     app(LedgerService::class)->creditPaperWallet($user, '100.00000000');
 
     $this->actingAs($user)->postJson('/trading/paper', [
@@ -64,6 +68,7 @@ test('paper trade opening is blocked when quote is missing', function () {
 
 test('paper trade cannot be opened without sufficient simulation funds', function () {
     $user = User::factory()->create();
+    $user->markEmailAsVerified();
     DB::table('market_quotes')->insert([
         'symbol' => 'BTCUSDT',
         'price' => '90000.000000000000',
@@ -86,6 +91,7 @@ test('paper trade cannot be opened without sufficient simulation funds', functio
 
 test('paper trade opens and reserves the stake from the client wallet', function () {
     $user = User::factory()->create();
+    $user->markEmailAsVerified();
     $ledger = app(LedgerService::class);
     $ledger->creditPaperWallet($user, '100.00000000');
 
@@ -112,6 +118,7 @@ test('paper trade opens and reserves the stake from the client wallet', function
 
 test('a trade is not settled using a quote captured before expiry', function () {
     $user = User::factory()->create();
+    $user->markEmailAsVerified();
     $ledger = app(LedgerService::class);
     $ledger->creditPaperWallet($user, '100.00000000');
 
@@ -145,6 +152,7 @@ test('a trade is not settled using a quote captured before expiry', function () 
 
 test('an expired winning paper trade settles once using a post-expiry quote', function () {
     $user = User::factory()->create();
+    $user->markEmailAsVerified();
     $ledger = app(LedgerService::class);
     $ledger->creditPaperWallet($user, '100.00000000');
 
@@ -180,6 +188,7 @@ test('an expired winning paper trade settles once using a post-expiry quote', fu
 
 test('ledger refuses a posting that would make a paper wallet negative', function () {
     $user = User::factory()->create();
+    $user->markEmailAsVerified();
     $ledger = app(LedgerService::class);
     $wallet = $ledger->wallet($user);
     $capital = $ledger->system('NEGATIVE_TEST_CAPITAL', 'USDT', 'debit');
