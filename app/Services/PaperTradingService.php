@@ -79,6 +79,11 @@ class PaperTradingService
                 if ((int) $existing->user_id !== $user->id) {
                     throw new RuntimeException('Request key already used.');
                 }
+                if ($existing->symbol !== $symbol || $existing->direction !== $direction
+                    || Decimal::compare((string) $existing->stake, $stake) !== 0
+                    || (int) $existing->duration_seconds !== $duration) {
+                    throw new RuntimeException('Request key was already used for a different trade.');
+                }
                 return (int) $existing->id;
             }
 

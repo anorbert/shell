@@ -24,14 +24,14 @@ class PaperConversionService {
   if($key===''||strlen($key)>100)throw new RuntimeException('A valid request key is required.');
   return DB::transaction(function()use($user,$from,$to,$amount,$sourceQuoteAt,$targetQuoteAt,$key){
    $existing=DB::table('paper_conversions')->where('request_key',$key)->first();
-   if($existing){if((int)$existing->user_id!==$user->id)throw new RuntimeException('Request key already used.');return $existing;}
+   if($existing){if((int)$existing->user_id!==$user->id)throw new RuntimeException('Request key already used.');if($existing->from_currency!==$from||$existing->to_currency!==$to||Decimal::compare((string)$existing->amount_in,$amount)!==0)throw new RuntimeException('Request key was already used for a different conversion.');return $existing;}
    $quote=$this->quote($from,$to,$amount);
    if(($quote['source_quote_at']??'')!==$sourceQuoteAt||($quote['target_quote_at']??'')!==($targetQuoteAt??''))throw new RuntimeException('Market quote changed. Refresh the preview before confirming.');
    $sourceWallet=$this->ledger->wallet($user,$from);$targetWallet=$this->ledger->wallet($user,$to);
    $sourceClearing=$this->ledger->system('PAPER_FX_CLEARING',$from,'credit');$targetClearing=$this->ledger->system('PAPER_FX_CLEARING',$to,'debit');
    DB::table('ledger_accounts')->whereIn('id',[$sourceWallet,$targetWallet,$sourceClearing,$targetClearing])->orderBy('id')->lockForUpdate()->get();
    $existing=DB::table('paper_conversions')->where('request_key',$key)->first();
-   if($existing){if((int)$existing->user_id!==$user->id)throw new RuntimeException('Request key already used.');return $existing;}
+   if($existing){if((int)$existing->user_id!==$user->id)throw new RuntimeException('Request key already used.');if($existing->from_currency!==$from||$existing->to_currency!==$to||Decimal::compare((string)$existing->amount_in,$amount)!==0)throw new RuntimeException('Request key was already used for a different conversion.');return $existing;}
    $meta=['user_id'=>$user->id,'request_key'=>$key,'from'=>$from,'to'=>$to,'environment'=>'paper'];
    $this->ledger->post('paper-conversion:'.$key.':source','Paper conversion source debit',[
     ['account_id'=>$sourceWallet,'side'=>'debit','amount'=>$amount],['account_id'=>$sourceClearing,'side'=>'credit','amount'=>$amount]
