@@ -21,8 +21,48 @@ class WalletOperationsController extends Controller
         $methods = DB::table('crypto_payment_methods')->orderBy('asset')->orderBy('network')->get();
         $kycSubmissions = DB::table('kyc_submissions')->join('users', 'users.id', '=', 'kyc_submissions.user_id')
             ->select('kyc_submissions.*', 'users.name as client_name', 'users.email as client_email')
-            ->latest('kyc_submissions.created_at')->paginate(20, ['*'], 'kyc_page');
+            ->latest('kyc_submissions.created_at')->paginate(10, ['*'], 'kyc_page');
         return view('admin.wallet-operations', compact('requests', 'methods', 'kycSubmissions'));
+    }
+
+    public function kycIndex(Request $request)
+    {
+        $query = DB::table('kyc_submissions')->join('users', 'users.id', '=', 'kyc_submissions.user_id')
+            ->leftJoin('users as reviewers', 'reviewers.id', '=', 'kyc_submissions.reviewed_by')
+            ->select('kyc_submissions.*', 'users.name as client_name', 'users.email as client_email',
+                'reviewers.name as reviewer_name');
+        $status = $request->query('status', 'pending');
+        if (in_array($status, ['pending', 'verified', 'rejected'], true)) {
+            $query->where('kyc_submissions.status', $status);
+        } else {
+            $status = 'all';
+        }
+        $search = trim((string) $request->query('q', ''));
+        if ($search !== '') {
+            $query->where(function ($builder) use ($search) {
+                $builder->where('users.name', 'like', '%'.$search.'%')
+                    ->orWhere('users.email', 'like', '%'.$search.'%')
+                    ->orWhere('kyc_submissions.document_number', 'like', '%'.$search.'%')
+                    ->orWhere('kyc_submissions.id', 'like', '%'.$search.'%');
+            });
+        }
+        $submissions = $query->orderByRaw("CASE WHEN kyc_submissions.status = 'pending' THEN 0 ELSE 1 END")
+            ->latest('kyc_submissions.created_at')->paginate(20)->withQueryString();
+        $counts = DB::table('kyc_submissions')->selectRaw("SUM(status = 'pending') as pending, SUM(status = 'verified') as verified, SUM(status = 'rejected') as rejected")->first();
+        return view('admin.kyc.index', compact('submissions', 'status', 'search', 'counts'));
+    }
+
+    public function kycShow(int $submission)
+    {
+        $kyc = DB::table('kyc_submissions')->join('users', 'users.id', '=', 'kyc_submissions.user_id')
+            ->leftJoin('users as reviewers', 'reviewers.id', '=', 'kyc_submissions.reviewed_by')
+            ->select('kyc_submissions.*', 'users.name as client_name', 'users.email as client_email',
+                'users.created_at as client_registered_at', 'reviewers.name as reviewer_name')
+            ->where('kyc_submissions.id', $submission)->first();
+        abort_unless($kyc, 404);
+        $history = DB::table('kyc_submissions')->where('user_id', $kyc->user_id)
+            ->orderByDesc('created_at')->get();
+        return view('admin.kyc.show', compact('kyc', 'history'));
     }
 
     public function saveMethod(Request $request)
@@ -105,12 +145,21 @@ class WalletOperationsController extends Controller
         $data = $request->validate([
             'decision' => ['required', 'in:verified,rejected'],
             'review_note' => ['nullable', 'string', 'max:2000'],
+            'checks' => ['required_if:decision,verified', 'array'],
+            'checks.identity_legible' => ['required_if:decision,verified', 'accepted'],
+            'checks.details_match' => ['required_if:decision,verified', 'accepted'],
+            'checks.document_valid' => ['required_if:decision,verified', 'accepted'],
+            'checks.selfie_match' => ['required_if:decision,verified', 'accepted'],
         ]);
+        if ($data['decision'] === 'rejected' && trim((string) ($data['review_note'] ?? '')) === '') {
+            return back()->withErrors(['review_note' => 'Provide a clear reason so the client can correct the submission.'])->withInput();
+        }
         $record = DB::table('kyc_submissions')->where('id', $submission)->where('status', 'pending')->first();
         abort_unless($record, 404);
         DB::transaction(function () use ($request, $record, $data) {
             DB::table('kyc_submissions')->where('id', $record->id)->update([
                 'status' => $data['decision'], 'review_note' => $data['review_note'] ?? null,
+                'review_checklist' => isset($data['checks']) ? json_encode($data['checks']) : null,
                 'reviewed_by' => $request->user()->id, 'reviewed_at' => now(), 'updated_at' => now(),
             ]);
             $user = User::findOrFail($record->user_id);
@@ -121,7 +170,7 @@ class WalletOperationsController extends Controller
                     : 'Your KYC submission was not approved. Review the admin note and submit corrected documents. '.$data['review_note'],
                 ['kyc_submission_id' => $record->id, 'status' => $data['decision']]);
         });
-        return back()->with('status', 'KYC decision saved.');
+        return redirect()->route('admin.kyc.show', $submission)->with('status', 'KYC decision saved.');
     }
 
     public function kycDocument(int $submission, string $kind)
@@ -132,15 +181,15 @@ class WalletOperationsController extends Controller
         $path = $kind === 'document' ? $record->document_path : $record->selfie_path;
         abort_unless($path && Storage::disk('local')->exists($path), 404);
         $mime = $kind === 'document' ? $record->document_mime : $record->selfie_mime;
-        $encrypted = Storage::disk('local')->get($path);
-        $contents = Crypt::decryptString($encrypted);
-        $originalPath = preg_replace('/\\.enc$/', '', $path);
-        $extension = pathinfo($originalPath, PATHINFO_EXTENSION) ?: 'bin';
+        abort_unless(in_array($mime, ['image/jpeg', 'image/png', 'application/pdf'], true), 415);
+        $contents = Crypt::decryptString(Storage::disk('local')->get($path));
+        $extension = pathinfo(preg_replace('/\.enc$/', '', $path), PATHINFO_EXTENSION) ?: 'bin';
         return response($contents, 200, [
-            'Content-Type' => $mime ?: 'application/octet-stream',
-            'Content-Disposition' => 'attachment; filename="kyc-'.$submission.'-'.$kind.'.'.$extension.'"',
+            'Content-Type' => $mime,
+            'Content-Disposition' => 'inline; filename="kyc-'.$submission.'-'.$kind.'.'.$extension.'"',
             'Cache-Control' => 'no-store, private',
             'X-Content-Type-Options' => 'nosniff',
+            'Content-Security-Policy' => "default-src 'none'; sandbox",
         ]);
     }
 }
