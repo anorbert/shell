@@ -18,7 +18,8 @@
 <section class="panel"><div class="panel-head"><div><span class="eyebrow">OPERATIONS</span><h2>Administration tools</h2></div></div><div class="quick-links">
 <a href="{{ route('admin.clients') }}"><span class="quick-icon">◎</span><span><strong>Client accounts</strong><small>Review account status and access</small></span><b>→</b></a>
 <a href="{{ route('admin.operations') }}"><span class="quick-icon">⌁</span><span><strong>Trading operations</strong><small>Inspect quote freshness, open positions and settlements</small></span><b>→</b></a>
-<a href="{{ route('admin.kyc.index') }}"><span class="quick-icon">₿</span><span><strong>KYC review queue</strong><small>{{ $pendingWalletRequests }} pending money requests · {{ $pendingKycCount }} KYC reviews</small></span><b>→</b></a>
+<a href="{{ route('admin.kyc.index') }}"><span class="quick-icon">✓</span><span><strong>KYC review queue</strong><small>{{ $pendingKycCount }} submissions awaiting identity review</small></span><b>→</b></a>
+<a href="{{ route('admin.wallet-operations.index') }}"><span class="quick-icon">₿</span><span><strong>Wallet operations</strong><small>{{ $pendingWalletRequests }} deposits and withdrawals awaiting action</small></span><b>→</b></a>
 <a href="{{ route('admin.support.index') }}"><span class="quick-icon">✉</span><span><strong>Support inbox</strong><small>Investigate and respond to client requests</small></span><b>→</b></a>
 </div></section>
 <section class="panel"><div class="panel-head"><div><span class="eyebrow">LATEST ACTIVITY</span><h2>Recent paper trades</h2></div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>CLIENT</th><th>PAIR</th><th>DIRECTION</th><th>STAKE</th><th>OPENED</th><th>STATUS</th></tr></thead><tbody>
