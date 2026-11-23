@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\ManualWalletService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
@@ -128,6 +129,16 @@ class WalletOperationsController extends Controller
         abort_unless($record, 404);
         $path = $kind === 'document' ? $record->document_path : $record->selfie_path;
         abort_unless($path && Storage::disk('local')->exists($path), 404);
-        return Storage::disk('local')->download($path);
+        $mime = $kind === 'document' ? $record->document_mime : $record->selfie_mime;
+        $encrypted = Storage::disk('local')->get($path);
+        $contents = Crypt::decryptString($encrypted);
+        $originalPath = preg_replace('/\\.enc$/', '', $path);
+        $extension = pathinfo($originalPath, PATHINFO_EXTENSION) ?: 'bin';
+        return response($contents, 200, [
+            'Content-Type' => $mime ?: 'application/octet-stream',
+            'Content-Disposition' => 'attachment; filename="kyc-'.$submission.'-'.$kind.'.'.$extension.'"',
+            'Cache-Control' => 'no-store, private',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 }
