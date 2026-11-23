@@ -89,6 +89,7 @@ class WalletRequestController extends Controller
             'amount_usd' => ['required', 'regex:/^(?:[1-9][0-9]{0,7})(?:\.[0-9]{1,8})?$/'],
             'method_id' => ['required', 'integer', 'exists:crypto_payment_methods,id'],
             'wallet_address' => ['required', 'string', 'min:12', 'max:255'],
+            'wallet_memo' => ['nullable', 'string', 'max:255'],
             'client_note' => ['nullable', 'string', 'max:1000'],
         ]);
         $method = DB::table('crypto_payment_methods')->where('id', $data['method_id'])->where('withdrawals_enabled', true)->first();
@@ -97,7 +98,7 @@ class WalletRequestController extends Controller
             $id = $wallets->requestWithdrawal($request->user(), [
                 'amount_usd' => $data['amount_usd'], 'asset' => $method->asset,
                 'network' => $method->network, 'wallet_address' => $data['wallet_address'],
-                'client_note' => $data['client_note'] ?? null,
+                'wallet_memo' => $data['wallet_memo'] ?? null, 'client_note' => $data['client_note'] ?? null,
             ]);
             return back()->with('status', 'Withdrawal request #'.$id.' submitted. Funds are reserved while admin reviews it.');
         } catch (RuntimeException $exception) {
