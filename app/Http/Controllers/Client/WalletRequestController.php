@@ -28,7 +28,7 @@ class WalletRequestController extends Controller
     {
         $data = $request->validate([
             'document_type' => ['required', 'in:national_id,passport,driving_licence'],
-            'document_number' => ['nullable', 'string', 'max:120'],
+            'document_number' => ['required', 'string', 'min:4', 'max:120'],
             'document' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'],
             'selfie' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
         ]);
