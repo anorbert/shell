@@ -15,7 +15,9 @@ class DashboardController extends Controller
         return view('admin.dashboard', [
             'clientCount' => User::where('role', 'client')->count(),
             'adminCount' => User::where('role', 'admin')->count(),
-            'verifiedCount' => User::whereNotNull('email_verified_at')->count(),
+            'verifiedCount' => User::where('role', 'client')->whereNotNull('email_verified_at')->count(),
+            'demoWalletTotal' => DB::table('ledger_entries')->join('ledger_accounts', 'ledger_accounts.id', '=', 'ledger_entries.ledger_account_id')->where('ledger_accounts.code', 'PAPER_WALLET')->selectRaw("COALESCE(SUM(CASE WHEN ledger_entries.side = 'credit' THEN ledger_entries.amount ELSE -ledger_entries.amount END), 0) as total")->value('total'),
+            'realWalletTotal' => DB::table('ledger_entries')->join('ledger_accounts', 'ledger_accounts.id', '=', 'ledger_entries.ledger_account_id')->where('ledger_accounts.code', 'REAL_WALLET')->selectRaw("COALESCE(SUM(CASE WHEN ledger_entries.side = 'credit' THEN ledger_entries.amount ELSE -ledger_entries.amount END), 0) as total")->value('total'),
             'freshQuoteCount' => DB::table('market_quotes')->where('captured_at', '>=', $freshAfter)->count(),
             'configuredMarketCount' => count(config('shell.market.symbols', [])),
             'openTradeCount' => DB::table('paper_trades')->where('status', 'open')->count(),
