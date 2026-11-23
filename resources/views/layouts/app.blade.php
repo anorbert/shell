@@ -20,6 +20,7 @@
                 <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard')?'active':'' }}">Overview</a>
                 <a href="{{ route('admin.clients') }}" class="{{ request()->routeIs('admin.clients')?'active':'' }}">Client accounts</a>
                 <a href="{{ route('admin.operations') }}" class="{{ request()->routeIs('admin.operations')?'active':'' }}">Trading operations</a>
+                <a href="{{ route('admin.wallet-operations.index') }}" class="{{ request()->routeIs('admin.wallet-operations.*')?'active':'' }}">Wallet & KYC review</a>
                 <a href="{{ route('admin.support.index') }}" class="{{ request()->routeIs('admin.support.*')?'active':'' }}">Support inbox</a>
             @else
                 <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard')?'active':'' }}">Overview</a>
@@ -27,6 +28,7 @@
                 <a href="{{ route('convert.index') }}" class="{{ request()->routeIs('convert.*')?'active':'' }}">Convert</a>
                 <a href="{{ route('trading.index') }}" class="{{ request()->routeIs('trading.*')?'active':'' }}">Trading hub</a>
                 <a href="{{ route('portfolio.index') }}" class="{{ request()->routeIs('portfolio.*')?'active':'' }}">Portfolio</a>
+                <a href="{{ route('wallet-requests.index') }}" class="{{ request()->routeIs('wallet-requests.*')?'active':'' }}">Deposit / Withdraw</a>
                 <a href="{{ route('activity.index') }}" class="{{ request()->routeIs('activity.*')?'active':'' }}">Activity</a>
                 <a href="{{ route('statement.index') }}" class="{{ request()->routeIs('statement.*')?'active':'' }}">Wallet statement</a>
             @endif
