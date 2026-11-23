@@ -19,10 +19,7 @@ class WalletOperationsController extends Controller
             ->select('wallet_requests.*', 'users.name as client_name', 'users.email as client_email')
             ->latest('wallet_requests.created_at')->paginate(30);
         $methods = DB::table('crypto_payment_methods')->orderBy('asset')->orderBy('network')->get();
-        $kycSubmissions = DB::table('kyc_submissions')->join('users', 'users.id', '=', 'kyc_submissions.user_id')
-            ->select('kyc_submissions.*', 'users.name as client_name', 'users.email as client_email')
-            ->latest('kyc_submissions.created_at')->paginate(10, ['*'], 'kyc_page');
-        return view('admin.wallet-operations', compact('requests', 'methods', 'kycSubmissions'));
+        return view('admin.wallet-operations', compact('requests', 'methods'));
     }
 
     public function kycIndex(Request $request)
