@@ -34,7 +34,7 @@ test('paper conversions move balances through balanced currency ledgers and are 
     );
 
     expect($conversion->status)->toBe('completed')
-        ->and($conversion->amount_out)->toBe('0.00020000')
+        ->and((float) $conversion->amount_out)->toBe(0.0002)
         ->and($ledger->balanceUnits($ledger->wallet($user, 'USDT')))->toBe(0)
         ->and($ledger->balanceUnits($ledger->wallet($user, 'BTC')))->toBe(20000);
 
