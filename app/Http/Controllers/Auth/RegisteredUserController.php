@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\LedgerService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ class RegisteredUserController extends Controller
         return view('auth.register');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, LedgerService $ledger): RedirectResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -30,6 +31,9 @@ class RegisteredUserController extends Controller
             'email' => $validated['email'],
             'password' => $validated['password'],
         ]);
+
+        // Provision both independent wallets at account creation. No real funds are created.
+        $ledger->provisionClientWallets($user, config('shell.paper.currency', 'USDT'));
 
         event(new Registered($user));
         Auth::login($user);
