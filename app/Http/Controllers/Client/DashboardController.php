@@ -20,7 +20,7 @@ class DashboardController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
-        $currency = config('shell.paper.currency', 'USDT');
+        $currency = config('shell.paper.currency', 'USD');
         $wallets = $ledger->provisionClientWallets($user, $currency);
         $quotes = $markets->freshQuotes();
 
