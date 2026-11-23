@@ -51,5 +51,5 @@ test('clients can view their account security page', function () {
     $this->actingAs($client)->get('/security')
         ->assertOk()
         ->assertSee('Protect your account')
-        ->assertSee('Login history');
+        ->assertSee('Recent account activity');
 });
