@@ -48,7 +48,7 @@ class ManualWalletService
                 'user_id' => $user->id, 'type' => 'withdrawal', 'status' => 'pending',
                 'amount_usd' => $data['amount_usd'], 'asset' => strtoupper($data['asset']),
                 'network' => $data['network'], 'wallet_address' => $data['wallet_address'],
-                'client_note' => $data['client_note'] ?? null, 'created_at' => now(), 'updated_at' => now(),
+                'wallet_memo' => $data['wallet_memo'] ?? null, 'client_note' => $data['client_note'] ?? null, 'created_at' => now(), 'updated_at' => now(),
             ]);
             $key = 'withdrawal-reserve:'.$requestId;
             $wallet = $this->ledger->realWallet($user, 'USD');
