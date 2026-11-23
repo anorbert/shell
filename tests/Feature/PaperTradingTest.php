@@ -238,5 +238,5 @@ test('real wallet cannot be overdrawn by a ledger posting', function () {
     expect(fn () => $ledger->post('real-wallet-overdraw-test', 'Invalid real wallet debit', [
         ['account_id' => $realWallet, 'side' => 'debit', 'amount' => '1.00000000'],
         ['account_id' => $capital, 'side' => 'credit', 'amount' => '1.00000000'],
-    ]))->toThrow(RuntimeException::class, 'Insufficient wallet balance; ledger posting would create a negative balance.');
+    ]))->toThrow(RuntimeException::class, 'Insufficient real wallet balance; ledger posting would create a negative balance.');
 });
