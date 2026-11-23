@@ -134,3 +134,12 @@ Run `php artisan test`, `vendor/bin/pint --test`, `npm run build` and the fronte
 - A KYC submission requires an identity document, document number and selfie. Approval requires the administrator to attest that the document is legible and valid, account details match, selfie matches the portrait, duplicate checks are complete and the required risk/sanctions screening has been performed. A reviewer note is mandatory for both approval and rejection.
 - The checklist is an auditable human attestation; the application does not automatically authenticate identity documents or perform sanctions screening. Admins must use the organisation's approved verification process and must not tick checks they have not performed.
 - KYC case documents are served only through authenticated admin routes, with no-store response headers and an allowlist of PDF/JPEG/PNG content types.
+
+
+## International client registration
+
+- Registration presents a country/region selector covering 245 ISO region calling-code entries, sourced from libphonenumber calling-code metadata. The default selection is Rwanda (+250); users can select their own region.
+- The phone prefix updates with the selected region. The server validates the region against `config/phone-countries.php`, accepts a national-format phone number, removes the domestic trunk prefix and stores the result in E.164 format in `users.phone_e164`.
+- The ISO alpha-2 country/region code is stored in `users.country_code`. Existing accounts remain valid because these fields are nullable. The migration also adds `phone_verified_at` for a future verification flow.
+- Client settings and the admin client profile display the stored international contact details.
+- This is international-format registration, not proof of phone ownership. SMS/WhatsApp OTP, full libphonenumber per-country number-plan validation, locale/time-zone preferences, localised pricing/payment rails, and jurisdiction-specific compliance are not included. Do not use the number for account recovery or sensitive authentication until phone verification is implemented.
