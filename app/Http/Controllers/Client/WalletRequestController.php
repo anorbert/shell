@@ -33,12 +33,20 @@ class WalletRequestController extends Controller
         $user = $request->user();
         $existing = DB::table('kyc_submissions')->where('user_id', $user->id)->whereIn('status', ['pending', 'verified'])->exists();
         if ($existing) return back()->withErrors(['kyc' => 'Your KYC is already pending or verified.']);
-        $documentPath = $request->file('document')->store('kyc/'.$user->id, 'local');
-        $selfiePath = $request->file('selfie')?->store('kyc/'.$user->id, 'local');
+        $document = $request->file('document');
+        $documentPath = 'kyc/'.$user->id.'/'.Str::uuid().'.'.$document->getClientOriginalExtension().'.enc';
+        Storage::disk('local')->put($documentPath, Crypt::encryptString(file_get_contents($document->getRealPath())));
+        $selfie = $request->file('selfie');
+        $selfiePath = null;
+        if ($selfie) {
+            $selfiePath = 'kyc/'.$user->id.'/'.Str::uuid().'.'.$selfie->getClientOriginalExtension().'.enc';
+            Storage::disk('local')->put($selfiePath, Crypt::encryptString(file_get_contents($selfie->getRealPath())));
+        }
         DB::table('kyc_submissions')->insert([
             'user_id' => $user->id, 'document_type' => $data['document_type'],
             'document_number' => $data['document_number'] ?? null, 'document_path' => $documentPath,
-            'selfie_path' => $selfiePath, 'status' => 'pending', 'created_at' => now(), 'updated_at' => now(),
+            'document_mime' => $document->getMimeType(), 'selfie_path' => $selfiePath,
+            'selfie_mime' => $selfie?->getMimeType(), 'status' => 'pending', 'created_at' => now(), 'updated_at' => now(),
         ]);
         app(ManualWalletService::class)->notifyAdmins('kyc-submission:'.$user->id.':'.now()->timestamp,
             'KYC submission requires review', $user->name.' ('.$user->email.') submitted KYC documents.',
