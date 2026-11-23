@@ -88,10 +88,12 @@ class WalletOperationsController extends Controller
     {
         $data = $request->validate([
             'transaction_hash' => ['required', 'string', 'min:12', 'max:255'],
+            'settlement_amount' => ['required', 'regex:/^(?:[0-9]+)(?:\\.[0-9]{1,12})?$/'],
+            'fee_usd' => ['nullable', 'numeric', 'min:0', 'max:100000000'],
             'admin_note' => ['required', 'string', 'min:3', 'max:2000'],
         ]);
         try {
-            $wallets->markWithdrawalPaid($walletRequest, $request->user(), $data['transaction_hash'], $data['admin_note']);
+            $wallets->markWithdrawalPaid($walletRequest, $request->user(), $data['transaction_hash'], $data['settlement_amount'], $data['admin_note'], $data['fee_usd'] ?? null);
             return back()->with('status', 'Withdrawal marked paid and ledger reserve settled.');
         } catch (RuntimeException $exception) {
             return back()->withErrors(['wallet_request' => $exception->getMessage()]);
