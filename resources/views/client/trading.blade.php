@@ -3,7 +3,7 @@
 @section('content')
 <div class="notice-banner"><span class="notice-icon">i</span><div><strong>Simulation only — no real money</strong><p>Credits are non-withdrawable and have no cash value. Outcomes are not investment returns.</p></div><span class="mode-tag">PAPER ONLY</span></div>
 <div class="content-grid"><section class="panel"><div class="panel-head"><div><span class="eyebrow">NEW POSITION</span><h2>Open a paper trade</h2></div></div>
-<form id="paper-trade-form" class="form-stack">
+<form id="paper-trade-form" class="form-stack">\n<input type="hidden" name="request_key" value="{{ \\Illuminate\\Support\\Str::uuid() }}">
 <label>Market pair<select name="symbol" required>@foreach($symbols as $s)<option value="{{ $s }}">{{ $s }}</option>@endforeach</select></label>
 <label>Direction<select name="direction"><option value="UP">UP — price rises</option><option value="DOWN">DOWN — price falls</option></select></label>
 <label>Paper stake (USDT)<input name="stake" type="number" min="0.00000001" max="{{ config('shell.paper.max_stake') }}" step="0.00000001" required></label>
