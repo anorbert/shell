@@ -26,14 +26,18 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => $validated['password'],
-        ]);
+        $user = DB::transaction(function () use ($validated, $ledger) {
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => $validated['password'],
+            ]);
 
-        // Provision both independent wallets at account creation. No real funds are created.
-        $ledger->provisionClientWallets($user, config('shell.paper.currency', 'USDT'));
+            // Provision both independent wallets atomically. No real funds are created.
+            $ledger->provisionClientWallets($user, config('shell.paper.currency', 'USDT'));
+
+            return $user;
+        });
 
         event(new Registered($user));
         Auth::login($user);
