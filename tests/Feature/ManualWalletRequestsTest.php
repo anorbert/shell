@@ -129,3 +129,43 @@ test('rejecting a withdrawal releases its reserved balance', function () {
     expect(DB::table('wallet_requests')->where('id', $request->id)->value('status'))->toBe('rejected')
         ->and($ledger->balanceUnits($wallet))->toBe(5000000000);
 });
+
+
+test('admin can search KYC cases and open a dedicated case file', function () {
+    $client = User::factory()->create();
+    DB::table('kyc_submissions')->insert([
+        'user_id' => $client->id, 'document_type' => 'passport',
+        'document_number' => 'P1234567', 'document_path' => 'kyc/test/passport.pdf',
+        'document_mime' => 'application/pdf', 'selfie_path' => 'kyc/test/selfie.jpg',
+        'selfie_mime' => 'image/jpeg', 'status' => 'pending',
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $admin = createVerifiedAdminForTest();
+
+    $this->actingAs($admin)->get('/admin/kyc?status=pending&q='.urlencode($client->email))
+        ->assertOk()->assertSee($client->email);
+    $this->actingAs($admin)->get('/admin/kyc/1')
+        ->assertOk()->assertSee('Verification checklist')->assertSee('Identity evidence');
+});
+
+test('admin cannot approve KYC without completing every required review check', function () {
+    $client = User::factory()->create();
+    $submission = DB::table('kyc_submissions')->insertGetId([
+        'user_id' => $client->id, 'document_type' => 'national_id',
+        'document_number' => 'ID123456', 'document_path' => 'kyc/test/id.pdf',
+        'document_mime' => 'application/pdf', 'selfie_path' => 'kyc/test/selfie.jpg',
+        'selfie_mime' => 'image/jpeg', 'status' => 'pending',
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $admin = createVerifiedAdminForTest();
+
+    $this->actingAs($admin)->post('/admin/wallet-operations/kyc/'.$submission, [
+        'decision' => 'verified', 'review_note' => 'Documents reviewed.',
+        'checks' => ['identity_legible' => '1'],
+    ])->assertSessionHasErrors([
+        'checks.details_match', 'checks.document_valid', 'checks.selfie_match',
+        'checks.duplicate_check', 'checks.risk_screened',
+    ]);
+
+    expect(DB::table('kyc_submissions')->where('id', $submission)->value('status'))->toBe('pending');
+});
