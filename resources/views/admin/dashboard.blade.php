@@ -10,21 +10,13 @@
     <article class="metric-card"><span class="metric-label">FRESH MARKET PAIRS</span><strong>{{ number_format($freshQuoteCount) }}/{{ number_format($configuredMarketCount) }}</strong><small>Quotes within freshness limit</small></article>
     <article class="metric-card"><span class="metric-label">OPEN PAPER TRADES</span><strong>{{ number_format($openTradeCount) }}</strong><small>{{ number_format($settledTradeCount) }} settled overall</small></article>
 </div>
-<section class="panel">
-    <div class="panel-head"><div><span class="eyebrow">OPERATIONS</span><h2>Administration tools</h2></div></div>
-    <div class="quick-links">
-        <a href="{{ route('admin.clients') }}"><span class="quick-icon">◎</span><span><strong>Client accounts</strong><small>Review account status and access</small></span><b>→</b></a>
-        <a href="{{ route('admin.operations') }}"><span class="quick-icon">⌁</span><span><strong>Trading operations</strong><small>Inspect quote freshness, open positions and settlements</small></span><b>→</b></a>
-    </div>
-</section>
-<section class="panel">
-    <div class="panel-head"><div><span class="eyebrow">LATEST ACTIVITY</span><h2>Recent paper trades</h2></div></div>
-    <div class="table-wrap"><table class="data-table"><thead><tr><th>CLIENT</th><th>PAIR</th><th>DIRECTION</th><th>STAKE</th><th>OPENED</th><th>STATUS</th></tr></thead><tbody>
-    @forelse($latestTrades as $trade)
-        <tr><td><strong>{{ $trade->client_name }}</strong><small>{{ $trade->client_email }}</small></td><td>{{ $trade->symbol }}</td><td>{{ $trade->direction }}</td><td>{{ $trade->stake }} USDT</td><td>{{ $trade->opened_at }}</td><td><span class="table-status {{ $trade->status === 'open' ? 'pending' : 'verified' }}">{{ strtoupper($trade->status) }}</span></td></tr>
-    @empty
-        <tr><td colspan="6" class="table-empty">No paper trades have been opened.</td></tr>
-    @endforelse
-    </tbody></table></div>
-</section>
+<section class="panel"><div class="panel-head"><div><span class="eyebrow">OPERATIONS</span><h2>Administration tools</h2></div></div><div class="quick-links">
+<a href="{{ route('admin.clients') }}"><span class="quick-icon">◎</span><span><strong>Client accounts</strong><small>Review account status and access</small></span><b>→</b></a>
+<a href="{{ route('admin.operations') }}"><span class="quick-icon">⌁</span><span><strong>Trading operations</strong><small>Inspect quote freshness, open positions and settlements</small></span><b>→</b></a>
+<a href="{{ route('admin.support.index') }}"><span class="quick-icon">✉</span><span><strong>Support inbox</strong><small>Investigate and respond to client requests</small></span><b>→</b></a>
+</div></section>
+<section class="panel"><div class="panel-head"><div><span class="eyebrow">LATEST ACTIVITY</span><h2>Recent paper trades</h2></div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>CLIENT</th><th>PAIR</th><th>DIRECTION</th><th>STAKE</th><th>OPENED</th><th>STATUS</th></tr></thead><tbody>
+@forelse($latestTrades as $trade)<tr><td><strong>{{ $trade->client_name }}</strong><small>{{ $trade->client_email }}</small></td><td>{{ $trade->symbol }}</td><td>{{ $trade->direction }}</td><td>{{ $trade->stake }} {{ $trade->wallet_currency ?? config('shell.paper.currency','USD') }}</td><td>{{ $trade->opened_at }}</td><td><span class="table-status {{ $trade->status === 'open' ? 'pending' : 'verified' }}">{{ strtoupper($trade->status) }}</span></td></tr>
+@empty<tr><td colspan="6" class="table-empty">No paper trades have been opened.</td></tr>@endforelse
+</tbody></table></div></section>
 @endsection

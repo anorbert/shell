@@ -8,11 +8,14 @@ test('guests are redirected to the login page', function () {
 
 test('client accounts can visit the client dashboard', function () {
     $user = User::factory()->create();
+    $user->markEmailAsVerified();
 
     $this->actingAs($user)
         ->get('/dashboard')
         ->assertOk()
-        ->assertSee('Paper-trading environment')
+        ->assertSee('Two independent wallets')
+        ->assertSee('DEMO WALLET')
+        ->assertSee('REAL WALLET')
         ->assertSee('Client');
 });
 

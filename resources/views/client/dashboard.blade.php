@@ -10,8 +10,16 @@
     <article class="metric-card"><span class="metric-label">FRESH MARKET PAIRS</span><strong>{{ $quotes->count() }}</strong><small>{{ $marketConnected ? 'Provider quotes available' : 'No fresh provider quotes' }}</small></article>
     <article class="metric-card"><span class="metric-label">REAL-MONEY STATUS</span><strong>Disabled</strong><small>Deposits and withdrawals unavailable</small></article>
 </div>
-<div class="content-grid"><section class="panel panel-wide"><div class="panel-head"><div><span class="eyebrow">MARKET WATCH</span><h2>Market overview</h2></div><a href="{{ route('markets.index') }}" class="text-link">View markets ↗</a></div>
+<div class="content-grid">
+<section class="panel"><div class="panel-head"><div><span class="eyebrow">YOUR FIRST SESSION</span><h2>Start trading in demo mode</h2></div><span class="table-status verified">GUIDE</span></div>
+<div class="quick-links">
+<a href="{{ route('markets.index') }}"><span class="quick-icon">01</span><span><strong>Explore markets</strong><small>Review provider quotes and save pairs to your watchlist.</small></span><b>→</b></a>
+<a href="{{ route('portfolio.index') }}"><span class="quick-icon">02</span><span><strong>Check your demo wallet</strong><small>Your $20,000 demo balance is separate from the real wallet.</small></span><b>→</b></a>
+<a href="{{ route('trading.index') }}"><span class="quick-icon">03</span><span><strong>Open your first demo position</strong><small>Choose UP or DOWN, stake, duration and review the payout estimate.</small></span><b>→</b></a>
+<a href="{{ route('activity.index') }}"><span class="quick-icon">04</span><span><strong>Review results</strong><small>Track settlement status and export your demo activity.</small></span><b>→</b></a>
+</div></section>
+<section class="panel"><div class="panel-head"><div><span class="eyebrow">MARKET WATCH</span><h2>Market overview</h2></div><a href="{{ route('markets.index') }}" class="text-link">View markets ↗</a></div>
 @if($marketConnected)<div class="table-wrap"><table class="data-table"><thead><tr><th>PAIR</th><th>PRICE (USDT)</th><th>PROVIDER</th><th>CAPTURED</th></tr></thead><tbody>@foreach($quotes->take(6) as $quote)<tr><td><strong>{{ $quote->symbol }}</strong></td><td>{{ $quote->price }}</td><td>{{ $quote->provider }}</td><td>{{ $quote->captured_at }}</td></tr>@endforeach</tbody></table></div>
-@else<div class="empty-state"><div class="empty-icon">⌁</div><strong>No fresh provider quotes</strong><p>Run <code>php artisan shell:markets:refresh</code> and verify provider connectivity. Stale prices are hidden and cannot be traded.</p></div>@endif
-</section><section class="panel"><div class="panel-head"><div><span class="eyebrow">QUICK ACCESS</span><h2>Your workspace</h2></div></div><div class="quick-links"><a href="{{ route('trading.index') }}"><span class="quick-icon">↗</span><span><strong>Demo trading</strong><small>Trade with simulation credits</small></span><b>→</b></a><a href="{{ route('convert.index') }}"><span class="quick-icon">⇄</span><span><strong>Demo conversion</strong><small>Convert demo balances</small></span><b>→</b></a><a href="{{ route('portfolio.index') }}"><span class="quick-icon">◫</span><span><strong>Wallet center</strong><small>View both wallets</small></span><b>→</b></a><a href="{{ route('activity.index') }}"><span class="quick-icon">↺</span><span><strong>Activity</strong><small>Review account records</small></span><b>→</b></a></div></section></div>
+@else<div class="empty-state"><div class="empty-icon">⌁</div><strong>No fresh provider quotes</strong><p>Trading is blocked until a valid fresh quote is available. Check the administrator Operations page for provider health.</p></div>@endif
+</section></div>
 @endsection
