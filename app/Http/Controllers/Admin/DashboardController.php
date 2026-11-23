@@ -15,6 +15,8 @@ class DashboardController extends Controller
         return view('admin.dashboard', [
             'clientCount' => User::where('role', 'client')->count(),
             'adminCount' => User::where('role', 'admin')->count(),
+            'pendingWalletRequests' => DB::table('wallet_requests')->where('status', 'pending')->count(),
+            'pendingKycCount' => DB::table('kyc_submissions')->where('status', 'pending')->count(),
             'verifiedCount' => User::where('role', 'client')->whereNotNull('email_verified_at')->count(),
             'demoWalletTotal' => DB::table('ledger_entries')->join('ledger_accounts', 'ledger_accounts.id', '=', 'ledger_entries.ledger_account_id')->where('ledger_accounts.code', 'PAPER_WALLET')->selectRaw("COALESCE(SUM(CASE WHEN ledger_entries.side = 'credit' THEN ledger_entries.amount ELSE -ledger_entries.amount END), 0) as total")->value('total'),
             'realWalletTotal' => DB::table('ledger_entries')->join('ledger_accounts', 'ledger_accounts.id', '=', 'ledger_entries.ledger_account_id')->where('ledger_accounts.code', 'REAL_WALLET')->selectRaw("COALESCE(SUM(CASE WHEN ledger_entries.side = 'credit' THEN ledger_entries.amount ELSE -ledger_entries.amount END), 0) as total")->value('total'),
