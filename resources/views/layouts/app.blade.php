@@ -20,7 +20,7 @@
                 <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard')?'active':'' }}">Overview</a>
                 <a href="{{ route('admin.clients') }}" class="{{ request()->routeIs('admin.clients')?'active':'' }}">Client accounts</a>
                 <a href="{{ route('admin.operations') }}" class="{{ request()->routeIs('admin.operations')?'active':'' }}">Trading operations</a>
-                <a href="{{ route('admin.wallet-operations.index') }}" class="{{ request()->routeIs('admin.wallet-operations.*')?'active':'' }}">Wallet & KYC review <span class="nav-count">{{ \\Illuminate\\Support\\Facades\\DB::table('wallet_requests')->where('status','pending')->count() + \\Illuminate\\Support\\Facades\\DB::table('kyc_submissions')->where('status','pending')->count() }}</span></a>
+                <a href="{{ route('admin.wallet-operations.index') }}" class="{{ request()->routeIs('admin.wallet-operations.*')?'active':'' }}">Wallet & KYC review <span class="nav-count">{{ \Illuminate\Support\Facades\DB::table('wallet_requests')->where('status','pending')->count() + \Illuminate\Support\Facades\DB::table('kyc_submissions')->where('status','pending')->count() }}</span></a>
                 <a href="{{ route('admin.support.index') }}" class="{{ request()->routeIs('admin.support.*')?'active':'' }}">Support inbox</a>
             @else
                 <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard')?'active':'' }}">Overview</a>
