@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Guests\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -12,7 +12,7 @@ class ConfirmablePasswordController extends Controller
 {
     public function show()
     {
-        return view('auth.confirm-password');
+        return view('guests.auth.confirm-password');
     }
 
     public function store(Request $request): RedirectResponse

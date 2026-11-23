@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Guests;
 
 use Illuminate\Http\Request;
 
@@ -12,6 +12,6 @@ class HomeController extends Controller
             return redirect()->route('dashboard');
         }
 
-        return view('public.home');
+        return view('guests.home');
     }
 }
