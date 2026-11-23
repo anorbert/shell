@@ -124,3 +124,13 @@ Run `php artisan test`, `vendor/bin/pint --test`, `npm run build` and the fronte
 - New requests create admin in-app notifications and send email to every account with the admin role. Configure a real SMTP/mail provider in production; the development default `MAIL_MAILER=log` writes messages to the application log instead of delivering email.
 - This workflow is manual recordkeeping, not blockchain verification. Admins must independently verify confirmations, token contract, network, destination address, amount, fees, and sanctions/risk controls before approval.
 - Real-money trading remains disabled. Obtain legal/compliance approval and establish custody, reconciliation, KYC/AML, sanctions screening, incident response and operational controls before accepting customer funds.
+
+
+### Admin KYC case review
+
+- Admins have a dedicated **Admin → KYC review** queue, separate from wallet-request processing.
+- The queue defaults to pending cases and supports filtering by pending / verified / rejected / all, plus search by client name, email, document number or case ID. Results are paginated and pending cases are prioritised.
+- Each case page previews the encrypted identity document and required selfie in the browser, shows client/account metadata and previous KYC submissions, and records reviewer identity, time, decision, checklist and notes.
+- A KYC submission requires an identity document, document number and selfie. Approval requires the administrator to attest that the document is legible and valid, account details match, selfie matches the portrait, duplicate checks are complete and the required risk/sanctions screening has been performed. A reviewer note is mandatory for both approval and rejection.
+- The checklist is an auditable human attestation; the application does not automatically authenticate identity documents or perform sanctions screening. Admins must use the organisation's approved verification process and must not tick checks they have not performed.
+- KYC case documents are served only through authenticated admin routes, with no-store response headers and an allowlist of PDF/JPEG/PNG content types.
