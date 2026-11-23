@@ -12,6 +12,7 @@ class PaperConversionService {
  private function validatePair(string $from,string $to):void{if(!in_array($from,$this->currencies(),true)||!in_array($to,$this->currencies(),true)||$from===$to)throw new RuntimeException('Choose two different supported currencies.');}
  private function price(string $currency):array{if($currency==='USDT')return ['price'=>'1.000000000000','captured_at'=>null];$q=$this->markets->freshQuote($currency.'USDT');return ['price'=>(string)$q->price,'captured_at'=>(string)$q->captured_at];}
  public function quote(string $from,string $to,string $amount):array{
+  if(!config('shell.paper.enabled'))throw new RuntimeException('Paper conversion is disabled.');
   $this->validatePair($from,$to);$units=Decimal::units($amount);
   if($units<=0||$units>Decimal::units((string)config('shell.paper.max_stake','10000.00000000')))throw new RuntimeException('Conversion amount is outside the paper limits.');
   $source=$this->price($from);$target=$this->price($to);
