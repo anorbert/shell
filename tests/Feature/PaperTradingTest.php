@@ -188,7 +188,7 @@ test('ledger refuses a posting that would make a paper wallet negative', functio
     expect(fn () => $ledger->post('negative-wallet-test', 'Invalid overdraw', [
         ['account_id' => $wallet, 'side' => 'debit', 'amount' => '6.00000000'],
         ['account_id' => $capital, 'side' => 'credit', 'amount' => '6.00000000'],
-    ]))->toThrow(RuntimeException::class, 'Ledger posting would create a negative paper wallet balance.');
+    ]))->toThrow(RuntimeException::class, 'Insufficient paper balance; ledger posting would create a negative wallet balance.');
 
     expect($ledger->balanceUnits($wallet))->toBe(500000000);
 });

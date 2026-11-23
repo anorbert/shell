@@ -72,6 +72,16 @@ class PaperTradingService
                 ['user_id' => $user->id, 'symbol' => $symbol, 'environment' => 'paper']
             );
 
+            // Another request may have completed while this request waited for
+            // the same ledger accounts. Return its trade rather than duplicating it.
+            $existing = DB::table('paper_trades')->where('open_idempotency_key', $key)->first();
+            if ($existing) {
+                if ((int) $existing->user_id !== $user->id) {
+                    throw new RuntimeException('Request key already used.');
+                }
+                return (int) $existing->id;
+            }
+
             return (int) DB::table('paper_trades')->insertGetId([
                 'user_id' => $user->id,
                 'symbol' => $symbol,
