@@ -43,7 +43,7 @@ class WalletOperationsController extends Controller
         ];
         if (!empty($data['id'])) DB::table('crypto_payment_methods')->where('id', $data['id'])->update($values);
         else DB::table('crypto_payment_methods')->insert($values + [
-            'deposits_enabled' => true, 'withdrawals_enabled' => true, 'created_at' => now(),
+            'deposits_enabled' => false, 'withdrawals_enabled' => false, 'created_at' => now(),
         ]);
         return back()->with('status', 'Crypto payment method saved. Verify the network and address before enabling it.');
     }
