@@ -13,7 +13,7 @@
 <div class="content-grid">
     <section class="panel">
         <div class="panel-head"><div><span class="eyebrow">SIMULATION ENVIRONMENT</span><h2>Demo wallet</h2></div><span class="table-status verified">ACTIVE</span></div>
-        <p class="muted">Used for demo trading and simulated conversions. Add $100–$20,000 per top-up. Demo credits cannot be withdrawn or transferred to the real wallet.</p>
+        <p class="muted">Used for demo trading and simulated conversions. Add $100–$20,000 per top-up. Demo credits cannot be withdrawn or transferred to the real wallet. Crypto conversion prices use USDT market quotes as a 1:1 USD reference.</p>
         <div class="metric-card"><span class="metric-label">AVAILABLE USD</span><strong id="demo-wallet-balance">{{ $demoBalance }}</strong></div>
         <button class="button button-primary" type="button" data-modal-open="#demo-topup-modal">Add demo funds</button>
         <div class="table-wrap"><table class="data-table"><thead><tr><th>ASSET</th><th>DEMO BALANCE</th><th>TYPE</th></tr></thead><tbody>
