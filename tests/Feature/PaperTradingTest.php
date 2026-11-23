@@ -24,7 +24,7 @@ test('ledger idempotency key returns the original transaction without reposting'
     $user->markEmailAsVerified();
     $ledger = app(LedgerService::class);
     $wallet = $ledger->wallet($user);
-    $capital = $ledger->system('TEST_CAPITAL', 'USDT', 'debit');
+    $capital = $ledger->system('TEST_CAPITAL', 'USD', 'debit');
     $entries = [
         ['account_id' => $capital, 'side' => 'debit', 'amount' => '25.00000000'],
         ['account_id' => $wallet, 'side' => 'credit', 'amount' => '25.00000000'],
