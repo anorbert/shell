@@ -2,7 +2,7 @@
 
 // ISO 3166-1 alpha-2 region to E.164 country calling code.
 // Calling-code metadata derived from libphonenumber metadata (Apache-2.0).
-return {
+return [
     'US' => "+1",
     'AG' => "+1",
     'AI' => "+1",
@@ -248,4 +248,4 @@ return {
     'GE' => "+995",
     'KG' => "+996",
     'UZ' => "+998"
-};
+];
