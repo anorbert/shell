@@ -1,5 +1,7 @@
 <?php
 
+use App\Services\LedgerService;
+
 test('registration screen can be rendered', function () {
     $response = $this->get('/register');
 
@@ -16,4 +18,8 @@ test('new users can register', function () {
 
     $this->assertAuthenticated();
     $response->assertRedirect(route('dashboard', absolute: false));
+
+    $wallets = app(LedgerService::class)->provisionClientWallets(auth()->user());
+    expect(app(LedgerService::class)->balanceUnits($wallets['demo']))->toBe(2000000000000)
+        ->and(app(LedgerService::class)->balanceUnits($wallets['real']))->toBe(0);
 });
