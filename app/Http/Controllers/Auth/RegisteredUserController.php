@@ -31,9 +31,26 @@ class RegisteredUserController extends Controller
         ]);
 
         $dialCode = config('phone-countries.'.$validated['country_code']);
-        $nationalNumber = preg_replace('/\D+/', '', $validated['phone_number']);
-        // Remove the domestic trunk prefix before storing the international E.164 form.
-        $nationalNumber = ltrim($nationalNumber, '0');
+        $rawPhone = trim($validated['phone_number']);
+        $nationalNumber = preg_replace('/\D+/', '', $rawPhone);
+        $dialDigits = preg_replace('/\D+/', '', $dialCode);
+
+        // Accept either a national number or a complete + / 00 international number.
+        if (str_starts_with($rawPhone, '+') || str_starts_with($rawPhone, '00')) {
+            if (str_starts_with($rawPhone, '00')) {
+                $nationalNumber = substr($nationalNumber, 2);
+            }
+            if (!str_starts_with($nationalNumber, $dialDigits)) {
+                return back()->withErrors([
+                    'phone_number' => 'The phone country calling code does not match the selected country.',
+                ])->withInput();
+            }
+            $nationalNumber = substr($nationalNumber, strlen($dialDigits));
+        } else {
+            // Remove the domestic trunk prefix before storing the international E.164 form.
+            $nationalNumber = ltrim($nationalNumber, '0');
+        }
+
         $phoneE164 = $dialCode.$nationalNumber;
         $phoneDigits = preg_replace('/\D+/', '', $phoneE164);
 
