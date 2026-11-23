@@ -97,6 +97,7 @@ class PaperTradingService
                 'symbol' => $symbol,
                 'direction' => $direction,
                 'stake' => $stake,
+                'wallet_currency' => $currency,
                 'opening_price' => $quote->price,
                 'duration_seconds' => $duration,
                 'status' => 'open',
