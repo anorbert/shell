@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Client;
 
+use App\Http\Controllers\Controller;
+
 class ClientModuleController extends Controller
 {
     public function markets()
