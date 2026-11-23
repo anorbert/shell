@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 test('paper conversions move balances through balanced currency ledgers and are idempotent', function () {
     $user = User::factory()->create();
     $ledger = app(LedgerService::class);
-    $ledger->creditPaperWallet($user, '10.00000000');
+    $ledger->creditPaperWallet($user, '10.00000000', 'USDT');
 
     $capturedAt = now()->startOfSecond();
     DB::table('market_quotes')->insert([
@@ -55,7 +55,7 @@ test('paper conversions move balances through balanced currency ledgers and are 
 test('paper conversion rejects a changed market quote and leaves balances untouched', function () {
     $user = User::factory()->create();
     $ledger = app(LedgerService::class);
-    $ledger->creditPaperWallet($user, '10.00000000');
+    $ledger->creditPaperWallet($user, '10.00000000', 'USDT');
 
     DB::table('market_quotes')->insert([
         'symbol' => 'BTCUSDT',
@@ -90,7 +90,7 @@ test('paper conversion rejects a changed market quote and leaves balances untouc
 
 test('paper conversion idempotency key cannot be reused with different inputs', function () {
     $user = User::factory()->create();
-    app(LedgerService::class)->creditPaperWallet($user, '20.00000000');
+    app(LedgerService::class)->creditPaperWallet($user, '20.00000000', 'USDT');
     $capturedAt = now()->startOfSecond();
     DB::table('market_quotes')->insert([
         'symbol' => 'BTCUSDT',
