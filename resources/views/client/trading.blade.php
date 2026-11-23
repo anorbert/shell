@@ -29,8 +29,8 @@
 </section>
 </div>
 <section class="panel"><div class="panel-head"><div><span class="eyebrow">YOUR POSITIONS</span><h2>Trade history</h2></div><a class="text-link" href="{{ route('activity.index') }}">Full activity ↗</a></div>
-<div class="table-wrap"><table class="data-table"><thead><tr><th>PAIR</th><th>DIRECTION</th><th>STAKE</th><th>OPEN PRICE</th><th>EXPIRY</th><th>STATUS</th></tr></thead><tbody>
-@forelse($trades as $trade)<tr><td><strong>{{ $trade->symbol }}</strong></td><td>{{ $trade->direction }}</td><td>{{ $trade->stake }} {{ $trade->wallet_currency ?? $currency }}</td><td>{{ $trade->opening_price }}</td><td>{{ $trade->expires_at }}</td><td><span class="table-status {{ $trade->status==='open'?'pending':'verified' }}">{{ strtoupper($trade->status) }}</span></td></tr>@empty<tr><td colspan="6" class="table-empty">No paper trades yet. Your first position will appear here.</td></tr>@endforelse
+<div class="table-wrap"><table class="data-table"><thead><tr><th>PAIR</th><th>DIRECTION</th><th>STAKE</th><th>OPEN PRICE</th><th>EXPIRY</th><th>TIME LEFT</th><th>STATUS</th></tr></thead><tbody>
+@forelse($trades as $trade)<tr><td><strong>{{ $trade->symbol }}</strong></td><td>{{ $trade->direction }}</td><td>{{ $trade->stake }} {{ $trade->wallet_currency ?? $currency }}</td><td>{{ $trade->opening_price }}</td><td>{{ $trade->expires_at }}</td><td>@if($trade->status==='open')<span class="trade-countdown" data-expiry="{{ strtotime($trade->expires_at) * 1000 }}">Calculating…</span>@else — @endif</td><td><span class="table-status {{ $trade->status==='open'?'pending':'verified' }}">{{ strtoupper($trade->status) }}</span></td></tr>@empty<tr><td colspan="7" class="table-empty">No paper trades yet. Your first position will appear here.</td></tr>@endforelse
 </tbody></table></div><div class="pagination-wrap">{{ $trades->links() }}</div></section>
 @endsection
 @push('scripts')
@@ -40,7 +40,7 @@ const chartContext=chartCanvas.getContext('2d');
 const chartMarket=document.getElementById('chart-market');
 const tradeSymbol=document.getElementById('trade-symbol');
 let chartInterval='1m';
-let chartCandles=[];
+let chartCandles=[];let chartLoading=false;
 function drawCandles(){
     const ratio=window.devicePixelRatio||1;
     const width=chartCanvas.clientWidth||700;
@@ -66,6 +66,8 @@ function drawCandles(){
     document.getElementById('chart-last-price').textContent='Last candle close: '+last.close+' USDT';
 }
 async function loadCandles(){
+    if(chartLoading)return;
+    chartLoading=true;
     const symbol=chartMarket.value;
     document.getElementById('chart-symbol').textContent=symbol;
     document.getElementById('chart-health').textContent='LOADING';
@@ -77,7 +79,7 @@ async function loadCandles(){
     }catch(error){
         chartCandles=[];drawCandles();document.getElementById('chart-health').textContent='UNAVAILABLE';
         document.getElementById('chart-updated').textContent=error.message;
-    }
+    }finally{chartLoading=false;}
 }
 chartMarket.addEventListener('change',()=>{tradeSymbol.value=chartMarket.value;loadCandles();});
 tradeSymbol.addEventListener('change',()=>{chartMarket.value=tradeSymbol.value;loadCandles();});
@@ -88,6 +90,17 @@ document.querySelectorAll('[data-interval]').forEach(button=>button.addEventList
 }));
 window.addEventListener('resize',drawCandles);
 loadCandles();
+window.setInterval(loadCandles,30000);
+function updateTradeCountdowns(){
+    const now=Date.now();
+    document.querySelectorAll('[data-expiry]').forEach(element=>{
+        const seconds=Math.max(0,Math.ceil((Number(element.dataset.expiry)-now)/1000));
+        if(seconds===0){element.textContent='Awaiting settlement';return;}
+        const minutes=Math.floor(seconds/60),remaining=seconds%60;
+        element.textContent=minutes+'m '+String(remaining).padStart(2,'0')+'s';
+    });
+}
+updateTradeCountdowns();window.setInterval(updateTradeCountdowns,1000);
 const stakeInput=document.getElementById('trade-stake');
 const payoutRate={{ (int) config('shell.paper.payout_basis_points',18000) / 10000 }};
 function updatePayout(){const stake=Math.max(0,Number(stakeInput.value)||0);document.getElementById('potential-return').textContent=(stake*payoutRate).toFixed(2);}

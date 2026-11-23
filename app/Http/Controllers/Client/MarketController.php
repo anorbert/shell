@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Services\MarketQuoteService;
 use Illuminate\Http\Request;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -67,6 +68,9 @@ class MarketController extends Controller
             ]);
         } catch (RuntimeException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
+        } catch (ConnectionException $exception) {
+            report($exception);
+            return response()->json(['message' => 'Chart provider is temporarily unreachable. Please retry shortly.'], 503);
         }
     }
 
