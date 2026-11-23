@@ -150,7 +150,7 @@ class PaperTradingService
                 $tie = $comparison === 0;
 
                 $currency = config('shell.paper.currency', 'USDT');
-                $wallet = $this->ledger->wallet(User::findOrFail($trade->user_id), $currency);
+                $wallet = $this->ledger->provisionClientWallets(User::findOrFail($trade->user_id), $currency)['demo'];
                 $escrow = $this->ledger->system('PAPER_ESCROW', $currency);
                 $entries = [['account_id' => $escrow, 'side' => 'debit', 'amount' => $trade->stake]];
 
