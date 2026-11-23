@@ -47,7 +47,7 @@ test('market and trading screens require authentication', function () {
 test('client portfolio displays zero until simulation credits are issued', function () {
     $user = User::factory()->create();
     $user->markEmailAsVerified();
-    $this->actingAs($user)->get('/portfolio')->assertOk()->assertSee('0.00000000')->assertSee('Paper wallet only');
+    $this->actingAs($user)->get('/portfolio')->assertOk()->assertSee('0.00000000')->assertSee('Two independent wallets');
 });
 
 test('paper trade opening is blocked when quote is missing', function () {
@@ -200,4 +200,43 @@ test('ledger refuses a posting that would make a paper wallet negative', functio
     ]))->toThrow(RuntimeException::class, 'Insufficient paper balance; ledger posting would create a negative wallet balance.');
 
     expect($ledger->balanceUnits($wallet))->toBe(500000000);
+});
+
+
+test('every client receives separate demo and real wallets with independent balances', function () {
+    $user = User::factory()->create();
+    $user->markEmailAsVerified();
+
+    $ledger = app(LedgerService::class);
+    $wallets = $ledger->provisionClientWallets($user);
+
+    expect($wallets['demo'])->not->toBe($wallets['real'])
+        ->and($ledger->balanceUnits($wallets['demo']))->toBe(0)
+        ->and($ledger->balanceUnits($wallets['real']))->toBe(0);
+
+    $ledger->creditPaperWallet($user, '75.00000000');
+
+    expect($ledger->balanceUnits($wallets['demo']))->toBe(7500000000)
+        ->and($ledger->balanceUnits($wallets['real']))->toBe(0);
+
+    $realCapital = $ledger->system('TEST_REAL_CAPITAL', 'USDT', 'debit');
+    $ledger->post('test-real-wallet-credit', 'Test real wallet ledger funding', [
+        ['account_id' => $realCapital, 'side' => 'debit', 'amount' => '20.00000000'],
+        ['account_id' => $wallets['real'], 'side' => 'credit', 'amount' => '20.00000000'],
+    ], ['environment' => 'real', 'test_only' => true]);
+
+    expect($ledger->balanceUnits($wallets['demo']))->toBe(7500000000)
+        ->and($ledger->balanceUnits($wallets['real']))->toBe(2000000000);
+});
+
+test('real wallet cannot be overdrawn by a ledger posting', function () {
+    $user = User::factory()->create();
+    $ledger = app(LedgerService::class);
+    $realWallet = $ledger->realWallet($user);
+    $capital = $ledger->system('REAL_OVERDRAW_TEST', 'USDT', 'debit');
+
+    expect(fn () => $ledger->post('real-wallet-overdraw-test', 'Invalid real wallet debit', [
+        ['account_id' => $realWallet, 'side' => 'debit', 'amount' => '1.00000000'],
+        ['account_id' => $capital, 'side' => 'credit', 'amount' => '1.00000000'],
+    ]))->toThrow(RuntimeException::class, 'Insufficient wallet balance; ledger posting would create a negative balance.');
 });
