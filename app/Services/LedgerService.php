@@ -1,16 +1,160 @@
 <?php
-namespace App\Services;
-use App\Models\User;use App\Support\Decimal;use Illuminate\Support\Facades\DB;use RuntimeException;
-class LedgerService {
-public function account(string $owner,string $code,string $currency,string $normal):int{$r=DB::table('ledger_accounts')->where(['owner_key'=>$owner,'code'=>$code,'currency'=>$currency])->first();if($r)return (int)$r->id;return (int)DB::table('ledger_accounts')->insertGetId(['owner_key'=>$owner,'code'=>$code,'currency'=>$currency,'normal_side'=>$normal,'created_at'=>now(),'updated_at'=>now()]);}
-public function wallet(User $u,string $c='USDT'):int{return $this->account('USER:'.$u->id,'PAPER_WALLET',$c,'credit');}
-public function system(string $code,string $c='USDT',string $normal='credit'):int{return $this->account('SYSTEM',$code,$c,$normal);}
-public function balanceUnits(int $id):int{$sum=0;foreach(DB::table('ledger_entries')->where('ledger_account_id',$id)->get(['side','amount']) as $e){$v=Decimal::units((string)$e->amount);$sum+=$e->side==='credit'?$v:-$v;}return $sum;}
-public function post(string $key,string $description,array $entries,array $metadata=[]):int{
-if($id=DB::table('ledger_transactions')->where('idempotency_key',$key)->value('id'))return (int)$id;$debit=0;$credit=0;$currency=null;
-foreach($entries as $e){$a=DB::table('ledger_accounts')->find($e['account_id']);if(!$a)throw new RuntimeException('Ledger account missing.');$currency??=$a->currency;if($currency!==$a->currency)throw new RuntimeException('Mixed ledger currencies are forbidden.');$v=Decimal::units((string)$e['amount']);if($v<=0)throw new RuntimeException('Ledger amounts must be positive.');if($e['side']==='debit')$debit+=$v;elseif($e['side']==='credit')$credit+=$v;else throw new RuntimeException('Invalid ledger side.');}
-if($debit!==$credit||$debit===0)throw new RuntimeException('Unbalanced ledger transaction.');
-return DB::transaction(function()use($key,$description,$entries,$metadata){$id=DB::table('ledger_transactions')->insertGetId(['idempotency_key'=>$key,'description'=>$description,'metadata'=>json_encode($metadata,JSON_THROW_ON_ERROR),'posted_at'=>now(),'created_at'=>now(),'updated_at'=>now()]);foreach($entries as $e)DB::table('ledger_entries')->insert(['ledger_transaction_id'=>$id,'ledger_account_id'=>$e['account_id'],'side'=>$e['side'],'amount'=>$e['amount'],'created_at'=>now(),'updated_at'=>now()]);return (int)$id;});
-}
-public function creditPaperWallet(User $u,string $amount,string $currency='USDT'):int{$wallet=$this->wallet($u,$currency);$capital=$this->system('PAPER_CAPITAL',$currency,'debit');return $this->post('paper-credit:'.$u->id.':'.now()->timestamp.':'.bin2hex(random_bytes(5)),'Administrator-issued simulation credits',[['account_id'=>$capital,'side'=>'debit','amount'=>$amount],['account_id'=>$wallet,'side'=>'credit','amount'=>$amount]],['user_id'=>$u->id,'environment'=>'paper']);}
+
+namespace App\\Services;
+
+use App\\Models\\User;
+use App\\Support\\Decimal;
+use Illuminate\\Support\\Facades\\DB;
+use RuntimeException;
+
+class LedgerService
+{
+    public function account(string $owner, string $code, string $currency, string $normal): int
+    {
+        DB::table('ledger_accounts')->insertOrIgnore([
+            'owner_key' => $owner,
+            'code' => $code,
+            'currency' => $currency,
+            'normal_side' => $normal,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $id = DB::table('ledger_accounts')
+            ->where(['owner_key' => $owner, 'code' => $code, 'currency' => $currency])
+            ->value('id');
+
+        if (!$id) {
+            throw new RuntimeException('Unable to initialize ledger account.');
+        }
+
+        return (int) $id;
+    }
+
+    public function wallet(User $user, string $currency = 'USDT'): int
+    {
+        return $this->account('USER:'.$user->id, 'PAPER_WALLET', $currency, 'credit');
+    }
+
+    public function system(string $code, string $currency = 'USDT', string $normal = 'credit'): int
+    {
+        return $this->account('SYSTEM', $code, $currency, $normal);
+    }
+
+    public function balanceUnits(int $accountId): int
+    {
+        $sum = 0;
+
+        foreach (DB::table('ledger_entries')->where('ledger_account_id', $accountId)->get(['side', 'amount']) as $entry) {
+            $units = Decimal::units((string) $entry->amount);
+            $sum += $entry->side === 'credit' ? $units : -$units;
+        }
+
+        return $sum;
+    }
+
+    /**
+     * Post a balanced transaction atomically. Account locks serialize balance
+     * changes and the unique idempotency key prevents duplicate postings.
+     */
+    public function post(string $key, string $description, array $entries, array $metadata = []): int
+    {
+        if ($key === '' || strlen($key) > 120) {
+            throw new RuntimeException('Invalid ledger idempotency key.');
+        }
+
+        return DB::transaction(function () use ($key, $description, $entries, $metadata) {
+            $existing = DB::table('ledger_transactions')->where('idempotency_key', $key)->value('id');
+
+            if ($existing) {
+                return (int) $existing;
+            }
+
+            $accountIds = collect($entries)->pluck('account_id')->map(fn ($id) => (int) $id)->unique()->sort()->values();
+
+            if ($accountIds->isEmpty()) {
+                throw new RuntimeException('A ledger transaction requires entries.');
+            }
+
+            $accounts = DB::table('ledger_accounts')
+                ->whereIn('id', $accountIds)
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+
+            if ($accounts->count() !== $accountIds->count()) {
+                throw new RuntimeException('Ledger account missing.');
+            }
+
+            $debit = 0;
+            $credit = 0;
+            $currency = null;
+
+            foreach ($entries as $entry) {
+                $account = $accounts->get((int) $entry['account_id']);
+                $currency ??= $account->currency;
+
+                if ($currency !== $account->currency) {
+                    throw new RuntimeException('Mixed ledger currencies are forbidden.');
+                }
+
+                $amount = Decimal::units((string) $entry['amount']);
+
+                if ($amount <= 0) {
+                    throw new RuntimeException('Ledger amounts must be positive.');
+                }
+
+                if ($entry['side'] === 'debit') {
+                    $debit += $amount;
+                } elseif ($entry['side'] === 'credit') {
+                    $credit += $amount;
+                } else {
+                    throw new RuntimeException('Invalid ledger side.');
+                }
+            }
+
+            if ($debit !== $credit || $debit === 0) {
+                throw new RuntimeException('Unbalanced ledger transaction.');
+            }
+
+            $transactionId = DB::table('ledger_transactions')->insertGetId([
+                'idempotency_key' => $key,
+                'description' => $description,
+                'metadata' => json_encode($metadata, JSON_THROW_ON_ERROR),
+                'posted_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            foreach ($entries as $entry) {
+                DB::table('ledger_entries')->insert([
+                    'ledger_transaction_id' => $transactionId,
+                    'ledger_account_id' => $entry['account_id'],
+                    'side' => $entry['side'],
+                    'amount' => $entry['amount'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            return (int) $transactionId;
+        }, 3);
+    }
+
+    public function creditPaperWallet(User $user, string $amount, string $currency = 'USDT'): int
+    {
+        $wallet = $this->wallet($user, $currency);
+        $capital = $this->system('PAPER_CAPITAL', $currency, 'debit');
+
+        return $this->post(
+            'paper-credit:'. $user->id . ':' . now()->timestamp . ':' . bin2hex(random_bytes(8)),
+            'Administrator-issued simulation credits',
+            [
+                ['account_id' => $capital, 'side' => 'debit', 'amount' => $amount],
+                ['account_id' => $wallet, 'side' => 'credit', 'amount' => $amount],
+            ],
+            ['user_id' => $user->id, 'environment' => 'paper']
+        );
+    }
 }
