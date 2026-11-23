@@ -1,5 +1,3 @@
-import '../css/app.css';
-
 const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
 document.addEventListener('click', (event) => {
