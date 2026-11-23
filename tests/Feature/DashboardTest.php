@@ -3,14 +3,54 @@
 use App\Models\User;
 
 test('guests are redirected to the login page', function () {
-    $response = $this->get('/dashboard');
-    $response->assertRedirect('/login');
+    $this->get('/dashboard')->assertRedirect('/login');
 });
 
-test('authenticated users can visit the dashboard', function () {
+test('client accounts can visit the client dashboard', function () {
     $user = User::factory()->create();
-    $this->actingAs($user);
 
-    $response = $this->get('/dashboard');
-    $response->assertStatus(200);
+    $this->actingAs($user)
+        ->get('/dashboard')
+        ->assertOk()
+        ->assertSee('Paper-trading environment')
+        ->assertSee('Client');
+});
+
+test('administrator accounts are redirected to administration', function () {
+    $user = User::factory()->create();
+    $user->forceFill(['role' => 'admin'])->save();
+
+    $this->actingAs($user)
+        ->get('/dashboard')
+        ->assertRedirect(route('admin.dashboard'));
+});
+
+test('clients cannot access administrator routes', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get('/admin')
+        ->assertForbidden();
+});
+
+test('administrators can access the administrator dashboard', function () {
+    $user = User::factory()->create();
+    $user->forceFill(['role' => 'admin'])->save();
+
+    $this->actingAs($user)
+        ->get('/admin')
+        ->assertOk()
+        ->assertSee('Platform overview');
+});
+
+test('public registration creates a client account only', function () {
+    $this->post('/register', [
+        'name' => 'Test Client',
+        'email' => 'client@example.com',
+        'password' => 'StrongPassword123!',
+        'password_confirmation' => 'StrongPassword123!',
+        'role' => 'admin',
+    ])->assertRedirect('/dashboard');
+
+    expect(User::where('email', 'client@example.com')->first()->role)->toBe('client');
 });
