@@ -27,7 +27,7 @@ test('manual crypto deposit stays pending and never credits the real wallet befo
     $method = createCryptoMethodForTest();
 
     $this->actingAs($client)->post('/wallet-requests/deposit', [
-        'method_id' => $method, 'amount_usd' => '125.00000000',
+        'method_id' => $method, 'amount_usd' => '125.00000000', 'asset_amount' => '125.00000000',
         'transaction_hash' => '0xabcdef1234567890deposit',
     ])->assertRedirect();
 
@@ -89,7 +89,7 @@ test('KYC-verified withdrawal reserves funds and admin marks it paid only with a
 
     $admin = createVerifiedAdminForTest();
     $this->actingAs($admin)->post('/admin/wallet-operations/'.$request->id.'/mark-paid', [
-        'transaction_hash' => '0xabcdef1234567890withdraw',
+        'transaction_hash' => '0xabcdef1234567890withdraw', 'settlement_amount' => '0.002500000000',
         'admin_note' => 'Transfer sent and verified.',
     ])->assertRedirect();
 
