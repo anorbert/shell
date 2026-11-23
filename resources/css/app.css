@@ -22,3 +22,88 @@
 .trading-layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(300px,.8fr);gap:16px;align-items:start}.trading-chart-panel{min-width:0}.chart-toolbar{display:flex;align-items:end;justify-content:space-between;gap:15px;flex-wrap:wrap;margin-bottom:14px}.chart-toolbar label{display:grid;gap:6px;color:#9aa8bb;font-size:10px}.chart-toolbar select{background:#0b1421;border:1px solid #35445a;color:#edf2f8;border-radius:6px;padding:8px 10px}.chart-intervals,.stake-presets{display:flex;gap:7px;flex-wrap:wrap}.chart-intervals button,.stake-presets button{background:#172337;color:#9caec3;border:1px solid #34445a;border-radius:5px;padding:7px 10px;font-size:10px;cursor:pointer}.chart-intervals button.active,.chart-intervals button:hover,.stake-presets button:hover{border-color:var(--gold);color:var(--gold2)}.market-chart-wrap{height:320px;width:100%;background:linear-gradient(180deg,#0b1421,#0e1928);border:1px solid #26374c;border-radius:8px;overflow:hidden}.market-chart-wrap canvas{display:block;width:100%;height:100%}.chart-foot{display:flex;justify-content:space-between;gap:10px;color:#9aa8bb;font-size:10px;margin-top:12px}.trade-ticket{position:sticky;top:16px}.wallet-summary{background:#0b1421;border:1px solid #2c3b50;border-radius:7px;padding:13px}.wallet-summary span,.wallet-summary strong{display:block}.wallet-summary span{font-size:9px;color:#8b9ab0;letter-spacing:.12em}.wallet-summary strong{font:700 18px 'Manrope';color:var(--gold2);margin-top:7px}.payout-preview{border:1px solid #34445a;background:#111f30;border-radius:7px;padding:13px}.payout-preview span,.payout-preview small{display:block;color:#9ba9bc;font-size:10px}.payout-preview strong{display:block;font:700 21px 'Manrope';color:var(--green);margin:6px 0}.payout-preview small{line-height:1.5}.payout-preview b{color:#e9edf5}.direction-buttons{display:grid;grid-template-columns:1fr 1fr;gap:9px}.direction-buttons button{border:0;border-radius:7px;padding:13px 9px;font-weight:800;color:#07140f;background:#55c99a;cursor:pointer}.direction-buttons button small{display:block;font-size:9px;font-weight:500;margin-top:4px}.direction-buttons .direction-down{background:#e87986;color:#240b10}.direction-buttons button:disabled{opacity:.55;cursor:wait}
 @media(max-width:1100px){.trading-layout{grid-template-columns:1fr}.trade-ticket{position:static}}
 @media(max-width:760px){.trading-layout{display:block}.market-chart-wrap{height:250px}.chart-toolbar{align-items:start}.chart-foot{font-size:9px}.direction-buttons{gap:6px}}
+
+
+/* Shell UI refinement: consistent hierarchy, iconography, responsive navigation and controls */
+.icon-library{position:absolute;width:0;height:0;overflow:hidden}
+.nav-icon{width:18px;height:18px;flex:0 0 18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.side-nav a,.sidebar-bottom>a,.nav-logout{display:flex;align-items:center;gap:12px;min-height:43px;padding:10px 12px;border:1px solid transparent;transition:background .18s,border-color .18s,color .18s}
+.side-nav a span:not(.nav-count),.sidebar-bottom>a span:not(.nav-count),.nav-logout span{flex:1}
+.side-nav a.active,.sidebar-bottom>a.active{background:linear-gradient(90deg,#c8a96a18,#c8a96a08);border-color:#c8a96a32;color:#f0d99f;box-shadow:inset 2px 0 #c8a96a}
+.side-nav a:hover,.sidebar-bottom>a:hover,.nav-logout:hover{background:#1a2638;color:#f0d99f}
+.sidebar-label{margin-top:2px}
+.sidebar-bottom>a,.sidebar-bottom .nav-logout{font-size:11px}
+.topbar{background:#0a111eeb;backdrop-filter:blur(14px);position:sticky;top:0;z-index:50}
+.topbar h1{letter-spacing:-.035em}
+.page-content{padding-top:30px;padding-bottom:54px}
+.panel,.metric-card{box-shadow:0 10px 28px #00000012;transition:border-color .18s,transform .18s}
+.panel{padding:23px}
+.panel-head{align-items:center}
+.panel-head h2{letter-spacing:-.025em}
+.metric-card{position:relative;overflow:hidden;min-height:112px}
+.metric-card:after{content:"";position:absolute;width:74px;height:74px;border:1px solid #c8a96a16;border-radius:50%;right:-25px;top:-28px;box-shadow:0 0 0 10px #c8a96a08,0 0 0 20px #c8a96a05}
+.metric-card strong{letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.button{min-height:39px;letter-spacing:.005em}
+.button:focus-visible,.side-nav a:focus-visible,.sidebar-bottom a:focus-visible,.nav-logout:focus-visible{outline:2px solid var(--gold2);outline-offset:3px}
+.button-secondary{background:#263449;color:#e8edf5;border:1px solid #40516a}
+.button-secondary:hover{background:#33445d}
+button:disabled{opacity:.55;cursor:not-allowed}
+input,select,textarea{accent-color:var(--gold)}
+.form-stack input,.form-stack select,.form-stack textarea,.form-grid input,.form-grid select,.form-grid textarea{transition:border-color .16s,box-shadow .16s}
+.form-stack input:focus,.form-stack select:focus,.form-stack textarea:focus,.form-grid input:focus,.form-grid select:focus,.form-grid textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px #c8a96a1c}
+.data-table th{white-space:nowrap;position:sticky;top:0;background:#101a29;z-index:1}
+.data-table tbody tr{transition:background .15s}
+.data-table tbody tr:hover{background:#ffffff05}
+.data-table td{vertical-align:middle;line-height:1.5}
+.table-status{display:inline-flex;align-items:center;gap:6px;font-weight:700;letter-spacing:.04em}
+.table-status:before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}
+.filter-row{background:#0d1725;border:1px solid #26364b;border-radius:9px;padding:14px;margin:0 0 17px}
+.filter-row label{flex:1;min-width:150px}
+.filter-row input,.filter-row select{width:100%;min-height:39px}
+.notice-banner{box-shadow:0 8px 22px #0002}
+.quick-links a{transition:padding .16s,background .16s}
+.quick-links a:hover{padding-left:8px;padding-right:8px;background:#ffffff05}
+.quick-icon{font-size:14px}
+.empty-state{border:1px dashed #33445a;border-radius:9px;background:#0c1523}
+.pagination-wrap nav{gap:5px;align-items:center;flex-wrap:wrap}
+.pagination-wrap a,.pagination-wrap span{border:1px solid #2b3a50;border-radius:6px}
+.pagination-wrap a:hover{border-color:var(--gold);color:var(--gold2)}
+.modal-dialog{box-shadow:0 28px 90px #000b;max-height:calc(100vh - 40px);overflow:auto}
+.toast{backdrop-filter:blur(10px)}
+/* Keep dense operational forms readable on desktop and usable on phones */
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:18px 0}
+.form-grid label{display:grid;gap:7px;color:#aab7c8;font-size:11px;font-weight:600}
+.form-grid input,.form-grid select,.form-grid textarea{width:100%;min-width:0;border:1px solid #35445a;background:#0b1421;color:#f1f4f8;padding:11px 12px;border-radius:7px}
+.form-grid textarea{min-height:90px;resize:vertical}
+.form-grid .full-width{grid-column:1/-1}
+@media(max-width:720px){
+ .app-shell{display:block}
+ .sidebar{position:sticky;top:0;z-index:100;padding:10px 12px;background:#0c1421f5;backdrop-filter:blur(14px)}
+ .sidebar .brand{padding:0 5px 9px}
+ .side-nav{gap:5px;padding-bottom:2px}
+ .side-nav a{flex:0 0 auto;min-height:38px;padding:8px 10px;font-size:10px;gap:7px}
+ .side-nav .nav-icon{width:15px;height:15px;flex-basis:15px}
+ .sidebar-bottom{display:flex;gap:5px;overflow-x:auto;margin-top:8px;padding-top:7px;border-top:1px solid #253247}
+ .sidebar-bottom>a,.sidebar-bottom .nav-logout{flex:0 0 auto;width:auto;min-height:34px;padding:7px 9px;font-size:10px;white-space:nowrap}
+ .sidebar-bottom form{flex:0 0 auto}
+ .sidebar-bottom .nav-logout{width:auto}
+ .topbar{position:relative;height:auto;min-height:74px;padding:13px 16px}
+ .topbar h1{font-size:19px}
+ .page-content{padding:16px 12px 36px}
+ .panel{padding:16px;margin-bottom:13px}
+ .metric-card{min-height:100px}
+ .filter-row{padding:12px;gap:10px}
+ .filter-row label{min-width:100%}
+ .filter-row button{flex:1}
+ .form-grid{grid-template-columns:1fr}
+ .form-grid .full-width{grid-column:auto}
+ .data-table th,.data-table td{padding:11px 9px}
+}
+@media(max-width:420px){
+ .sidebar .brand{font-size:13px}
+ .brand-mark{width:32px;height:32px}
+ .topbar-right{gap:8px}
+ .avatar{width:31px;height:31px}
+ .metric-card strong{font-size:17px}
+ .notice-banner{padding:12px}
+}
