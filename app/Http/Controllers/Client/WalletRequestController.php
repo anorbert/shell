@@ -61,6 +61,7 @@ class WalletRequestController extends Controller
         $data = $request->validate([
             'method_id' => ['required', 'integer', 'exists:crypto_payment_methods,id'],
             'amount_usd' => ['required', 'regex:/^(?:[1-9][0-9]{0,7})(?:\.[0-9]{1,8})?$/'],
+            'asset_amount' => ['required', 'regex:/^(?:[0-9]+)(?:\.[0-9]{1,12})?$/'],
             'transaction_hash' => ['required', 'string', 'min:12', 'max:255'],
             'client_note' => ['nullable', 'string', 'max:1000'],
         ]);
