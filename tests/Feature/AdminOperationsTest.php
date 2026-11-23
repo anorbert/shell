@@ -1,7 +1,7 @@
 <?php
 
-use App\\Models\\User;
-use Illuminate\\Support\\Facades\\DB;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 test('clients cannot access administration operations', function () {
     $client = User::factory()->create();

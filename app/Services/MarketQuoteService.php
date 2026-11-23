@@ -1,9 +1,9 @@
 <?php
 
-namespace App\\Services;
+namespace App\Services;
 
-use Illuminate\\Support\\Facades\\DB;
-use Illuminate\\Support\\Facades\\Http;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 class MarketQuoteService
@@ -27,7 +27,7 @@ class MarketQuoteService
             $symbol = $item['symbol'] ?? null;
             $price = $item['price'] ?? null;
 
-            if (!is_string($symbol) || !isset($allowed[$symbol]) || !is_string($price) || !preg_match('/^[0-9]{1,16}(?:\\.[0-9]{1,12})?$/', $price) || (float) $price <= 0) {
+            if (!is_string($symbol) || !isset($allowed[$symbol]) || !is_string($price) || !preg_match('/^[0-9]{1,16}(?:\.[0-9]{1,12})?$/', $price) || (float) $price <= 0) {
                 continue;
             }
 

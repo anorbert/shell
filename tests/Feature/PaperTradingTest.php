@@ -1,9 +1,9 @@
 <?php
 
-use App\\Models\\User;
-use App\\Services\\LedgerService;
-use App\\Services\\PaperTradingService;
-use Illuminate\\Support\\Facades\\DB;
+use App\Models\User;
+use App\Services\LedgerService;
+use App\Services\PaperTradingService;
+use Illuminate\Support\Facades\DB;
 
 test('paper wallet credits create balanced ledger entries', function () {
     $user = User::factory()->create();
