@@ -72,7 +72,7 @@ class WalletRequestController extends Controller
         }
         $id = DB::table('wallet_requests')->insertGetId([
             'user_id' => $user->id, 'type' => 'deposit', 'status' => 'pending',
-            'amount_usd' => $data['amount_usd'], 'asset' => $method->asset, 'network' => $method->network,
+            'amount_usd' => $data['amount_usd'], 'asset_amount' => $data['asset_amount'], 'asset' => $method->asset, 'network' => $method->network,
             'wallet_address' => $method->wallet_address, 'transaction_hash' => $data['transaction_hash'],
             'client_note' => $data['client_note'] ?? null, 'created_at' => now(), 'updated_at' => now(),
         ]);
