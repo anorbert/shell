@@ -31,8 +31,8 @@ return new class extends Migration
             $table->string('memo_label', 80)->nullable();
             $table->string('memo_value', 255)->nullable();
             $table->text('instructions')->nullable();
-            $table->boolean('deposits_enabled')->default(true);
-            $table->boolean('withdrawals_enabled')->default(true);
+            $table->boolean('deposits_enabled')->default(false);
+            $table->boolean('withdrawals_enabled')->default(false);
             $table->timestamps();
             $table->unique(['asset', 'network']);
         });
