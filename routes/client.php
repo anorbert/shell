@@ -9,6 +9,7 @@ use App\Http\Controllers\Client\PaperTradingController;
 use App\Http\Controllers\Client\Settings\SecurityController;
 use App\Http\Controllers\Client\SupportController;
 use App\Http\Controllers\Client\PortfolioController;
+use App\Http\Controllers\Client\StatementController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'client', 'verified'])->group(function () {
