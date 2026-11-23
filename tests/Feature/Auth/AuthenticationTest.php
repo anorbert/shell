@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 test('login screen can be rendered', function () {
     $response = $this->get('/login');
@@ -18,6 +19,7 @@ test('users can authenticate using the login screen', function () {
 
     $this->assertAuthenticated();
     $response->assertRedirect(route('dashboard', absolute: false));
+    $this->assertDatabaseHas('user_login_events', ['user_id' => $user->id, 'event_type' => 'login']);
 });
 
 test('users can not authenticate with invalid password', function () {
@@ -38,4 +40,5 @@ test('users can logout', function () {
 
     $this->assertGuest();
     $response->assertRedirect('/');
+    $this->assertDatabaseHas('user_login_events', ['user_id' => $user->id, 'event_type' => 'logout']);
 });
