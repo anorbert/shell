@@ -44,7 +44,10 @@ routes/
 - Provider-sourced market quotes with search, price sorting and per-client favorites.
 - Paper UP/DOWN trades with fresh quote checks, reserved stakes, expiry settlement and idempotent ledger postings.
 - Paper conversion between USDT and supported quoted assets. Both legs are posted through currency-specific double-entry ledger accounts. Quote changes between preview and confirmation reject the conversion.
-- Every client receives a $20,000 USD-denominated demo welcome balance once, plus an independent real wallet initialized at $0.\n- Clients can add $100–$20,000 in demo credits per top-up; demo withdrawals and demo-to-real transfers are prohibited.\n- Real-wallet credits are reserved for confirmed deposits through a future approved payment integration; deposits and withdrawals are not live yet.\n- Portfolio balances by paper currency, activity filters and CSV export.
+- Every client receives a $20,000 USD-denominated demo welcome balance once, plus an independent real wallet initialized at $0.
+- Clients can add $100–$20,000 in demo credits per top-up; demo withdrawals and demo-to-real transfers are prohibited.
+- Real-wallet credits are reserved for confirmed deposits through a future approved payment integration; deposits and withdrawals are not live yet.
+- Portfolio balances by paper currency, activity filters and CSV export.
 - In-app notifications for settled trades, paper conversions and support replies.
 - Support tickets and threaded replies.
 - Login history and database-session revocation after password confirmation.
@@ -82,7 +85,8 @@ The admin Operations page shows the last recorded execution status. A successful
 
 ## Financial and security boundaries
 
-- Every demo welcome grant and demo top-up is simulated, ledger-recorded and has no cash or redemption value. Demo funds cannot be withdrawn or transferred to the real wallet.\n- The real wallet starts at zero. Only a future confirmed payment-provider deposit flow may credit it; no client-side balance editing or demo top-up can do so.
+- Every demo welcome grant and demo top-up is simulated, ledger-recorded and has no cash or redemption value. Demo funds cannot be withdrawn or transferred to the real wallet.
+- The real wallet starts at zero. Only a future confirmed payment-provider deposit flow may credit it; no client-side balance editing or demo top-up can do so.
 - Paper conversions are internal simulations only. No exchange, custody, blockchain transfer or real asset purchase occurs.
 - Real deposits, withdrawals, custody, live trading and investment-return products remain disabled.
 - No guaranteed returns, fake balances or fabricated market quotes are used.
