@@ -10,10 +10,12 @@ class ClientController extends Controller
 {
     public function index(Request $request)
     {
+        $search = trim((string) $request->query('search', ''));
+
         $clients = User::query()
             ->where('role', 'client')
-            ->when($request->string('search')->trim()->isNotEmpty(), function ($query) use ($request) {
-                $term = $request->string('search')->trim()->toString();
+            ->when($search !== '', function ($query) use ($search) {
+                $term = $search;
                 $query->where(function ($builder) use ($term) {
                     $builder->where('name', 'like', "%{$term}%")
                         ->orWhere('email', 'like', "%{$term}%");
