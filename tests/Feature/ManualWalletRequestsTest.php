@@ -24,6 +24,7 @@ function createVerifiedAdminForTest(): User
 test('manual crypto deposit stays pending and never credits the real wallet before admin confirmation', function () {
     $client = User::factory()->create();
     $client->markEmailAsVerified();
+    $admin = createVerifiedAdminForTest();
     $method = createCryptoMethodForTest();
 
     $this->actingAs($client)->post('/wallet-requests/deposit', [
@@ -38,7 +39,8 @@ test('manual crypto deposit stays pending and never credits the real wallet befo
     expect($request->status)->toBe('pending')
         ->and($ledger->balanceUnits($wallet))->toBe(0);
 
-    $admin = createVerifiedAdminForTest();
+    expect(DB::table('user_notifications')->where('user_id', $admin->id)->where('type', 'wallet_request')->where('title', 'Deposit request requires confirmation')->exists())->toBeTrue();
+
     $this->actingAs($admin)->post('/admin/wallet-operations/'.$request->id.'/confirm-deposit', [
         'amount_usd' => '125.00000000', 'admin_note' => 'Verified on-chain.',
     ])->assertRedirect();
