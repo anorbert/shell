@@ -30,7 +30,7 @@ class WalletRequestController extends Controller
             'document_type' => ['required', 'in:national_id,passport,driving_licence'],
             'document_number' => ['nullable', 'string', 'max:120'],
             'document' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'],
-            'selfie' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
+            'selfie' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
         ]);
         $user = $request->user();
         $existing = DB::table('kyc_submissions')->where('user_id', $user->id)->whereIn('status', ['pending', 'verified'])->exists();
