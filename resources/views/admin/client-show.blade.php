@@ -4,7 +4,7 @@
 @section('heading','Client profile')
 @section('content')
 <div class="panel">
-    <div class="panel-head"><div><span class="eyebrow">CLIENT #{{ $user->id }}</span><h2>{{ $user->name }}</h2><p class="muted">{{ $user->email }}</p></div><span class="table-status {{ $user->email_verified_at ? 'verified' : 'pending' }}">{{ $user->email_verified_at ? 'VERIFIED' : 'UNVERIFIED' }}</span></div>
+    <div class="panel-head"><div><span class="eyebrow">CLIENT #{{ $user->id }}</span><h2>{{ $user->name }}</h2><p class="muted">{{ $user->email }}</p><p class="muted">Country: {{ $user->country_code ?? 'Not provided' }} · Phone: {{ $user->phone_e164 ?? 'Not provided' }} · Phone verification: {{ $user->phone_verified_at ? 'Verified' : 'Not verified' }}</p></div><span class="table-status {{ $user->email_verified_at ? 'verified' : 'pending' }}">{{ $user->email_verified_at ? 'VERIFIED' : 'UNVERIFIED' }}</span></div>
     <div class="metric-grid">
         <article class="metric-card"><span class="metric-label">REGISTERED</span><strong>{{ $user->created_at->format('d M Y') }}</strong><small>Client since</small></article>
         <article class="metric-card"><span class="metric-label">EMAIL VERIFIED</span><strong>{{ $user->email_verified_at ? 'Yes' : 'No' }}</strong><small>Account verification</small></article>
