@@ -1,0 +1,129 @@
+<?php
+
+use App\Models\User;
+use App\Services\LedgerService;
+use Illuminate\Support\Facades\DB;
+
+function createCryptoMethodForTest(array $overrides = []): int
+{
+    return DB::table('crypto_payment_methods')->insertGetId(array_merge([
+        'asset' => 'USDT', 'network' => 'TRC20', 'wallet_address' => 'TTestDepositAddress123456789',
+        'deposits_enabled' => true, 'withdrawals_enabled' => true,
+        'created_at' => now(), 'updated_at' => now(),
+    ], $overrides));
+}
+
+function createVerifiedAdminForTest(): User
+{
+    $admin = User::factory()->create();
+    $admin->forceFill(['role' => 'admin'])->save();
+    $admin->markEmailAsVerified();
+    return $admin;
+}
+
+test('manual crypto deposit stays pending and never credits the real wallet before admin confirmation', function () {
+    $client = User::factory()->create();
+    $client->markEmailAsVerified();
+    $method = createCryptoMethodForTest();
+
+    $this->actingAs($client)->post('/wallet-requests/deposit', [
+        'method_id' => $method, 'amount_usd' => '125.00000000',
+        'transaction_hash' => '0xabcdef1234567890deposit',
+    ])->assertRedirect();
+
+    $request = DB::table('wallet_requests')->where('user_id', $client->id)->first();
+    $ledger = app(LedgerService::class);
+    $wallet = $ledger->realWallet($client);
+
+    expect($request->status)->toBe('pending')
+        ->and($ledger->balanceUnits($wallet))->toBe(0);
+
+    $admin = createVerifiedAdminForTest();
+    $this->actingAs($admin)->post('/admin/wallet-operations/'.$request->id.'/confirm-deposit', [
+        'amount_usd' => '125.00000000', 'admin_note' => 'Verified on-chain.',
+    ])->assertRedirect();
+
+    expect(DB::table('wallet_requests')->where('id', $request->id)->value('status'))->toBe('confirmed')
+        ->and($ledger->balanceUnits($wallet))->toBe(12500000000);
+});
+
+test('withdrawals are blocked until KYC has been verified', function () {
+    $client = User::factory()->create();
+    $client->markEmailAsVerified();
+    $method = createCryptoMethodForTest();
+
+    $this->actingAs($client)->post('/wallet-requests/withdraw', [
+        'method_id' => $method, 'amount_usd' => '25.00000000',
+        'wallet_address' => 'TClientReceivingAddress123456789',
+    ])->assertSessionHasErrors('withdrawal');
+
+    expect(DB::table('wallet_requests')->where('user_id', $client->id)->count())->toBe(0);
+});
+
+test('KYC-verified withdrawal reserves funds and admin marks it paid only with a transaction reference', function () {
+    $client = User::factory()->create();
+    $client->markEmailAsVerified();
+    $method = createCryptoMethodForTest();
+    DB::table('kyc_submissions')->insert([
+        'user_id' => $client->id, 'document_type' => 'national_id',
+        'document_path' => 'kyc/test/id.pdf', 'status' => 'verified',
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+
+    $ledger = app(LedgerService::class);
+    $wallet = $ledger->realWallet($client);
+    $capital = $ledger->system('TEST_REAL_WALLET_CAPITAL', 'USD', 'debit');
+    $ledger->post('test-real-wallet-funding', 'Test real wallet funding', [
+        ['account_id' => $capital, 'side' => 'debit', 'amount' => '100.00000000'],
+        ['account_id' => $wallet, 'side' => 'credit', 'amount' => '100.00000000'],
+    ]);
+
+    $this->actingAs($client)->post('/wallet-requests/withdraw', [
+        'method_id' => $method, 'amount_usd' => '30.00000000',
+        'wallet_address' => 'TClientReceivingAddress123456789',
+    ])->assertRedirect();
+
+    $request = DB::table('wallet_requests')->where('user_id', $client->id)->first();
+    expect($request->status)->toBe('pending')
+        ->and($ledger->balanceUnits($wallet))->toBe(7000000000);
+
+    $admin = createVerifiedAdminForTest();
+    $this->actingAs($admin)->post('/admin/wallet-operations/'.$request->id.'/mark-paid', [
+        'transaction_hash' => '0xabcdef1234567890withdraw',
+        'admin_note' => 'Transfer sent and verified.',
+    ])->assertRedirect();
+
+    expect(DB::table('wallet_requests')->where('id', $request->id)->value('status'))->toBe('paid')
+        ->and($ledger->balanceUnits($wallet))->toBe(7000000000);
+});
+
+test('rejecting a withdrawal releases its reserved balance', function () {
+    $client = User::factory()->create();
+    $client->markEmailAsVerified();
+    $method = createCryptoMethodForTest();
+    DB::table('kyc_submissions')->insert([
+        'user_id' => $client->id, 'document_type' => 'passport',
+        'document_path' => 'kyc/test/passport.pdf', 'status' => 'verified',
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $ledger = app(LedgerService::class);
+    $wallet = $ledger->realWallet($client);
+    $capital = $ledger->system('TEST_REAL_WALLET_CAPITAL_REJECT', 'USD', 'debit');
+    $ledger->post('test-real-wallet-funding-reject', 'Test real wallet funding', [
+        ['account_id' => $capital, 'side' => 'debit', 'amount' => '50.00000000'],
+        ['account_id' => $wallet, 'side' => 'credit', 'amount' => '50.00000000'],
+    ]);
+    $this->actingAs($client)->post('/wallet-requests/withdraw', [
+        'method_id' => $method, 'amount_usd' => '20.00000000',
+        'wallet_address' => 'TClientReceivingAddress123456789',
+    ])->assertRedirect();
+    $request = DB::table('wallet_requests')->where('user_id', $client->id)->first();
+
+    $admin = createVerifiedAdminForTest();
+    $this->actingAs($admin)->post('/admin/wallet-operations/'.$request->id.'/reject', [
+        'admin_note' => 'Address could not be validated.',
+    ])->assertRedirect();
+
+    expect(DB::table('wallet_requests')->where('id', $request->id)->value('status'))->toBe('rejected')
+        ->and($ledger->balanceUnits($wallet))->toBe(5000000000);
+});
