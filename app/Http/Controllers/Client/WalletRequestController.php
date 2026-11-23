@@ -15,7 +15,7 @@ class WalletRequestController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $methods = DB::table('crypto_payment_methods')->where('deposits_enabled', true)->orderBy('asset')->orderBy('network')->get();
+        $methods = DB::table('crypto_payment_methods')->orderBy('asset')->orderBy('network')->get();
         $requests = DB::table('wallet_requests')->where('user_id', $user->id)->latest()->paginate(15);
         $kyc = DB::table('kyc_submissions')->where('user_id', $user->id)->latest()->first();
         $kycVerified = app(ManualWalletService::class)->hasApprovedKyc($user);
@@ -31,8 +31,8 @@ class WalletRequestController extends Controller
             'selfie' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
         ]);
         $user = $request->user();
-        $existing = DB::table('kyc_submissions')->where('user_id', $user->id)->where('status', 'pending')->exists();
-        if ($existing) return back()->withErrors(['kyc' => 'Your KYC submission is already awaiting review.']);
+        $existing = DB::table('kyc_submissions')->where('user_id', $user->id)->whereIn('status', ['pending', 'verified'])->exists();
+        if ($existing) return back()->withErrors(['kyc' => 'Your KYC is already pending or verified.']);
         $documentPath = $request->file('document')->store('kyc/'.$user->id, 'local');
         $selfiePath = $request->file('selfie')?->store('kyc/'.$user->id, 'local');
         DB::table('kyc_submissions')->insert([
@@ -57,6 +57,9 @@ class WalletRequestController extends Controller
         $method = DB::table('crypto_payment_methods')->where('id', $data['method_id'])->where('deposits_enabled', true)->first();
         abort_unless($method, 404);
         $user = $request->user();
+        if (DB::table('wallet_requests')->where('type', 'deposit')->where('transaction_hash', $data['transaction_hash'])->exists()) {
+            return back()->withErrors(['transaction_hash' => 'This transaction hash has already been submitted.']);
+        }
         $id = DB::table('wallet_requests')->insertGetId([
             'user_id' => $user->id, 'type' => 'deposit', 'status' => 'pending',
             'amount_usd' => $data['amount_usd'], 'asset' => $method->asset, 'network' => $method->network,
