@@ -150,6 +150,8 @@ class WalletOperationsController extends Controller
             'checks.details_match' => ['required_if:decision,verified', 'accepted'],
             'checks.document_valid' => ['required_if:decision,verified', 'accepted'],
             'checks.selfie_match' => ['required_if:decision,verified', 'accepted'],
+            'checks.duplicate_check' => ['required_if:decision,verified', 'accepted'],
+            'checks.risk_screened' => ['required_if:decision,verified', 'accepted'],
         ]);
         if ($data['decision'] === 'rejected' && trim((string) ($data['review_note'] ?? '')) === '') {
             return back()->withErrors(['review_note' => 'Provide a clear reason so the client can correct the submission.'])->withInput();
