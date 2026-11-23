@@ -43,7 +43,7 @@ routes/
 ### Client workspace
 - Provider-sourced market quotes with search, price sorting and per-client favorites.
 - Paper UP/DOWN trades with fresh quote checks, reserved stakes, expiry settlement and idempotent ledger postings.
-- Paper conversion between USDT and supported quoted assets. Both legs are posted through currency-specific double-entry ledger accounts. Quote changes between preview and confirmation reject the conversion.
+- Paper conversion between the USD-denominated demo wallet, legacy USDT demo balances and supported quoted assets. USD conversion uses USDT market prices as a 1:1 reference proxy. Both legs are posted through currency-specific double-entry ledger accounts. Quote changes between preview and confirmation reject the conversion.
 - Every client receives a $20,000 USD-denominated demo welcome balance once, plus an independent real wallet initialized at $0.
 - Clients can add $100–$20,000 in demo credits per top-up; demo withdrawals and demo-to-real transfers are prohibited.
 - Real-wallet credits are reserved for confirmed deposits through a future approved payment integration; deposits and withdrawals are not live yet.
