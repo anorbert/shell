@@ -2,6 +2,7 @@
 use App\Http\Controllers\Client\ActivityController;
 use App\Http\Controllers\Client\MarketController;
 use App\Http\Controllers\Client\NotificationController;
+use App\Http\Controllers\Client\PaperConversionController;
 use App\Http\Controllers\Client\PaperTradingController;
 use App\Http\Controllers\Client\PortfolioController;
 use Illuminate\Support\Facades\Route;
@@ -16,4 +17,7 @@ Route::middleware(['auth','client','verified'])->group(function(){
  Route::get('/activity/export',[ActivityController::class,'export'])->name('activity.export');
  Route::get('/notifications',[NotificationController::class,'index'])->name('notifications.index');
  Route::post('/notifications/{notification}/read',[NotificationController::class,'markRead'])->middleware('throttle:60,1')->name('notifications.read');
+ Route::get('/convert',[PaperConversionController::class,'index'])->name('convert.index');
+ Route::post('/convert/quote',[PaperConversionController::class,'quote'])->middleware('throttle:30,1')->name('convert.quote');
+ Route::post('/convert/paper',[PaperConversionController::class,'convert'])->middleware('throttle:10,1')->name('convert.paper');
 });

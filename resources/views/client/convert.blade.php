@@ -1,0 +1,25 @@
+@extends('layouts.app')
+@section('title','Paper conversion') @section('eyebrow','SIMULATION EXCHANGE') @section('heading','Currency conversion')
+@section('content')
+<div class="notice-banner"><span class="notice-icon">i</span><div><strong>Paper conversion only</strong><p>Conversion moves simulation credits between paper wallets. It does not access, purchase or transfer real cryptocurrency. Indicative rates use fresh Binance Spot quotes and are locked to the preview.</p></div><span class="mode-tag">PAPER ONLY</span></div>
+<div class="content-grid"><section class="panel"><div class="panel-head"><div><span class="eyebrow">CONVERT ASSETS</span><h2>New paper conversion</h2></div></div>
+<form id="conversion-form" class="form-stack"><input type="hidden" name="request_key" value="{{ (string)\Illuminate\Support\Str::uuid() }}"><input type="hidden" name="source_quote_at"><input type="hidden" name="target_quote_at">
+<label>From<select name="from_currency">@foreach($currencies as $c)<option value="{{ $c }}" @selected($c==='USDT')>{{ $c }}</option>@endforeach</select></label>
+<label>To<select name="to_currency">@foreach($currencies as $c)<option value="{{ $c }}" @selected($c==='BTC')>{{ $c }}</option>@endforeach</select></label>
+<label>Amount<input name="amount" type="number" min="0.00000001" step="0.00000001" max="{{ config('shell.paper.max_stake') }}" value="10.00000000" required></label>
+<button class="button button-primary button-full" id="preview-conversion" type="button">Preview conversion</button>
+<div id="conversion-preview" class="empty-state" hidden><strong>Indicative output</strong><h2 id="conversion-output">—</h2><p id="conversion-details"></p><button class="button button-primary button-full" id="confirm-conversion" type="button">Confirm paper conversion</button></div>
+</form></section><section class="panel"><div class="panel-head"><div><span class="eyebrow">HOW IT WORKS</span><h2>Simulation controls</h2></div></div><div class="quick-links"><div><strong>Fresh market prices</strong><small>Both asset prices must be fresh before a preview can be generated.</small></div><div><strong>Quote lock</strong><small>If either market quote changes before confirmation, the conversion is rejected and must be previewed again.</small></div><div><strong>Double-entry accounting</strong><small>Source and destination balances are posted as balanced currency-specific ledger entries.</small></div><div><strong>No real-world settlement</strong><small>No exchange, custody, withdrawal or blockchain transfer occurs.</small></div></div></section></div>
+<section class="panel"><div class="panel-head"><div><span class="eyebrow">PAPER CONVERSION RECORDS</span><h2>Recent conversions</h2></div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>DATE</th><th>FROM</th><th>TO</th><th>RATE (USDT)</th><th>STATUS</th></tr></thead><tbody>
+@forelse($conversions as $c)<tr><td>{{ $c->created_at }}</td><td>{{ $c->amount_in }} {{ $c->from_currency }}</td><td>{{ $c->amount_out }} {{ $c->to_currency }}</td><td>{{ $c->source_price }} / {{ $c->target_price }}</td><td><span class="table-status verified">PAPER</span></td></tr>@empty<tr><td colspan="5" class="table-empty">No paper conversions recorded.</td></tr>@endforelse
+</tbody></table></div></section>
+@endsection
+@push('scripts')
+<script>
+const cf=document.getElementById('conversion-form'),preview=document.getElementById('conversion-preview'),pb=document.getElementById('preview-conversion'),cb=document.getElementById('confirm-conversion');let ready=false;
+function payload(){return Object.fromEntries(new FormData(cf).entries());}
+pb.addEventListener('click',async()=>{pb.disabled=true;ready=false;cb.disabled=true;try{const q=await window.shellAjax(@json(route('convert.quote')),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload())});cf.elements.source_quote_at.value=q.source_quote_at||'';cf.elements.target_quote_at.value=q.target_quote_at||'';document.getElementById('conversion-output').textContent=q.amount_out+' '+q.to_currency;document.getElementById('conversion-details').textContent='Rate basis: '+q.source_price+' USDT per '+q.from_currency+' / '+q.target_price+' USDT per '+q.to_currency+'. No fee is applied; no real asset is moved.';preview.hidden=false;ready=true;cb.disabled=false;}catch(e){window.shellToast(e.message,'error');preview.hidden=true;}finally{pb.disabled=false;}});
+cb.addEventListener('click',async()=>{if(!ready)return;cb.disabled=true;try{const r=await window.shellAjax(@json(route('convert.paper')),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload())});window.shellToast(r.message);window.location.reload();}catch(e){window.shellToast(e.message,'error');ready=false;preview.hidden=true;}finally{cb.disabled=false;}});
+cf.addEventListener('input',()=>{ready=false;preview.hidden=true;});
+</script>
+@endpush
