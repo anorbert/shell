@@ -49,3 +49,30 @@ test('registration rejects unsupported country codes and malformed phone numbers
     $response->assertRedirect('/register')
         ->assertSessionHasErrors(['country_code', 'phone_number']);
 });
+
+test('registration accepts an already international phone number when its country matches', function () {
+    $response = $this->post('/register', [
+        'name' => 'International User',
+        'email' => 'international@example.com',
+        'country_code' => 'US',
+        'phone_number' => '+1 (202) 555-0123',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ]);
+
+    $response->assertRedirect(route('dashboard', absolute: false));
+    expect(User::where('email', 'international@example.com')->value('phone_e164'))->toBe('+12025550123');
+});
+
+test('registration rejects a pasted international number that conflicts with selected country', function () {
+    $response = $this->from('/register')->post('/register', [
+        'name' => 'International User',
+        'email' => 'mismatch@example.com',
+        'country_code' => 'RW',
+        'phone_number' => '+12025550123',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ]);
+
+    $response->assertRedirect('/register')->assertSessionHasErrors('phone_number');
+});
