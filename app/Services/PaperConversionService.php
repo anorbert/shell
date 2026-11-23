@@ -15,7 +15,7 @@ class PaperConversionService
 
     public function currencies(): array
     {
-        return array_merge(['USD'], array_map(fn ($symbol) => substr($symbol, 0, -4), config('shell.market.symbols', [])));
+        return array_merge(['USD', 'USDT'], array_map(fn ($symbol) => substr($symbol, 0, -4), config('shell.market.symbols', [])));
     }
 
     private function validatePair(string $from, string $to): void
@@ -28,7 +28,7 @@ class PaperConversionService
     private function price(string $currency): array
     {
         // USD is the demo account's denomination. USDT market quotes are used as a 1:1 pricing proxy.
-        if ($currency === 'USD') return ['price' => '1.000000000000', 'captured_at' => null];
+        if (in_array($currency, ['USD', 'USDT'], true)) return ['price' => '1.000000000000', 'captured_at' => null];
         $quote = $this->markets->freshQuote($currency.'USDT');
         return ['price' => (string) $quote->price, 'captured_at' => (string) $quote->captured_at];
     }
