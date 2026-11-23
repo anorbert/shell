@@ -144,7 +144,7 @@ class WalletOperationsController extends Controller
     {
         $data = $request->validate([
             'decision' => ['required', 'in:verified,rejected'],
-            'review_note' => ['nullable', 'string', 'max:2000'],
+            'review_note' => ['required', 'string', 'min:5', 'max:2000'],
             'checks' => ['required_if:decision,verified', 'array'],
             'checks.identity_legible' => ['required_if:decision,verified', 'accepted'],
             'checks.details_match' => ['required_if:decision,verified', 'accepted'],
@@ -153,9 +153,6 @@ class WalletOperationsController extends Controller
             'checks.duplicate_check' => ['required_if:decision,verified', 'accepted'],
             'checks.risk_screened' => ['required_if:decision,verified', 'accepted'],
         ]);
-        if ($data['decision'] === 'rejected' && trim((string) ($data['review_note'] ?? '')) === '') {
-            return back()->withErrors(['review_note' => 'Provide a clear reason so the client can correct the submission.'])->withInput();
-        }
         $record = DB::table('kyc_submissions')->where('id', $submission)->where('status', 'pending')->first();
         abort_unless($record, 404);
         DB::transaction(function () use ($request, $record, $data) {
@@ -191,7 +188,7 @@ class WalletOperationsController extends Controller
             'Content-Disposition' => 'inline; filename="kyc-'.$submission.'-'.$kind.'.'.$extension.'"',
             'Cache-Control' => 'no-store, private',
             'X-Content-Type-Options' => 'nosniff',
-            'Content-Security-Policy' => "default-src 'none'; sandbox",
+
         ]);
     }
 }
