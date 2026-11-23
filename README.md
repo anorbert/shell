@@ -114,3 +114,13 @@ Run `php artisan test`, `vendor/bin/pint --test`, `npm run build` and the fronte
 - The administrator Operations screen highlights stale configured quotes, expired-but-unsettled positions, open positions and the last successful market refresh.
 - Review failed job heartbeat messages and application logs when market refresh or settlement is unsuccessful. A scheduled job heartbeat is operational evidence, not a guarantee that external providers or settlement will always be available.
 - Verify php artisan schedule:list during deployment and keep the single scheduler cron entry active. Laravel's withoutOverlapping scheduler locks require a functioning cache store. See the Laravel 12 task scheduling documentation: https://laravel.com/docs/12.x/scheduling.
+
+## Manual crypto deposits, withdrawals and KYC
+
+- Admins configure each supported crypto asset/network and the exact deposit address from **Admin → Wallet & KYC review**. Keep each network disabled until the address, memo/tag requirements and custody controls have been independently checked.
+- Clients submit the transaction hash and requested USD credit. A request remains pending and does not credit the real wallet until an admin verifies the transaction on the correct chain and confirms the USD amount.
+- Withdrawals require an approved KYC submission. The requested amount is reserved from the real wallet at submission. Rejection releases the reserve; marking paid settles the reserve and requires the outbound transaction hash.
+- KYC files are stored on the private local disk and can only be downloaded through the authenticated admin review route. Configure private, encrypted backups and a retention policy before production.
+- New requests create admin in-app notifications and send email to every account with the admin role. Configure a real SMTP/mail provider in production; the development default `MAIL_MAILER=log` writes messages to the application log instead of delivering email.
+- This workflow is manual recordkeeping, not blockchain verification. Admins must independently verify confirmations, token contract, network, destination address, amount, fees, and sanctions/risk controls before approval.
+- Real-money trading remains disabled. Obtain legal/compliance approval and establish custody, reconciliation, KYC/AML, sanctions screening, incident response and operational controls before accepting customer funds.
