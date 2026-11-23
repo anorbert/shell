@@ -28,6 +28,7 @@
                 <a href="{{ route('trading.index') }}" class="{{ request()->routeIs('trading.*')?'active':'' }}">Trading hub</a>
                 <a href="{{ route('portfolio.index') }}" class="{{ request()->routeIs('portfolio.*')?'active':'' }}">Portfolio</a>
                 <a href="{{ route('activity.index') }}" class="{{ request()->routeIs('activity.*')?'active':'' }}">Activity</a>
+                <a href="{{ route('statement.index') }}" class="{{ request()->routeIs('statement.*')?'active':'' }}">Wallet statement</a>
             @endif
         </nav>
         <div class="sidebar-bottom">
