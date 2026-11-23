@@ -3,7 +3,7 @@
 @section('eyebrow', 'ADMINISTRATION')
 @section('heading', 'Platform overview')
 @section('content')
-<div class="notice-banner"><span class="notice-icon">!</span><div><strong>Simulation environment only</strong><p>Real-money deposits, withdrawals, custody, conversions and live execution remain disabled. Paper balances have no cash value.</p></div><span class="mode-tag">PAPER ONLY</span></div>
+<div class="notice-banner"><span class="notice-icon">!</span><div><strong>Simulation environment only</strong><p>Real crypto deposits and withdrawals use manual admin review. Do not credit deposits before on-chain verification or mark withdrawals paid before sending funds. Real-money trading and automated custody remain disabled.</p></div><span class="mode-tag">PAPER ONLY</span></div>
 <div class="metric-grid">
     <article class="metric-card"><span class="metric-label">CLIENT ACCOUNTS</span><strong>{{ number_format($clientCount) }}</strong><small>Registered clients</small></article>
     <article class="metric-card"><span class="metric-label">ADMIN ACCOUNTS</span><strong>{{ number_format($adminCount) }}</strong><small>Privileged operators</small></article>
@@ -12,10 +12,13 @@
     <article class="metric-card"><span class="metric-label">CLIENT DEMO WALLET BALANCES</span><strong>{{ number_format((float) ($demoWalletTotal ?? 0), 2) }} USD</strong><small>Non-cash simulation credits</small></article>
     <article class="metric-card"><span class="metric-label">CLIENT REAL WALLET BALANCES</span><strong>{{ number_format((float) ($realWalletTotal ?? 0), 2) }} USD</strong><small>Ledger balances only; deposits are not enabled</small></article>
     <article class="metric-card"><span class="metric-label">VERIFIED CLIENTS</span><strong>{{ number_format($verifiedCount) }}</strong><small>Email-verified client accounts</small></article>
+    <article class="metric-card"><span class="metric-label">PENDING WALLET REQUESTS</span><strong>{{ number_format($pendingWalletRequests) }}</strong><small>Deposits and withdrawals awaiting action</small></article>
+    <article class="metric-card"><span class="metric-label">PENDING KYC REVIEWS</span><strong>{{ number_format($pendingKycCount) }}</strong><small>Identity submissions awaiting verification</small></article>
 </div>
 <section class="panel"><div class="panel-head"><div><span class="eyebrow">OPERATIONS</span><h2>Administration tools</h2></div></div><div class="quick-links">
 <a href="{{ route('admin.clients') }}"><span class="quick-icon">◎</span><span><strong>Client accounts</strong><small>Review account status and access</small></span><b>→</b></a>
 <a href="{{ route('admin.operations') }}"><span class="quick-icon">⌁</span><span><strong>Trading operations</strong><small>Inspect quote freshness, open positions and settlements</small></span><b>→</b></a>
+<a href="{{ route('admin.wallet-operations.index') }}"><span class="quick-icon">₿</span><span><strong>Wallet and KYC review</strong><small>{{ $pendingWalletRequests }} pending money requests · {{ $pendingKycCount }} KYC reviews</small></span><b>→</b></a>
 <a href="{{ route('admin.support.index') }}"><span class="quick-icon">✉</span><span><strong>Support inbox</strong><small>Investigate and respond to client requests</small></span><b>→</b></a>
 </div></section>
 <section class="panel"><div class="panel-head"><div><span class="eyebrow">LATEST ACTIVITY</span><h2>Recent paper trades</h2></div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>CLIENT</th><th>PAIR</th><th>DIRECTION</th><th>STAKE</th><th>OPENED</th><th>STATUS</th></tr></thead><tbody>
