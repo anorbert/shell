@@ -133,7 +133,7 @@ test('rejecting a withdrawal releases its reserved balance', function () {
 
 test('admin can search KYC cases and open a dedicated case file', function () {
     $client = User::factory()->create();
-    DB::table('kyc_submissions')->insert([
+    $submission = DB::table('kyc_submissions')->insertGetId([
         'user_id' => $client->id, 'document_type' => 'passport',
         'document_number' => 'P1234567', 'document_path' => 'kyc/test/passport.pdf',
         'document_mime' => 'application/pdf', 'selfie_path' => 'kyc/test/selfie.jpg',
