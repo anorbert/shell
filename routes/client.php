@@ -22,6 +22,10 @@ Route::middleware(['auth', 'client', 'verified'])->group(function () {
     Route::post('/trading/paper', [PaperTradingController::class, 'store'])->middleware('throttle:20,1')->name('trading.store');
 
     Route::get('/portfolio', PortfolioController::class)->name('portfolio.index');
+    Route::get('/wallet-requests', [WalletRequestController::class, 'index'])->name('wallet-requests.index');
+    Route::post('/wallet-requests/kyc', [WalletRequestController::class, 'submitKyc'])->middleware('throttle:3,60')->name('wallet-requests.kyc');
+    Route::post('/wallet-requests/deposit', [WalletRequestController::class, 'deposit'])->middleware('throttle:5,60')->name('wallet-requests.deposit');
+    Route::post('/wallet-requests/withdraw', [WalletRequestController::class, 'withdraw'])->middleware('throttle:5,60')->name('wallet-requests.withdraw');
     Route::post('/portfolio/demo/top-up', [DemoWalletController::class, 'topUp'])->middleware('throttle:5,1')->name('portfolio.demo.top-up');
 
     Route::get('/activity', ActivityController::class)->name('activity.index');
