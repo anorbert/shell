@@ -1,6 +1,5 @@
+@import './shell.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Shell Blade interface theme. Detailed components live in resources/css/shell.css. */
-@import './shell.css';
