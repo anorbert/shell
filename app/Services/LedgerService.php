@@ -161,7 +161,9 @@ class LedgerService
                 }
 
                 if ($this->balanceUnits((int) $account->id) + $netChange < 0) {
-                    throw new RuntimeException('Insufficient wallet balance; ledger posting would create a negative balance.');
+                    throw new RuntimeException($account->code === 'PAPER_WALLET'
+                        ? 'Insufficient paper balance; ledger posting would create a negative wallet balance.'
+                        : 'Insufficient real wallet balance; ledger posting would create a negative balance.');
                 }
             }
 
