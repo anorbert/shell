@@ -218,6 +218,10 @@ test('paper trade opens and reserves the stake from the client wallet', function
 });
 
 test('a trade is not settled using a quote captured before expiry', function () {
+    Http::fake([
+        'api.binance.com/api/v3/ticker/price*' => Http::response([], 503),
+    ]);
+
     $user = User::factory()->create();
     $user->markEmailAsVerified();
     $ledger = app(LedgerService::class);
