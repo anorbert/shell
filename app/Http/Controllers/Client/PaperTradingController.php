@@ -30,6 +30,12 @@ class PaperTradingController extends Controller
             'payoutPercentage' => number_format((int) config('shell.paper.payout_basis_points', 18000) / 100, 2),
             'quotes' => $markets->freshQuotes(),
             'trades' => DB::table('paper_trades')->where('user_id', $request->user()->id)->latest()->paginate(12),
+            // Resume the latest active position automatically when the trading page is reopened.
+            'activeTradeId' => DB::table('paper_trades')
+                ->where('user_id', $request->user()->id)
+                ->where('status', 'open')
+                ->orderByDesc('opened_at')
+                ->value('id'),
             'symbols' => config('shell.market.symbols'),
             'durations' => config('shell.paper.durations'),
         ]);
