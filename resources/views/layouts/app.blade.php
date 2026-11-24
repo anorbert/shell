@@ -52,10 +52,10 @@
             <div class="topbar-title"><span class="eyebrow">@yield('eyebrow','ACCOUNT')</span><h1>@yield('heading','Overview')</h1></div>
             <nav class="topbar-nav" aria-label="Workspace shortcuts">
                 @if(auth()->user()->role==='admin')
-                    <a href="{{ route('admin.kyc.index') }}" class="{{ request()->routeIs('admin.kyc.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-shield"/></svg><span>KYC review</span><span class="nav-count">{{ \Illuminate\Support\Facades\DB::table('kyc_submissions')->where('status','pending')->count() }}</span></a>
-                    <a href="{{ route('admin.support.index') }}" class="{{ request()->routeIs('admin.support.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-message"/></svg><span>Support inbox</span></a>
+                    <a href="{{ route('admin.kyc.index') }}" aria-label="KYC review" title="KYC review" class="{{ request()->routeIs('admin.kyc.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-shield"/></svg><span>KYC review</span><span class="nav-count">{{ \Illuminate\Support\Facades\DB::table('kyc_submissions')->where('status','pending')->count() }}</span></a>
+                    <a href="{{ route('admin.support.index') }}" aria-label="Support inbox" title="Support inbox" class="{{ request()->routeIs('admin.support.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-message"/></svg><span>Support inbox</span></a>
                 @else
-                    <a href="{{ route('support.index') }}" class="{{ request()->routeIs('support.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-life"/></svg><span>Support</span></a>
+                    <a href="{{ route('support.index') }}" aria-label="Support" title="Support" class="{{ request()->routeIs('support.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-life"/></svg><span>Support</span></a>
                     <a class="topbar-icon-link {{ request()->routeIs('notifications.*')?'active':'' }}" href="{{ route('notifications.index') }}" aria-label="Notifications" title="Notifications"><svg class="nav-icon"><use href="#i-bell"/></svg><span class="nav-count">{{ Illuminate\Support\Facades\DB::table('user_notifications')->where('user_id',auth()->id())->whereNull('read_at')->count() }}</span></a>
                 @endif
             </nav>
