@@ -46,7 +46,7 @@ class PaperTradingController extends Controller
                 $request->user(),
                 strtoupper($values['symbol']),
                 $values['direction'],
-                $values['stake'],
+                $stake,
                 (int) $values['duration'],
                 $values['request_key'] ?: Str::uuid()->toString()
             );
