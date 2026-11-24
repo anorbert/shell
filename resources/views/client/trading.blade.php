@@ -1520,11 +1520,9 @@
 
             // Reconcile visible open rows with the authoritative server settlement state.
             // A row is never marked won/lost from the browser's live chart price.
-            let settlementRefreshPending = false;
             async function reconcileOpenTrades() {
                 const rows = [...document.querySelectorAll('[data-open-trade]')];
                 for (const row of rows) {
-                    if (settlementRefreshPending) return;
                     try {
                         const id = row.dataset.openTrade;
                         const response = await requestJson(@json(url('/trading/paper')) + '/' + id, {
@@ -1549,9 +1547,9 @@
                             row.removeAttribute('data-open-trade');
                             // Do not reload the terminal underneath another live position.
                             if (activePosition && activePosition.status === 'open') return;
-                            settlementRefreshPending = true;
-                            window.location.reload();
-                            return;
+                            // The server has already committed settlement. Update
+                            // the row in place; do not reload and interrupt the
+                            // live chart or any other open position.
                         }
                     } catch (error) {
                         // Keep the row visibly pending; the next cycle retries without fabricating a result.
@@ -1915,7 +1913,7 @@
                         if (activePosition && activePosition.status === 'open') {
                             await pollPosition();
                         } else {
-                            window.location.reload();
+                            await reconcileOpenTrades();
                         }
                         return;
                     }
