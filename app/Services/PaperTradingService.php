@@ -133,26 +133,40 @@ class PaperTradingService
         }
 
         foreach ($dueTrades as $candidate) {
-            // A settlement price must have been captured after this trade expired.
-            $quote = DB::table('market_quotes')
+            // Only use the first server-captured snapshot at/after expiry.
+            // If snapshot tracking began after an old trade had already expired,
+            // its true expiry price is unknowable and must not be fabricated.
+            $firstSnapshot = DB::table('market_quote_snapshots')
                 ->where('symbol', $candidate->symbol)
-                ->where('captured_at', '>=', $candidate->expires_at)
-                ->first();
+                ->orderBy('captured_at')
+                ->value('captured_at');
 
-            if (!$quote || now()->subSeconds((int) config('shell.market.max_age_seconds', 90))->gt($quote->captured_at)) {
+            if (!$firstSnapshot || $candidate->expires_at < $firstSnapshot) {
                 continue;
             }
 
-            DB::transaction(function () use ($candidate, $quote, &$settled) {
+            $quote = DB::table('market_quote_snapshots')
+                ->where('symbol', $candidate->symbol)
+                ->where('captured_at', '>=', $candidate->expires_at)
+                ->where('captured_at', '<=', now())
+                ->orderBy('captured_at')
+                ->first();
+
+            $maxDelay = (int) config('shell.market.settlement_quote_window_seconds', 60);
+            if (!$quote || $quote->captured_at > date('Y-m-d H:i:s', strtotime($candidate->expires_at) + $maxDelay)) {
+                continue;
+            }
+
+            DB::transaction(function () use ($candidate, $quote, $maxDelay, &$settled) {
                 $trade = DB::table('paper_trades')->where('id', $candidate->id)->lockForUpdate()->first();
 
                 if (!$trade || $trade->status !== 'open' || now()->lt($trade->expires_at)) {
                     return;
                 }
 
-                // Recheck quote freshness after acquiring the trade lock.
-                if (now()->subSeconds((int) config('shell.market.max_age_seconds', 90))->gt($quote->captured_at)
-                    || $quote->captured_at < $trade->expires_at) {
+                // Recheck the expiry window after acquiring the trade lock.
+                if ($quote->captured_at < $trade->expires_at
+                    || $quote->captured_at > date('Y-m-d H:i:s', strtotime($trade->expires_at) + $maxDelay)) {
                     return;
                 }
 
