@@ -1341,7 +1341,16 @@
                         }
                     }
 
-                    if (!ticker || marketSelect.value !== symbol) return;
+                    if (!ticker) {
+                        if (marketSelect.value === symbol) {
+                            setText('chart-health', 'RECONNECTING');
+                            if (activePosition && activePosition.status === 'open' && activePosition.symbol === symbol) {
+                                setText('position-price-move', 'Live price feed interrupted · reconnecting automatically. Your saved position remains active.');
+                            }
+                        }
+                        return;
+                    }
+                    if (marketSelect.value !== symbol) return;
                     const price = String(ticker.price);
                     const last = candles[candles.length - 1];
                     if (last) {
