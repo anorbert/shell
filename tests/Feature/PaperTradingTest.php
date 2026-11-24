@@ -121,7 +121,7 @@ test('paper trade opens and reserves the stake from the client wallet', function
         ->assertJsonPath('trade.status', 'open')
         ->assertJsonPath('trade.symbol', 'BTCUSDT')
         ->assertJsonPath('trade.direction', 'UP')
-        ->assertJsonPath('wallet_balance', '90.00000000');
+        ->assertJsonPath('wallet_balance', '20090.00000000');
 
     expect(DB::table('paper_trades')->where('user_id', $user->id)->count())->toBe(1)
         ->and($ledger->balanceUnits($ledger->wallet($user)))->toBe(2009000000000);
