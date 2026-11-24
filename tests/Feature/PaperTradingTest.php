@@ -275,7 +275,7 @@ test('paper trade opens and reserves the stake from the client wallet', function
         ->and($ledger->balanceUnits($ledger->wallet($user)))->toBe(2009000000000);
 });
 
-test('a trade is not settled using a quote captured before expiry', function () {
+test('a trade without a verified post-expiry quote is voided and fully refunded', function () {
     Http::fake([
         'api.binance.com/api/v3/ticker/price*' => Http::response([], 503),
     ]);
@@ -286,33 +286,38 @@ test('a trade is not settled using a quote captured before expiry', function () 
     $ledger->creditPaperWallet($user, '100.00000000');
 
     $openedAt = now()->subMinutes(3);
-    DB::table('market_quotes')->insert([
-        'symbol' => 'BTCUSDT',
-        'price' => '90000.000000000000',
-        'provider' => 'Test provider',
-        'captured_at' => $openedAt,
-        'created_at' => $openedAt,
-        'updated_at' => $openedAt,
+    $tradeKey = 'old-trade-waits-for-post-expiry-price';
+    $wallet = $ledger->demoWallet($user);
+    $escrow = $ledger->system('PAPER_ESCROW', 'USD');
+    $ledger->post('paper-open:' . $tradeKey, 'Test stake reservation', [
+        ['account_id' => $wallet, 'side' => 'debit', 'amount' => '10.00000000'],
+        ['account_id' => $escrow, 'side' => 'credit', 'amount' => '10.00000000'],
     ]);
+
     DB::table('paper_trades')->insert([
         'user_id' => $user->id,
         'symbol' => 'BTCUSDT',
         'direction' => 'UP',
         'stake' => '10.00000000',
+        'wallet_currency' => 'USD',
         'opening_price' => '90000.000000000000',
         'duration_seconds' => 60,
         'status' => 'open',
-        'open_idempotency_key' => 'old-trade-waits-for-post-expiry-price',
+        'open_idempotency_key' => $tradeKey,
         'opened_at' => $openedAt,
         'expires_at' => $openedAt->copy()->addMinute(),
         'created_at' => $openedAt,
         'updated_at' => $openedAt,
     ]);
 
-    expect(app(PaperTradingService::class)->settleDue())->toBe(0)
-        ->and(DB::table('paper_trades')->where('open_idempotency_key', 'old-trade-waits-for-post-expiry-price')->value('status'))->toBe('open');
-});
+    $tradeId = DB::table('paper_trades')->where('open_idempotency_key', $tradeKey)->value('id');
 
+    expect(app(PaperTradingService::class)->settleDue())->toBe(1)
+        ->and(DB::table('paper_trades')->where('id', $tradeId)->value('status'))->toBe('void')
+        ->and(DB::table('paper_trades')->where('id', $tradeId)->value('closing_price'))->toBeNull()
+        ->and($ledger->balanceUnits($wallet))->toBe(2010000000000)
+        ->and(DB::table('ledger_transactions')->where('idempotency_key', 'paper-settle:' . $tradeId)->count())->toBe(1);
+});
 test('expired trades settle when the first verified post-expiry quote arrives after the former grace period', function () {
     Http::fake([
         'api.binance.com/api/v3/ticker/price*' => Http::response([
