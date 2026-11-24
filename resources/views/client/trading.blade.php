@@ -587,6 +587,24 @@
     const resumableTradeId=@json($activeTradeId);
     if(resumableTradeId){openPositionModal(resumableTradeId);}
 
+    // Expired positions are not resumed as live trades. Ask the server to settle
+    // them in the background, then refresh the authoritative history/wallet.
+    const hasExpiredOpenTrades=@json((bool) ($hasExpiredOpenTrades ?? false));
+    if(hasExpiredOpenTrades){
+        requestJson(@json(route('trading.settle-expired')),{method:'POST'})
+            .then(result=>{
+                if(Number(result.settled_count)>0) window.location.reload();
+                else {
+                    const feedback=document.getElementById('trade-feedback');
+                    if(feedback) feedback.textContent='An expired position is awaiting a verified post-expiry market price. It will be retried automatically; no result has been guessed.';
+                }
+            })
+            .catch(()=>{
+                const feedback=document.getElementById('trade-feedback');
+                if(feedback) feedback.textContent='An expired position is awaiting settlement. The page is available; settlement will retry automatically.';
+            });
+    }
+
     tradeForm.addEventListener('submit',async event=>{
         event.preventDefault();
         const form=event.currentTarget,submitter=event.submitter;
