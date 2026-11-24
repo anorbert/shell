@@ -631,3 +631,20 @@ input,select,textarea{accent-color:var(--gold)}
 .wallet-detail-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
 .wallet-topup-form{max-width:480px}
 @media(max-width:520px){.wallet-account-switch{gap:8px}.wallet-account-option{padding:13px 12px;gap:6px}.wallet-account-name{font-size:11px}.wallet-account-option strong{font-size:20px}.wallet-account-hint{font-size:9px;line-height:1.4}.wallet-detail-metrics{grid-template-columns:1fr 1fr}}
+
+
+/* Client attention: keep guidance available without occupying page content. */
+.client-attention{display:flex;justify-content:flex-end;min-height:28px;margin:0 0 12px}
+.client-attention-trigger{display:inline-grid;place-items:center;width:30px;height:30px;padding:0;border:1px solid #5b4b2e;border-radius:50%;background:#241f17;color:#e2c98e;cursor:pointer;transition:background .16s,border-color .16s,transform .16s}
+.client-attention-trigger:hover,.client-attention-trigger:focus-visible{background:#382d1c;border-color:#d0ae69;transform:translateY(-1px);outline:none}
+.client-attention-trigger svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.client-attention-dialog{width:min(92vw,480px);max-height:min(80vh,620px);overflow:auto;margin:auto;padding:23px;border:1px solid #5b4b2e;border-radius:13px;background:#111c2b;color:#e9edf5;box-shadow:0 28px 90px #000c}
+.client-attention-dialog::backdrop{background:#03070dcc;backdrop-filter:blur(3px)}
+.client-attention-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.client-attention-dialog h2{margin:14px 0 9px;font:700 18px 'Manrope';color:#f0d99f}
+.client-attention-copy{color:#bdc7d5;font-size:13px;line-height:1.75}
+.client-attention-copy p{margin:0}
+.client-attention-dialog>.mode-tag{display:inline-block;margin-top:18px}
+.client-attention-close{width:32px;height:32px;border:1px solid #35445a;border-radius:8px;background:#0b1421;color:#c6d0de;font-size:22px;line-height:1;cursor:pointer}
+.client-attention-close:hover{border-color:#d0ae69;color:#f0d99f}
+@media(max-width:720px){.client-attention{margin-bottom:8px}.client-attention-dialog{padding:19px}}
