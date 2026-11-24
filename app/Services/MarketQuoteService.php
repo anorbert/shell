@@ -125,7 +125,7 @@ class MarketQuoteService
     public function freshQuotes()
     {
         return DB::table('market_quotes')
-            ->where('captured_at', '>=', now()->subSeconds((int) config('shell.market.max_age_seconds', 90)))
+            ->where('captured_at', '>=', now('UTC')->subSeconds((int) config('shell.market.max_age_seconds', 90)))
             ->whereIn('symbol', config('shell.market.symbols', []))
             ->orderBy('symbol')
             ->get();
