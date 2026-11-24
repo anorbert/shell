@@ -38,7 +38,7 @@
         <div class="page-action-row"><a class="button button-secondary" href="{{ route('trading.index') }}">Open demo trading</a><a class="button button-secondary" href="{{ route('convert.index') }}">Convert demo assets</a></div>
     </section>
 @else
-    <div class="notice-banner"><span class="notice-icon">i</span><div><strong>Real wallet</strong><p>Deposit and withdrawal requests are recorded here. Deposits are credited after transaction verification. Withdrawals are processed after identity approval and operations review.</p></div><span class="mode-tag">REAL ACCOUNT</span></div>
+    <x-client-attention title="Real wallet" tag="REAL ACCOUNT"><p>Deposit and withdrawal requests are recorded here. Deposits are credited after transaction verification. Withdrawals are processed after identity approval and operations review.</p></x-client-attention>
     <div class="metric-grid wallet-detail-metrics">
         <article class="metric-card"><span class="metric-label">AVAILABLE REAL BALANCE</span><strong>@money($selectedBalance)</strong><small>{{ $currency }} · real wallet</small></article>
         <article class="metric-card"><span class="metric-label">ACCOUNT TYPE</span><strong>Real</strong><small>Independent from demo trading</small></article>
