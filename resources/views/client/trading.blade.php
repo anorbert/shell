@@ -47,8 +47,8 @@
 </div>
 
 <section class="panel"><div class="panel-head"><div><span class="eyebrow">YOUR POSITIONS</span><h2>Trade history</h2></div><a class="button button-secondary" href="{{ route('activity.index') }}"><svg class="nav-icon"><use href="#i-clock"/></svg> View all trade history</a><a class="button button-secondary" href="{{ route('portfolio.index') }}"><svg class="nav-icon"><use href="#i-briefcase"/></svg> View portfolio</a></div>
-<div class="table-wrap"><table class="data-table"><thead><tr><th>PAIR</th><th>DIRECTION</th><th>STAKE</th><th>OPEN PRICE</th><th>EXPIRY</th><th>TIME LEFT</th><th>STATUS</th></tr></thead><tbody>
-@forelse($trades as $trade)<tr><td><strong>{{ $trade->symbol }}</strong></td><td>{{ $trade->direction }}</td><td>@money($trade->stake) {{ $trade->wallet_currency ?? $currency }}</td><td>@decimal($trade->opening_price)</td><td>{{ $trade->expires_at }}</td><td>@if($trade->status==='open')<span class="trade-countdown" data-expiry="{{ strtotime($trade->expires_at) * 1000 }}">Calculating…</span>@else — @endif</td><td><span class="table-status {{ $trade->status==='open'?'pending':'verified' }}">{{ strtoupper($trade->status) }}</span></td></tr>@empty<tr><td colspan="7" class="table-empty">No paper trades yet. Your first position will appear here.</td></tr>@endforelse
+<div class="table-wrap"><table class="data-table"><thead><tr><th>PAIR</th><th>DIRECTION</th><th>STAKE</th><th>OPEN PRICE</th><th>CLOSING PRICE</th><th>EXPIRY</th><th>TIME LEFT</th><th>RESULT</th></tr></thead><tbody>
+@forelse($trades as $trade)<tr @if($trade->status==='open')data-open-trade="{{ $trade->id }}"@endif><td><strong>{{ $trade->symbol }}</strong></td><td>{{ $trade->direction }}</td><td>@money($trade->stake) {{ $trade->wallet_currency ?? $currency }}</td><td>@decimal($trade->opening_price)</td><td class="trade-closing-price">{{ $trade->closing_price===null?'—':\App\Support\NumberFormatter::decimal($trade->closing_price) }}</td><td>{{ $trade->expires_at }}</td><td>@if($trade->status==='open')<span class="trade-countdown" data-expiry="{{ strtotime($trade->expires_at) * 1000 }}">Calculating…</span>@else <span class="muted">Settled</span> @endif</td><td><span class="table-status {{ $trade->status==='open'?'pending':($trade->status==='won'?'verified':'') }}">{{ $trade->status==='won'?'WIN':($trade->status==='lost'?'LOSS':($trade->status==='void'?'TIE':'OPEN')) }}</span></td></tr>@empty<tr><td colspan="8" class="table-empty">No paper trades yet. Your first position will appear here.</td></tr>@endforelse
 </tbody></table></div><div class="pagination-wrap">{{ $trades->links() }}</div></section>
 
 <div class="position-modal" id="position-modal" role="dialog" aria-modal="true" aria-labelledby="position-modal-title" aria-hidden="true">
@@ -431,6 +431,29 @@
         });
     }
     updateTradeCountdowns();window.setInterval(updateTradeCountdowns,1000);
+
+    // Reconcile visible open rows with the authoritative server settlement state.
+    // A row is never marked won/lost from the browser's live chart price.
+    let settlementRefreshPending=false;
+    async function reconcileOpenTrades(){
+        const rows=[...document.querySelectorAll('[data-open-trade]')];
+        for(const row of rows){
+            if(settlementRefreshPending) return;
+            try{
+                const id=row.dataset.openTrade;
+                const response=await requestJson(@json(url('/trading/paper'))+'/'+id,{method:'GET',headers:{'Accept':'application/json'}});
+                const trade=response.trade;
+                if(trade.status!=='open'){
+                    settlementRefreshPending=true;
+                    window.location.reload(); // refreshes closing price, result and wallet balance from server
+                    return;
+                }
+            }catch(error){
+                // Keep the row visibly pending; the next cycle retries without fabricating a result.
+            }
+        }
+    }
+    if(document.querySelector('[data-open-trade]')) window.setInterval(reconcileOpenTrades,5000);
     const stakeInput=document.getElementById('trade-stake');
     const tradeForm=document.getElementById('paper-trade-form');
     const payoutRate={{ (int) config('shell.paper.payout_basis_points',18000) / 10000 }};
