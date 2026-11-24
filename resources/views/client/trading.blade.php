@@ -19,8 +19,8 @@
     </div>
     <div class="chart-toolbar">
         <label>Market<select id="chart-market">@foreach($symbols as $symbol)<option value="{{ $symbol }}">{{ $symbol }}</option>@endforeach</select></label>
-        <div class="chart-intervals" role="group" aria-label="Chart timeframe">@foreach(['1m','5m','15m','1h','4h','1d'] as $interval)<button type="button" data-interval="{{ $interval }}" class="{{ $interval==='1m'?'active':'' }}" aria-pressed="{{ $interval==='1m'?'true':'false' }}">{{ $interval }}</button>@endforeach</div>
-    </div>
+        <div class="chart-intervals" role="group" aria-label="Chart timeframe">@foreach(['15m','1m','5m','1h','4h','1d'] as $interval)<button type="button" data-interval="{{ $interval }}" class="{{ $interval==='15m'?'active':'' }}" aria-pressed="{{ $interval==='15m'?'true':'false' }}">{{ $interval }}</button>@endforeach</div>
+    </div><div class="chart-zoom" role="group" aria-label="Chart zoom"><button type="button" id="chart-zoom-out" aria-label="Zoom out">−</button><span id="chart-zoom-level">80 candles</span><button type="button" id="chart-zoom-in" aria-label="Zoom in">+</button><button type="button" id="chart-zoom-reset">Reset</button></div>
     <div class="market-chart-wrap">
         <canvas id="market-candles" aria-label="Interactive candlestick market chart with price and time scales"></canvas>
         <div class="chart-loading" id="chart-loading">Loading market data…</div>
@@ -38,7 +38,7 @@
         <div class="stake-presets"><button type="button" data-stake="10">$10</button><button type="button" data-stake="25">$25</button><button type="button" data-stake="50">$50</button><button type="button" data-stake="100">$100</button></div>
         <label>Expiry duration<select name="duration">@foreach($durations as $duration)<option value="{{ $duration }}">{{ $duration>=3600?($duration/3600).' hour':($duration/60).' minutes' }}</option>@endforeach</select></label>
         <div class="payout-preview"><span>Configured payout rate</span><strong>{{ $payoutPercentage }}%</strong><small>Potential total return: <b id="potential-return">—</b> {{ $currency }} including stake, if the prediction wins. A losing position loses the reserved stake; a tie returns the stake.</small></div>
-        <div class="trade-process-hint"><strong>How this trade works</strong><ol><li>Choose the market, stake and expiry.</li><li>Select UP if you expect the price to rise, or DOWN if you expect it to fall.</li><li>We validate the latest server quote and reserve the stake from your demo wallet.</li><li>At expiry, the position settles against the next eligible server-captured quote. Your result appears in Trade history.</li></ol></div>
+        <details class="trade-process-hint"><summary>How this trade works <span>Quick guide</span></summary><ol><li>Choose the market, stake and expiry.</li><li>Select UP if you expect the price to rise, or DOWN if you expect it to fall.</li><li>We verify a fresh server price and reserve the stake from your demo wallet.</li><li>At expiry, the position settles against the next eligible server-captured quote. Your result appears in Trade history.</li></ol></details>
         <div class="direction-buttons"><button class="direction-up" type="submit" data-direction="UP">↗ UP <small>Price rises</small></button><button class="direction-down" type="submit" data-direction="DOWN">↘ DOWN <small>Price falls</small></button></div>
         <input type="hidden" name="direction" id="trade-direction" value="UP">
         <p class="muted" id="trade-feedback" role="status">Select a direction to preview and open a simulated position.</p>
@@ -59,10 +59,10 @@
 .chart-price-main{display:grid;gap:5px}.chart-price-main strong{font:800 clamp(22px,2.7vw,31px)/1.1 'Manrope';font-variant-numeric:tabular-nums;letter-spacing:-.035em}.chart-price-main span{font-size:11px;color:#8e9cb0}
 .chart-ohlc{display:flex;gap:13px;flex-wrap:wrap;justify-content:flex-end;color:#8190a5;font-size:10px;font-variant-numeric:tabular-nums}.chart-ohlc b{color:#d9e0e9;font-weight:700;margin-left:3px}
 .chart-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 17px}.chart-toolbar>label{display:flex;align-items:center;gap:9px;color:#8f9db0;font-size:11px}.chart-toolbar select{min-width:115px;border:1px solid #35445a;border-radius:6px;background:#0b1421;color:#e9edf5;padding:8px 10px;font-size:11px}
-.chart-intervals{display:flex;align-items:center;gap:4px;flex-wrap:wrap}.chart-intervals button{min-width:37px;padding:7px 8px;border:1px solid transparent;border-radius:5px;background:transparent;color:#8f9db0;font-size:10px;font-weight:700;cursor:pointer}.chart-intervals button:hover,.chart-intervals button.active{border-color:#c8a96a55;background:#c8a96a18;color:#f0d99f}
+.chart-zoom{display:flex;align-items:center;justify-content:flex-end;gap:6px;padding:0 17px 10px;color:#8f9db0;font-size:10px}.chart-zoom button{border:1px solid #35445a;border-radius:5px;background:#0b1421;color:#dce4ef;padding:5px 10px;cursor:pointer}.chart-zoom button:hover{border-color:#c8a96a;color:#f0d99f}.chart-intervals{display:flex;align-items:center;gap:4px;flex-wrap:wrap}.chart-intervals button{min-width:37px;padding:7px 8px;border:1px solid transparent;border-radius:5px;background:transparent;color:#8f9db0;font-size:10px;font-weight:700;cursor:pointer}.chart-intervals button:hover,.chart-intervals button.active{border-color:#c8a96a55;background:#c8a96a18;color:#f0d99f}
 .market-chart-wrap{height:390px;position:relative;min-width:0;background:#0b1421;border-top:1px solid #202d40;border-bottom:1px solid #202d40}.market-chart-wrap canvas{display:block;width:100%;height:100%;touch-action:pan-y}.chart-loading{position:absolute;inset:0;display:none;align-items:center;justify-content:center;color:#8c9bb0;font-size:12px;pointer-events:none;background:#0b1421aa}.chart-loading.visible{display:flex}
 .chart-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 17px;color:#7e8da2;font-size:10px;font-variant-numeric:tabular-nums}
-.trade-process-hint{padding:12px 14px;border:1px solid #29384d;border-radius:8px;background:#0b1421;color:#9aa8ba;font-size:11px;line-height:1.55}.trade-process-hint strong{display:block;color:#e5ebf3;margin-bottom:5px}.trade-process-hint ol{margin:0;padding-left:18px}.trade-process-hint li+li{margin-top:3px}#stake-help{display:block;line-height:1.45;margin-top:5px}
+.trade-process-hint{padding:12px 14px;border:1px solid #29384d;border-radius:8px;background:#0b1421;color:#9aa8ba;font-size:11px;line-height:1.55}.trade-process-hint summary{display:flex;justify-content:space-between;align-items:center;gap:12px;color:#e5ebf3;font-weight:700;cursor:pointer;list-style:none}.trade-process-hint summary::-webkit-details-marker{display:none}.trade-process-hint summary:after{content:'＋';color:#d5b879}.trade-process-hint[open] summary:after{content:'−'}.trade-process-hint summary span{margin-left:auto;color:#8f9db0;font-size:10px;font-weight:500}.trade-process-hint ol{margin:10px 0 0;padding-left:18px}.trade-process-hint li+li{margin-top:3px}#stake-help{display:block;line-height:1.45;margin-top:5px}
 #chart-health{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}#chart-health .live-dot{width:6px;height:6px;margin:0}
 @media(max-width:720px){.market-chart-wrap{height:330px}.chart-market-summary{align-items:flex-start;flex-direction:column}.chart-ohlc{justify-content:flex-start;gap:8px 12px}.chart-toolbar{align-items:flex-start;flex-direction:column}.chart-intervals{width:100%;justify-content:space-between}.chart-foot{font-size:9px}}
 @media(max-width:420px){.market-chart-wrap{height:290px}.chart-ohlc{font-size:9px;gap:7px}.chart-toolbar{padding-inline:12px}.chart-intervals button{min-width:32px;padding-inline:5px}}
@@ -79,7 +79,7 @@
     const tradeSymbol = document.getElementById('trade-symbol');
     const loading = document.getElementById('chart-loading');
     const palette = { text:'#8b9ab0', muted:'#65758b', grid:'rgba(139,154,176,.13)', border:'#26364b', up:'#22b78b', down:'#ed6474', crosshair:'rgba(190,204,222,.55)', panel:'#0b1421' };
-    let interval = '1m', candles = [], loadingRequest = false, failed = false, crosshair = null;
+    let interval = '15m', candles = [], loadingRequest = false, failed = false, crosshair = null, visibleCandles = 80;
     let plot = null, liveSocket = null, reconnectTimer = null, reconnectAttempts = 0, streamGeneration = 0;
 
     const number = value => Number(value);
@@ -128,13 +128,13 @@
             return;
         }
 
-        const values=candles.flatMap(c=>[number(c.high),number(c.low)]).filter(Number.isFinite);
+        const visible = candles.slice(-visibleCandles);\n        const values=visible.flatMap(c=>[number(c.high),number(c.low)]).filter(Number.isFinite);
         let min=Math.min(...values),max=Math.max(...values);
         const rawRange=max-min || Math.max(Math.abs(max)*.001,1e-8);
         const padding=rawRange*.09;min-=padding;max+=padding;
         const range=max-min;
         const y=value=>bottom-((value-min)/range)*chartHeight;
-        const step=chartWidth/candles.length;
+        const step=chartWidth/visible.length;
         const bodyWidth=Math.max(2,Math.min(13,step*.64));
 
         // Horizontal price grid and right-hand price scale.
@@ -145,16 +145,16 @@
             ctx.fillStyle=palette.text;ctx.fillText(formatAxis(value),right+10,py);
         }
         // Vertical time grid and time labels.
-        const timeCount=Math.min(6,candles.length);
+        const timeCount=Math.min(6,visible.length);
         ctx.textAlign='center';ctx.textBaseline='top';
         for(let i=0;i<timeCount;i++){
-            const index=Math.round(i*(candles.length-1)/Math.max(1,timeCount-1));
+            const index=Math.round(i*(visible.length-1)/Math.max(1,timeCount-1));
             const x=left+index*step+step/2;
             ctx.strokeStyle=palette.grid;ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bottom);ctx.stroke();
-            ctx.fillStyle=palette.text;ctx.fillText(formatTime(candles[index].time),x,bottom+9);
+            ctx.fillStyle=palette.text;ctx.fillText(formatTime(visible[index].time),x,bottom+9);
         }
         // Candlesticks.
-        candles.forEach((c,i)=>{
+        visible.forEach((c,i)=>{
             const open=number(c.open),close=number(c.close),high=number(c.high),low=number(c.low);
             const x=left+i*step+step/2,up=close>=open,color=up?palette.up:palette.down;
             ctx.strokeStyle=color;ctx.lineWidth=Math.max(1,Math.min(1.5,step*.13));
@@ -214,7 +214,7 @@
         if (last && candle.time === last.time) candles[candles.length - 1] = candle;
         else {
             candles.push(candle);
-            if (candles.length > 120) candles.shift();
+            if (candles.length > 200) candles.shift();
         }
         failed = false;
         updateSummary();
@@ -268,7 +268,7 @@
         setText('chart-health', 'LOADING');
         setText('chart-symbol', symbol);
         try {
-            const result = await window.shellAjax(@json(route('markets.candles')) + '?' + new URLSearchParams({symbol,interval:selectedInterval,limit:'120'}));
+            const result = await window.shellAjax(@json(route('markets.candles')) + '?' + new URLSearchParams({symbol,interval:selectedInterval,limit:'200'}));
             if (generation !== streamGeneration) return;
             if (!Array.isArray(result.candles) || !result.candles.length) throw new Error('No candle data is available for this market.');
             candles = result.candles.map(c => ({...c,time:number(c.time)}))
@@ -293,7 +293,7 @@
         }
     }
 
-    marketSelect.addEventListener('change',()=>{tradeSymbol.value=marketSelect.value;candles=[];loadCandles();});
+    function updateZoomLabel(){setText('chart-zoom-level',visibleCandles+' candles');}\n    document.getElementById('chart-zoom-in').addEventListener('click',()=>{visibleCandles=Math.max(20,visibleCandles-10);updateZoomLabel();draw();});\n    document.getElementById('chart-zoom-out').addEventListener('click',()=>{visibleCandles=Math.min(200,visibleCandles+10);updateZoomLabel();draw();});\n    document.getElementById('chart-zoom-reset').addEventListener('click',()=>{visibleCandles=80;updateZoomLabel();draw();});\n    updateZoomLabel();\n\n    marketSelect.addEventListener('change',()=>{tradeSymbol.value=marketSelect.value;candles=[];loadCandles();});
     tradeSymbol.addEventListener('change',()=>{marketSelect.value=tradeSymbol.value;candles=[];loadCandles();});
     document.querySelectorAll('[data-interval]').forEach(button=>button.addEventListener('click',()=>{
         interval=button.dataset.interval;
