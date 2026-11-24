@@ -705,6 +705,11 @@
             color: #ff9aa5
         }
 
+        .position-result.is-tie {
+            background: #3b3220;
+            color: #efd9a5
+        }
+
         .position-close {
             width: 100%;
             margin-top: 14px
@@ -1725,6 +1730,20 @@
                     setPositionText('position-closing-price', '—');
                     setPositionText('position-final-payout', 'Pending');
                     setPositionText('position-final-profit', 'Pending');
+
+                    // The scheduler may have settled this position while the page
+                    // was loading. Hydrate the same modal with its final payout.
+                    if (activePosition.status !== 'open') {
+                        const settlement = await requestJson(@json(url('/trading/paper')) + '/' + activePosition.id + '/settle', {
+                            method: 'POST',
+                            timeoutMs: 40000
+                        });
+                        const settledTrade = settlement.trade || activePosition;
+                        settledTrade.wallet_balance = settlement.wallet_balance;
+                        showSettledResult(settledTrade);
+                        return;
+                    }
+
                     updatePositionClock();
                     if (positionPollTimer) window.clearInterval(positionPollTimer);
                     if (positionClockTimer) window.clearInterval(positionClockTimer);
