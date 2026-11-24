@@ -139,12 +139,13 @@ class PaperTradingService
 
         $settled = 0;
 
-        // Capture a fresh server-side snapshot when any due trade lacks a
-        // post-expiry quote. This makes settlement self-healing: it does not rely
-        // on the browser or on a previous scheduler tick. Provider failures are
-        // retried by the scheduler and client reconciliation endpoint.
-        if ($dueTrades->isNotEmpty()) {
-            $needsRefresh = $dueTrades->contains(function ($trade) {
+        // Refresh only symbols with expired positions that still lack a
+        // post-expiry snapshot. Pulling the full ticker catalogue here added
+        // unnecessary latency to settlement and could leave the modal waiting
+        // on unrelated markets.
+        foreach ($dueTrades->pluck('symbol')->unique() as $symbol) {
+            $symbolTrades = $dueTrades->where('symbol', $symbol);
+            $needsRefresh = $symbolTrades->contains(function ($trade) {
                 return !DB::table('market_quote_snapshots')
                     ->where('symbol', $trade->symbol)
                     ->where('captured_at', '>=', $trade->expires_at)
@@ -157,7 +158,7 @@ class PaperTradingService
 
             if ($needsRefresh) {
                 try {
-                    $this->markets->refresh();
+                    $this->markets->refreshSymbolQuote($symbol);
                 } catch (\Throwable $exception) {
                     report($exception);
                 }
