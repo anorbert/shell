@@ -81,6 +81,18 @@ class PaperTradingService
                 return (int) $existing->id;
             }
 
+            // Recheck quote age after acquiring the transaction. A provider
+            // response that was fresh before waiting on ledger locks must not
+            // authorize an execution after it has become stale.
+            $quoteCapturedAt = strtotime((string) $quote->captured_at);
+            if ($quoteCapturedAt === false
+                || $quoteCapturedAt > now()->timestamp
+                || $quoteCapturedAt < now()->subSeconds(10)->timestamp) {
+                throw new RuntimeException(
+                    'The verified market quote expired while your trade was being prepared. No stake was deducted; please retry.'
+                );
+            }
+
             $wallet = $this->ledger->provisionClientWallets($user, $currency)['demo'];
             // LedgerService locks all affected accounts in a consistent order
             // and enforces the non-negative wallet invariant atomically.
