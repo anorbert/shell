@@ -20,6 +20,6 @@
 </div></section>
 <section class="panel"><div class="panel-head"><div><span class="eyebrow">MARKET WATCH</span><h2>Market overview</h2></div><a href="{{ route('markets.index') }}" class="text-link">View markets ↗</a></div>
 @if($marketConnected)<div class="table-wrap"><table class="data-table"><thead><tr><th>PAIR</th><th>PRICE (USDT)</th><th>PROVIDER</th><th>CAPTURED</th></tr></thead><tbody>@foreach($quotes->take(6) as $quote)<tr><td><strong>{{ $quote->symbol }}</strong></td><td>@decimal($quote->price)</td><td>{{ $quote->provider }}</td><td>{{ $quote->captured_at }}</td></tr>@endforeach</tbody></table></div>
-@else<div class="empty-state"><div class="empty-icon">⌁</div><strong>Market prices are being refreshed</strong><p>Current provider prices appear here as soon as a fresh market quote is available. Your demo wallet and account tools remain accessible.</p></div>@endif
+@else<div class="empty-state"><div class="empty-icon">⌁</div><strong>Market overview</strong><p>Fresh provider prices appear here when available. Your demo wallet, trading history and account tools remain accessible at all times.</p></div>@endif
 </section></div>
 @endsection
