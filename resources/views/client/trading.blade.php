@@ -78,7 +78,7 @@
     const loading = document.getElementById('chart-loading');
     const palette = { text:'#8b9ab0', muted:'#65758b', grid:'rgba(139,154,176,.13)', border:'#26364b', up:'#22b78b', down:'#ed6474', crosshair:'rgba(190,204,222,.55)', panel:'#0b1421' };
     let interval = '1m', candles = [], loadingRequest = false, failed = false, crosshair = null;
-    let plot = null, liveSocket = null, reconnectTimer = null, reconnectAttempts = 0, streamGeneration = 0, activeStreamKey = '';
+    let plot = null, liveSocket = null, reconnectTimer = null, reconnectAttempts = 0, streamGeneration = 0;
 
     const number = value => Number(value);
     const formatPrice = value => {
@@ -224,9 +224,8 @@
     function connectLiveStream(symbol, selectedInterval, generation) {
         if (generation !== streamGeneration) return;
         const streamKey = symbol.toLowerCase() + '@kline_' + selectedInterval;
-        activeStreamKey = streamKey;
         setText('chart-health', 'CONNECTING');
-        const socket = new WebSocket('wss://stream.binance.com:9443/ws/' + streamKey);
+        const socket = new WebSocket('wss://stream.binance.com:443/ws/' + streamKey);
         liveSocket = socket;
 
         socket.onopen = () => {
