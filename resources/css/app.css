@@ -412,3 +412,28 @@ input,select,textarea{accent-color:var(--gold)}
   .topbar-nav-group > summary { min-height: 36px; padding: 7px 9px; font-size: 10px; }
   .topbar-submenu { position: fixed; top: auto; left: 12px; right: 12px; bottom: auto; width: auto; max-width: 360px; }
 }
+
+
+/* Contextual page actions: keep secondary tasks on their parent workspace */
+.page-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin: 0 0 16px;
+}
+.page-action-row .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.page-action-row .nav-icon {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+}
+@media (max-width: 520px) {
+  .page-action-row { justify-content: stretch; }
+  .page-action-row .button { width: 100%; }
+}
