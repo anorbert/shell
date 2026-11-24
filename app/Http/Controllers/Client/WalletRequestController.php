@@ -28,8 +28,10 @@ class WalletRequestController extends Controller
         $methods = DB::table('crypto_payment_methods')->orderBy('asset')->orderBy('network')->get();
         $requests = DB::table('wallet_requests')->where('user_id', $user->id)->latest()->paginate(15);
         $kyc = DB::table('kyc_submissions')->where('user_id', $user->id)->latest()->first();
-        $kycVerified = app(ManualWalletService::class)->hasApprovedKyc($user);
-        return view('client.wallet-requests', compact('methods', 'requests', 'kyc', 'kycVerified', 'selectedAccount', 'selectedBalance', 'demoBalance', 'realBalance', 'currency'));
+        $walletService = app(ManualWalletService::class);
+        $kycVerified = $walletService->hasApprovedKyc($user);
+        $hasSuccessfulDeposit = $walletService->hasSuccessfulDeposit($user);
+        return view('client.wallet-requests', compact('methods', 'requests', 'kyc', 'kycVerified', 'hasSuccessfulDeposit', 'selectedAccount', 'selectedBalance', 'demoBalance', 'realBalance', 'currency'));
     }
 
     public function submitKyc(Request $request)
@@ -41,6 +43,9 @@ class WalletRequestController extends Controller
             'selfie' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
         ]);
         $user = $request->user();
+        if (!app(ManualWalletService::class)->hasSuccessfulDeposit($user)) {
+            return back()->withErrors(['kyc' => 'Complete and receive confirmation for at least one real-money deposit before submitting KYC.']);
+        }
         $existing = DB::table('kyc_submissions')->where('user_id', $user->id)->whereIn('status', ['pending', 'verified'])->exists();
         if ($existing) return back()->withErrors(['kyc' => 'Your KYC is already pending or verified.']);
         $document = $request->file('document');
