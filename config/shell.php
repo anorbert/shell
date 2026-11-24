@@ -15,5 +15,6 @@ return [
         'welcome_balance' => '20000.00000000',
         'topup_min' => '100.00000000',
         'topup_max' => '20000.00000000',
+        'settlement_quote_grace_seconds' => (int) env('SHELL_SETTLEMENT_QUOTE_GRACE_SECONDS', 15),
     ],
 ];
