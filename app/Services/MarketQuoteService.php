@@ -131,6 +131,50 @@ class MarketQuoteService
             ->get();
     }
 
+    /**
+     * Refresh one tradable pair on demand. This is intentionally lighter and
+     * faster than downloading the entire ticker catalogue during a button click.
+     */
+    private function refreshSymbol(string $symbol): void
+    {
+        $response = Http::acceptJson()
+            ->retry(1, 150)
+            ->timeout(5)
+            ->get(rtrim(config('shell.market.base_url'), '/') . '/api/v3/ticker/price', [
+                'symbol' => $symbol,
+            ]);
+
+        $item = $response->json();
+        $price = is_array($item) ? ($item['price'] ?? null) : null;
+
+        if (!$response->successful()
+            || !is_array($item)
+            || ($item['symbol'] ?? null) !== $symbol
+            || !is_string($price)
+            || !preg_match('/^[0-9]{1,16}(?:\\.[0-9]{1,12})?$/', $price)
+            || (float) $price <= 0) {
+            throw new RuntimeException('Market provider did not return a valid live price for ' . $symbol . '.');
+        }
+
+        $capturedAt = now();
+        DB::table('market_quotes')->updateOrInsert(
+            ['symbol' => $symbol],
+            [
+                'price' => $price,
+                'provider' => 'Binance Spot',
+                'captured_at' => $capturedAt,
+                'created_at' => $capturedAt,
+                'updated_at' => $capturedAt,
+            ]
+        );
+
+        DB::table('market_quote_snapshots')->insert([
+            'symbol' => $symbol,
+            'price' => $price,
+            'captured_at' => $capturedAt,
+        ]);
+    }
+
     public function freshQuote(string $symbol): object
     {
         if (!in_array($symbol, config('shell.market.symbols', []), true)) {
@@ -147,7 +191,7 @@ class MarketQuoteService
         // from the database after the provider response has been persisted.
         if (!$quote || $quote->captured_at < $minimumCapturedAt) {
             try {
-                $this->refresh();
+                $this->refreshSymbol($symbol);
             } catch (\Throwable $exception) {
                 report($exception);
             }
