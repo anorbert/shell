@@ -13,6 +13,19 @@ function createCryptoMethodForTest(array $overrides = []): int
     ], $overrides));
 }
 
+
+function createConfirmedDepositForTest(User $client): void
+{
+    DB::table('wallet_requests')->insert([
+        'user_id' => $client->id, 'type' => 'deposit', 'status' => 'confirmed',
+        'amount_usd' => '50.00000000', 'asset' => 'USDT', 'network' => 'TRC20',
+        'wallet_address' => 'TTestDepositAddress123456789',
+        'transaction_hash' => 'test-confirmed-deposit-'.$client->id,
+        'ledger_key' => 'test-confirmed-deposit-ledger-'.$client->id,
+        'reviewed_at' => now(), 'created_at' => now(), 'updated_at' => now(),
+    ]);
+}
+
 function createVerifiedAdminForTest(): User
 {
     $admin = User::factory()->create();
@@ -49,7 +62,7 @@ test('manual crypto deposit stays pending and never credits the real wallet befo
         ->and($ledger->balanceUnits($wallet))->toBe(12500000000);
 });
 
-test('withdrawals are blocked until KYC has been verified', function () {
+test('withdrawals are blocked until a real deposit has been confirmed', function () {
     $client = User::factory()->create();
     $client->markEmailAsVerified();
     $method = createCryptoMethodForTest();
@@ -57,7 +70,7 @@ test('withdrawals are blocked until KYC has been verified', function () {
     $this->actingAs($client)->post('/wallet-requests/withdraw', [
         'method_id' => $method, 'amount_usd' => '25.00000000',
         'wallet_address' => 'TClientReceivingAddress123456789',
-    ])->assertSessionHasErrors('withdrawal');
+    ])->assertSessionHasErrors(['withdrawal' => 'At least one real-money deposit must be successfully confirmed before withdrawals are available.']);
 
     expect(DB::table('wallet_requests')->where('user_id', $client->id)->count())->toBe(0);
 });
@@ -66,6 +79,7 @@ test('KYC-verified withdrawal reserves funds and admin marks it paid only with a
     $client = User::factory()->create();
     $client->markEmailAsVerified();
     $method = createCryptoMethodForTest();
+    createConfirmedDepositForTest($client);
     DB::table('kyc_submissions')->insert([
         'user_id' => $client->id, 'document_type' => 'national_id',
         'document_path' => 'kyc/test/id.pdf', 'status' => 'verified',
@@ -103,6 +117,7 @@ test('rejecting a withdrawal releases its reserved balance', function () {
     $client = User::factory()->create();
     $client->markEmailAsVerified();
     $method = createCryptoMethodForTest();
+    createConfirmedDepositForTest($client);
     $submission = DB::table('kyc_submissions')->insertGetId([
         'user_id' => $client->id, 'document_type' => 'passport',
         'document_path' => 'kyc/test/passport.pdf', 'status' => 'verified',
