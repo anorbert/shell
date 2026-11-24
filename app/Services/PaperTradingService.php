@@ -121,6 +121,17 @@ class PaperTradingService
 
         $settled = 0;
 
+        // Capture a fresh server-side snapshot when trades are due. This makes
+        // settlement self-contained instead of relying on a separate scheduler
+        // refresh having happened after each expiry time.
+        if ($dueTrades->isNotEmpty()) {
+            try {
+                $this->markets->refresh();
+            } catch (\\Throwable $exception) {
+                report($exception);
+            }
+        }
+
         foreach ($dueTrades as $candidate) {
             // A settlement price must have been captured after this trade expired.
             $quote = DB::table('market_quotes')
