@@ -195,19 +195,19 @@ class MarketQuoteService
         ]);
     }
 
-    public function freshQuote(string $symbol): object
+    /**
+     * Execution quotes must come from a successful provider response in this
+     * request. Cached display/conversion quotes are never accepted for a trade.
+     */
+    public function freshExecutionQuote(string $symbol): object
     {
         if (!in_array($symbol, config('shell.market.symbols', []), true)) {
             throw new RuntimeException('Unsupported market pair.');
         }
 
-        // A new position must never be opened against a cached quote. A quote
-        // that is 30–90 seconds old may be acceptable for display, but it is
-        // not an execution price. Require a successful provider response for
-        // this request and persist that response before returning it.
         try {
             $quote = $this->refreshSymbolQuote($symbol);
-        } catch (\Throwable $exception) {
+        } catch (\\Throwable $exception) {
             report($exception);
             throw new RuntimeException(
                 'A fresh verified market quote is unavailable for ' . $symbol . '. Your demo stake has not been deducted. Please retry when the market feed is restored.',
@@ -221,6 +221,28 @@ class MarketQuoteService
             throw new RuntimeException(
                 'The market quote for ' . $symbol . ' is stale or has an invalid timestamp. Your demo stake has not been deducted.'
             );
+        }
+
+        return $quote;
+    }
+
+    /**
+     * A recent server-captured quote is sufficient for an indicative paper
+     * conversion preview. Conversion confirmation independently checks that
+     * the quoted snapshot has not changed.
+     */
+    public function freshQuote(string $symbol): object
+    {
+        if (!in_array($symbol, config('shell.market.symbols', []), true)) {
+            throw new RuntimeException('Unsupported market pair.');
+        }
+
+        $maxAge = max(5, (int) config('shell.market.max_age_seconds', 90));
+        $quote = DB::table('market_quotes')->where('symbol', $symbol)->first();
+        $minimumCapturedAt = now()->subSeconds($maxAge);
+
+        if (!$quote || $quote->captured_at < $minimumCapturedAt || $quote->captured_at > now()) {
+            throw new RuntimeException('A recent server market quote is unavailable for ' . $symbol . '.');
         }
 
         return $quote;
