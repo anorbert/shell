@@ -8,6 +8,7 @@ use App\Services\MarketQuoteService;
 use App\Services\PaperTradingService;
 use App\Support\Decimal;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -271,7 +272,7 @@ class PaperTradingController extends Controller
             ], 201);
         } catch (RuntimeException | InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
-        } catch (\\Throwable $exception) {
+        } catch (\Throwable $exception) {
             report($exception);
             return response()->json([
                 'message' => 'Trade placement is temporarily unavailable. Your request is protected against duplicate processing; please retry with the same request key.',
