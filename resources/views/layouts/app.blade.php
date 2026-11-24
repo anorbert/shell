@@ -81,6 +81,27 @@
 </div>
 <div id="toast-region" class="toast-region" aria-live="polite"></div>
 @stack('modals')
+<script>
+document.addEventListener('click', function (event) {
+    const opener = event.target.closest('[data-attention-open]');
+    if (opener) {
+        const dialog = document.getElementById(opener.dataset.attentionOpen);
+        if (dialog && typeof dialog.showModal === 'function') dialog.showModal();
+        return;
+    }
+
+    const closer = event.target.closest('[data-attention-close]');
+    if (closer) {
+        const dialog = closer.closest('dialog');
+        if (dialog) dialog.close();
+        return;
+    }
+
+    if (event.target instanceof HTMLDialogElement && event.target.classList.contains('client-attention-dialog')) {
+        event.target.close();
+    }
+});
+</script>
 @stack('scripts')
 </body>
 </html>
