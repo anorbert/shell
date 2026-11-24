@@ -27,44 +27,57 @@
     <symbol id="i-settings" viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.6a8 8 0 0 1-1.5.9l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.5-.9l-1.7.6-1.4-2.4 1.4-1.1a8 8 0 0 1 0-1.8l-1.4-1.1 1.4-2.4 1.7.6a8 8 0 0 1 1.5-.9l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.5.9l1.7-.6 1.4 2.4-1.4 1.1a8 8 0 0 1 0 1.8Z"/></symbol>
     <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>
     <symbol id="i-life" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3m.1 4h.01"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
 </svg>
 <div class="app-shell">
     <aside class="sidebar">
         <a href="{{ route('dashboard') }}" class="brand"><span class="brand-mark">S</span><span>SHELL<span class="brand-sub">FINANCIAL TERMINAL</span></span></a>
-        <div class="sidebar-label">WORKSPACE</div>
-        <nav class="side-nav" aria-label="Main navigation">
+        <div class="sidebar-label">MAIN MENU</div>
+        <nav class="side-nav" aria-label="Primary navigation">
             @if(auth()->user()->role==='admin')
                 <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard')?'active':'' }}"><svg class="nav-icon"><use href="#i-grid"/></svg><span>Overview</span></a>
                 <a href="{{ route('admin.clients') }}" class="{{ request()->routeIs('admin.clients*')?'active':'' }}"><svg class="nav-icon"><use href="#i-users"/></svg><span>Client accounts</span></a>
                 <a href="{{ route('admin.operations') }}" class="{{ request()->routeIs('admin.operations')?'active':'' }}"><svg class="nav-icon"><use href="#i-chart"/></svg><span>Trading operations</span></a>
                 <a href="{{ route('admin.wallet-operations.index') }}" class="{{ request()->routeIs('admin.wallet-operations.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-wallet"/></svg><span>Wallet operations</span></a>
-                <a href="{{ route('admin.kyc.index') }}" class="{{ request()->routeIs('admin.kyc.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-shield"/></svg><span>KYC review</span><span class="nav-count">{{ \Illuminate\Support\Facades\DB::table('kyc_submissions')->where('status','pending')->count() }}</span></a>
-                <a href="{{ route('admin.support.index') }}" class="{{ request()->routeIs('admin.support.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-message"/></svg><span>Support inbox</span></a>
             @else
                 <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard')?'active':'' }}"><svg class="nav-icon"><use href="#i-grid"/></svg><span>Overview</span></a>
+                <a href="{{ route('trading.index') }}" class="{{ request()->routeIs('trading.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-clock"/></svg><span>Trade</span></a>
                 <a href="{{ route('markets.index') }}" class="{{ request()->routeIs('markets.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-chart"/></svg><span>Markets</span></a>
-                <a href="{{ route('convert.index') }}" class="{{ request()->routeIs('convert.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-repeat"/></svg><span>Convert</span></a>
-                <a href="{{ route('trading.index') }}" class="{{ request()->routeIs('trading.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-clock"/></svg><span>Trading hub</span></a>
                 <a href="{{ route('portfolio.index') }}" class="{{ request()->routeIs('portfolio.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-briefcase"/></svg><span>Portfolio</span></a>
-                <a href="{{ route('wallet-requests.index') }}" class="{{ request()->routeIs('wallet-requests.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-wallet"/></svg><span>Deposit / Withdraw</span></a>
-                <a href="{{ route('activity.index') }}" class="{{ request()->routeIs('activity.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-clock"/></svg><span>Activity</span></a>
-                <a href="{{ route('statement.index') }}" class="{{ request()->routeIs('statement.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-receipt"/></svg><span>Wallet statement</span></a>
             @endif
         </nav>
-        <div class="sidebar-bottom">
-            <a href="{{ route('profile.edit') }}"><svg class="nav-icon"><use href="#i-settings"/></svg><span>Account settings</span></a>
-            @if(auth()->user()->role==='client')
-                <a href="{{ route('security.index') }}" class="{{ request()->routeIs('security.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-shield"/></svg><span>Security</span></a>
-                <a href="{{ route('support.index') }}" class="{{ request()->routeIs('support.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-life"/></svg><span>Support</span></a>
-                <a href="{{ route('notifications.index') }}" class="{{ request()->routeIs('notifications.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-bell"/></svg><span>Notifications</span><span class="nav-count">{{ \Illuminate\Support\Facades\DB::table('user_notifications')->where('user_id',auth()->id())->whereNull('read_at')->count() }}</span></a>
-            @endif
-            <form method="POST" action="{{ route('logout') }}">@csrf<button class="nav-logout" type="submit"><svg class="nav-icon"><use href="#i-arrow"/></svg><span>Sign out</span></button></form>
-        </div>
     </aside>
     <main class="main-panel">
         <header class="topbar">
             <div class="topbar-title"><span class="eyebrow">@yield('eyebrow','ACCOUNT')</span><h1>@yield('heading','Overview')</h1></div>
-            <div class="topbar-right"><span class="status-pill"><i></i>{{ auth()->user()->role==='admin'?'Administrator':'Client account' }}</span><span class="avatar" aria-label="Account">{{ strtoupper(substr(auth()->user()->name,0,1)) }}</span></div>
+            <nav class="topbar-nav" aria-label="Workspace shortcuts">
+                @if(auth()->user()->role==='admin')
+                    <a href="{{ route('admin.kyc.index') }}" class="{{ request()->routeIs('admin.kyc.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-shield"/></svg><span>KYC review</span><span class="nav-count">{{ \Illuminate\Support\Facades\DB::table('kyc_submissions')->where('status','pending')->count() }}</span></a>
+                    <a href="{{ route('admin.support.index') }}" class="{{ request()->routeIs('admin.support.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-message"/></svg><span>Support inbox</span></a>
+                @else
+                    <a href="{{ route('convert.index') }}" class="{{ request()->routeIs('convert.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-repeat"/></svg><span>Convert</span></a>
+                    <a href="{{ route('wallet-requests.index') }}" class="{{ request()->routeIs('wallet-requests.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-wallet"/></svg><span>Wallet</span></a>
+                    <a href="{{ route('activity.index') }}" class="{{ request()->routeIs('activity.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-clock"/></svg><span>Activity</span></a>
+                    <a href="{{ route('statement.index') }}" class="{{ request()->routeIs('statement.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-receipt"/></svg><span>Statement</span></a>
+                    <a href="{{ route('support.index') }}" class="{{ request()->routeIs('support.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-life"/></svg><span>Support</span></a>
+                    <a class="topbar-icon-link {{ request()->routeIs('notifications.*')?'active':'' }}" href="{{ route('notifications.index') }}" aria-label="Notifications" title="Notifications"><svg class="nav-icon"><use href="#i-bell"/></svg><span class="nav-count">{{ \Illuminate\Support\Facades\DB::table('user_notifications')->where('user_id',auth()->id())->whereNull('read_at')->count() }}</span></a>
+                @endif
+            </nav>
+            <div class="topbar-right">
+                <span class="status-pill"><i></i>{{ auth()->user()->role==='admin'?'Administrator':'Client account' }}</span>
+                <details class="profile-menu">
+                    <summary class="profile-trigger" aria-label="Open profile menu"><span class="avatar">{{ strtoupper(substr(auth()->user()->name,0,1)) }}</span><span class="profile-trigger-copy"><strong>{{ auth()->user()->name }}</strong><small>{{ auth()->user()->role==='admin'?'Administrator':'My account' }}</small></span><span class="profile-chevron">⌄</span></summary>
+                    <div class="profile-dropdown">
+                        <div class="profile-dropdown-head"><strong>{{ auth()->user()->name }}</strong><small>{{ auth()->user()->email }}</small></div>
+                        <a href="{{ route('profile.edit') }}"><svg class="nav-icon"><use href="#i-user"/></svg>Profile & account details</a>
+                        <a href="{{ route('password.edit') }}"><svg class="nav-icon"><use href="#i-shield"/></svg>Change password</a>
+                        @if(auth()->user()->role==='client')
+                            <a href="{{ route('security.index') }}" class="{{ request()->routeIs('security.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-settings"/></svg>Security & sessions</a>
+                        @endif
+                        <form method="POST" action="{{ route('logout') }}">@csrf<button type="submit"><svg class="nav-icon"><use href="#i-arrow"/></svg>Sign out</button></form>
+                    </div>
+                </details>
+            </div>
         </header>
         <section class="page-content">@yield('content')</section>
     </main>
