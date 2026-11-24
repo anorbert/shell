@@ -224,13 +224,11 @@ class PaperTradingController extends Controller
             }
 
             $demoWallet = $ledger->provisionClientWallets($request->user(), $currency)['demo'];
-            $available = Decimal::fromUnits($ledger->balanceUnits($demoWallet));
-            if (Decimal::compare($stake, $available) > 0) {
-                return response()->json([
-                    'message' => 'Insufficient demo balance. Available: ' . $available . ' ' . $currency . '. Reduce your stake or add demo funds.',
-                ], 422);
-            }
 
+            // PaperTradingService performs the authoritative balance check and
+            // debit atomically in the ledger. Avoid a pre-check here: it can
+            // incorrectly reject an idempotent retry after the original request
+            // already reserved the stake.
             $id = $service->open(
                 $request->user(),
                 strtoupper($values['symbol']),
