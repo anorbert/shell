@@ -6,16 +6,16 @@
 <div class="page-action-row">
     <a href="{{ route('statement.index') }}" class="button button-secondary"><svg class="nav-icon"><use href="#i-receipt"/></svg> View wallet statement</a>
 </div>
-<div class="notice-banner"><span class="notice-icon">!</span><div><strong>Manual crypto settlement</strong><p>Only send crypto to the exact asset and network shown. Deposits remain pending until an administrator verifies the transaction. Withdrawals require approved KYC and are paid manually.</p></div><span class="mode-tag">MANUAL REVIEW</span></div>
+<div class="notice-banner"><span class="notice-icon">!</span><div><strong>Real-wallet funding and payouts</strong><p>Use the supported asset and network details shown on this page. Deposits are credited after transaction verification. Withdrawals are processed after identity approval and operations review.</p></div><span class="mode-tag">MANUAL REVIEW</span></div>
 @if(session('status'))<div class="notice-banner"><div><strong>{{ session('status') }}</strong></div></div>@endif
 @if($errors->any())<div class="notice-banner"><div><strong>Check the submitted details</strong><p>{{ $errors->first() }}</p></div></div>@endif
 <div class="content-grid">
 <section class="panel">
 <div class="panel-head"><div><span class="eyebrow">IDENTITY CHECK</span><h2>KYC verification</h2></div><span class="table-status {{ $kycVerified ? 'verified' : 'pending' }}">{{ $kycVerified ? 'VERIFIED' : strtoupper($kyc->status ?? 'NOT SUBMITTED') }}</span></div>
 @if($kycVerified)
-<p class="muted">Your KYC has been approved. Withdrawals are unlocked subject to available real-wallet balance and admin review.</p>
+<p class="muted">Your identity is verified. You can submit withdrawal requests against your available real-wallet balance for processing by the operations team.</p>
 @else
-<p class="muted">Withdrawals are locked until an administrator reviews and verifies your identity documents. Email verification alone does not qualify as KYC.</p>
+<p class="muted">Complete identity verification to activate withdrawal requests. Once your documents are reviewed and approved, the withdrawal form will be available.</p>
 <form method="POST" action="{{ route('wallet-requests.kyc') }}" enctype="multipart/form-data" class="form-stack">@csrf
 <label>Document type<select name="document_type" required><option value="national_id">National ID</option><option value="passport">Passport</option><option value="driving_licence">Driving licence</option></select></label>
 <label>Document number<input name="document_number" maxlength="120"></label>
@@ -28,7 +28,7 @@
 </section>
 <section class="panel">
 <div class="panel-head"><div><span class="eyebrow">ADD REAL FUNDS</span><h2>Deposit crypto</h2></div></div>
-@if($methods->where('deposits_enabled', true)->isEmpty())<p class="muted">No deposit network is currently enabled. Do not send funds to any address supplied outside this page.</p>@else
+@if($methods->where('deposits_enabled', true)->isEmpty())<p class="muted">Available deposit networks will appear here. Always use the asset, network and wallet address displayed in your account before sending funds.</p>@else
 <form method="POST" action="{{ route('wallet-requests.deposit') }}" class="form-stack">@csrf
 <label>Asset / network<select name="method_id" id="deposit-method" required><option value="">Choose network</option>@foreach($methods->where('deposits_enabled', true) as $method)<option value="{{ $method->id }}" data-address="{{ $method->wallet_address }}" data-memo-label="{{ $method->memo_label }}" data-memo="{{ $method->memo_value }}" data-instructions="{{ $method->instructions }}">{{ $method->asset }} · {{ $method->network }}</option>@endforeach</select></label>
 <div class="notice-banner" id="deposit-address-box" hidden><div><strong>Deposit address</strong><p id="deposit-address" style="overflow-wrap:anywhere"></p><p id="deposit-memo"></p><p id="deposit-instructions"></p></div><button class="button button-secondary" type="button" id="copy-deposit-address">Copy</button></div>
@@ -42,8 +42,8 @@
 </section>
 <section class="panel">
 <div class="panel-head"><div><span class="eyebrow">PAYOUT</span><h2>Withdraw real funds</h2></div><span class="table-status {{ $kycVerified ? 'verified' : 'pending' }}">{{ $kycVerified ? 'KYC APPROVED' : 'KYC REQUIRED' }}</span></div>
-@if(!$kycVerified)<p class="muted">Complete KYC and wait for admin verification before requesting a withdrawal.</p>
-@elseif($methods->where('withdrawals_enabled', true)->isEmpty())<p class="muted">No withdrawal network is currently enabled. Contact support for assistance.</p>
+@if(!$kycVerified)<p class="muted">Complete identity verification to activate withdrawals. Your request will then be processed by the operations team.</p>
+@elseif($methods->where('withdrawals_enabled', true)->isEmpty())<p class="muted">Withdrawal networks configured for your account will appear here. Contact support if you need help with an available network.</p>
 @else
 <form method="POST" action="{{ route('wallet-requests.withdraw') }}" class="form-stack">@csrf
 <label>Asset / network<select name="method_id" required><option value="">Choose network</option>@foreach($methods->where('withdrawals_enabled', true) as $method)<option value="{{ $method->id }}">{{ $method->asset }} · {{ $method->network }}</option>@endforeach</select></label>
