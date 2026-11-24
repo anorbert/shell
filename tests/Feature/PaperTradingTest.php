@@ -108,6 +108,54 @@ test('stale market quotes are refreshed from the provider before a trade is open
     expect(DB::table('paper_trades')->where('user_id', $user->id)->count())->toBe(1);
 });
 
+test('a retry returns the already persisted trade without another provider request or stake debit', function () {
+    $user = User::factory()->create();
+    $user->markEmailAsVerified();
+    $ledger = app(LedgerService::class);
+    $ledger->creditPaperWallet($user, '100.00000000');
+
+    DB::table('market_quotes')->insert([
+        'symbol' => 'BTCUSDT',
+        'price' => '90000.000000000000',
+        'provider' => 'Test provider',
+        'captured_at' => now(),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $payload = [
+        'symbol' => 'BTCUSDT',
+        'direction' => 'UP',
+        'stake' => '10',
+        'duration' => 60,
+        'request_key' => 'retry-same-trade-after-response-loss',
+    ];
+
+    $first = $this->actingAs($user)->postJson('/trading/paper', $payload)->assertCreated();
+    $firstTradeId = $first->json('trade_id');
+
+    // Simulate a response interruption followed by a stale quote and a
+    // temporarily unavailable provider. Idempotency must win before quote I/O.
+    $staleAt = now()->subMinutes(5);
+    DB::table('market_quotes')->where('symbol', 'BTCUSDT')->update([
+        'captured_at' => $staleAt,
+        'updated_at' => $staleAt,
+    ]);
+    Http::fake([
+        'api.binance.com/api/v3/ticker/price*' => Http::response([], 503),
+    ]);
+
+    $this->postJson('/trading/paper', $payload)
+        ->assertCreated()
+        ->assertJsonPath('trade_id', $firstTradeId)
+        ->assertJsonPath('trade.id', $firstTradeId);
+
+    Http::assertNothingSent();
+    expect(DB::table('paper_trades')->where('user_id', $user->id)->count())->toBe(1)
+        ->and(DB::table('ledger_transactions')->where('idempotency_key', 'paper-open:' . $payload['request_key'])->count())->toBe(1)
+        ->and($ledger->balanceUnits($ledger->wallet($user)))->toBe(2009000000000);
+});
+
 test('paper trade cannot be opened without sufficient simulation funds', function () {
     $user = User::factory()->create();
     $user->markEmailAsVerified();
