@@ -70,7 +70,7 @@
 
 @endsection
 
-@push('scripts')
+@push('styles')
 <style>
 .trading-chart-panel{min-width:0;overflow:hidden}.trading-chart-heading{align-items:center}.trading-chart-heading h2{font-variant-numeric:tabular-nums;letter-spacing:.02em}
 .chart-market-summary{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:15px 19px 13px;border-top:1px solid #253247;border-bottom:1px solid #253247;background:#0c1523}
@@ -113,7 +113,7 @@
         return payload;
     };
     const notify = (message,type='success') => {
-        if(typeof window.shellToast==='function'){notify(message,type);return;}
+        if(typeof window.shellToast==='function'){window.shellToast(message,type);return;}
         const region=document.getElementById('toast-region');
         if(region){const item=document.createElement('div');item.className='toast toast-'+type;item.textContent=message;region.appendChild(item);window.setTimeout(()=>item.remove(),4200);}
     };
@@ -295,6 +295,32 @@
         };
     }
 
+    async function fetchPublicCandles(symbol, selectedInterval) {
+        const query = new URLSearchParams({symbol, interval:selectedInterval, limit:'200'});
+        const endpoints = [
+            'https://data-api.binance.vision/api/v3/klines?' + query,
+            'https://api.binance.com/api/v3/klines?' + query
+        ];
+        let lastError = null;
+        for (const endpoint of endpoints) {
+            try {
+                const response = await fetch(endpoint, {headers:{'Accept':'application/json'}, cache:'no-store'});
+                if (!response.ok) throw new Error('Public market feed returned HTTP ' + response.status);
+                const rows = await response.json();
+                if (!Array.isArray(rows) || !rows.length) throw new Error('Public market feed returned no candles.');
+                const parsed = rows.filter(row => Array.isArray(row) && row.length >= 6).map(row => ({
+                    time:Number(row[0]), open:String(row[1]), high:String(row[2]),
+                    low:String(row[3]), close:String(row[4]), volume:String(row[5])
+                })).filter(c => [c.time,c.open,c.high,c.low,c.close].every(v => Number.isFinite(Number(v))));
+                if (parsed.length) return parsed;
+                throw new Error('Public market feed returned invalid candle data.');
+            } catch (error) {
+                lastError = error;
+            }
+        }
+        throw lastError || new Error('No public market feed is available.');
+    }
+
     async function loadCandles() {
         closeLiveStream();
         const generation = streamGeneration;
@@ -302,11 +328,19 @@
         const selectedInterval = interval;
         loadingRequest = true;
         failed = false;
+        loading.textContent = 'Loading market data…';
         loading.classList.add('visible');
         setText('chart-health', 'LOADING');
         setText('chart-symbol', symbol);
         try {
-            const result = await requestJson(@json(route('markets.candles')) + '?' + new URLSearchParams({symbol,interval:selectedInterval,limit:'200'}));
+            let result;
+            try {
+                result = await requestJson(@json(route('markets.candles')) + '?' + new URLSearchParams({symbol,interval:selectedInterval,limit:'200'}));
+            } catch (serverError) {
+                // If the Laravel host cannot reach the market provider, load the public
+                // read-only candle feed directly in the browser as a chart-only fallback.
+                result = {candles: await fetchPublicCandles(symbol, selectedInterval)};
+            }
             if (generation !== streamGeneration) return;
             if (!Array.isArray(result.candles) || !result.candles.length) throw new Error('No candle data is available for this market.');
             candles = result.candles.map(c => ({...c,time:number(c.time)}))
@@ -325,6 +359,7 @@
             if (!candles.length) draw();
             setText('chart-health', 'UNAVAILABLE');
             setText('chart-updated', error.message || 'Market data unavailable');
+            loading.textContent = 'Market feed unavailable · retrying may restore the chart';
         } finally {
             if (generation === streamGeneration) {
                 loadingRequest = false;
