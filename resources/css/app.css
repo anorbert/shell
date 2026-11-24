@@ -237,3 +237,93 @@ input,select,textarea{accent-color:var(--gold)}
  .topbar-title h1{font-size:17px}
  .topbar-nav>a{gap:5px;padding-inline:7px;font-size:9px}
 }
+
+
+/* Header repair: prevent workspace shortcuts from collapsing into a vertical stack */
+@media (min-width: 721px) {
+  .topbar {
+    display: grid !important;
+    grid-template-columns: minmax(205px, 245px) minmax(0, 1fr) minmax(250px, 315px) !important;
+    gap: 16px !important;
+    align-items: center !important;
+    min-width: 0;
+  }
+  .topbar-title,
+  .topbar-nav,
+  .topbar-right { min-width: 0 !important; }
+  .topbar-nav {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    white-space: nowrap !important;
+  }
+  .topbar-nav > a {
+    display: inline-flex !important;
+    flex: 0 0 auto !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    line-height: 1 !important;
+  }
+  .topbar-nav > a .nav-icon { flex: 0 0 15px !important; }
+  .topbar-right {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    white-space: nowrap;
+  }
+  .profile-trigger {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    min-width: 0;
+  }
+  .profile-trigger-copy {
+    display: grid !important;
+    min-width: 0;
+    max-width: 145px;
+  }
+  .profile-trigger-copy strong,
+  .profile-trigger-copy small {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+@media (min-width: 721px) and (max-width: 1250px) {
+  .topbar {
+    grid-template-columns: minmax(150px, 190px) minmax(0, 1fr) auto !important;
+    gap: 9px !important;
+    padding-inline: 12px !important;
+  }
+  .topbar-nav { justify-content: flex-start !important; gap: 2px !important; }
+  .topbar-nav > a { padding-inline: 7px !important; }
+  .topbar-nav > a span:not(.nav-count) { display: none !important; }
+  .profile-trigger-copy,
+  .profile-chevron { display: none !important; }
+}
+@media (max-width: 720px) {
+  .topbar-nav {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+  }
+  .topbar-nav > a {
+    display: inline-flex !important;
+    flex: 0 0 auto !important;
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+}
