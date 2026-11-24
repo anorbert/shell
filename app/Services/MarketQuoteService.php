@@ -207,7 +207,7 @@ class MarketQuoteService
 
         try {
             $quote = $this->refreshSymbolQuote($symbol);
-        } catch (\\Throwable $exception) {
+        } catch (\Throwable $exception) {
             report($exception);
             throw new RuntimeException(
                 'A fresh verified market quote is unavailable for ' . $symbol . '. Your demo stake has not been deducted. Please retry when the market feed is restored.',
