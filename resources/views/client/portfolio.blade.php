@@ -3,12 +3,10 @@
 @section('eyebrow', 'WALLET CENTER')
 @section('heading', 'My wallets')
 @section('content')
-    <div class="notice-banner"><span class="notice-icon">i</span>
-        <div><strong>Two independent wallets</strong>
-            <p>Your demo wallet starts with $20,000 in non-withdrawable simulation credits. You can add demo credits. Real
-                wallet deposits and withdrawals are handled through manual crypto requests and admin confirmation.</p>
-        </div><span class="mode-tag">SEPARATE LEDGERS</span>
-    </div>
+    <x-client-attention title="Two independent wallets" tag="SEPARATE LEDGERS">
+        <p>Your demo wallet starts with $20,000 in non-withdrawable simulation credits. You can add demo credits. Real
+            wallet deposits and withdrawals are handled through manual crypto requests and admin confirmation.</p>
+    </x-client-attention>
     <div class="metric-grid">
         <article class="metric-card"><span class="metric-label">DEMO WALLET ·
                 USD</span><strong>{{ $demoBalance }}</strong><small>Simulation credits only</small></article>
