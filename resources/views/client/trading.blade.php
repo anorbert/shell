@@ -1507,8 +1507,8 @@
             }
             draw(); // Paint the chart frame immediately, before the first network response.
             loadCandles();
-            pollPublicTicker();
-            window.setInterval(pollPublicTicker, 5000);
+            // The market WebSocket is the primary live price source. Do not
+            // add a periodic ticker fetch that makes the terminal feel delayed.
             window.addEventListener('beforeunload', closeLiveStream);
 
             function updateTradeCountdowns() {
@@ -1517,6 +1517,12 @@
                     const seconds = Math.max(0, Math.ceil((Number(element.dataset.expiry) - now) / 1000));
                     if (seconds === 0) {
                         element.textContent = 'Awaiting settlement';
+                        // Trigger settlement at the expiry boundary, not on a later
+                        // 15-second reconciliation cycle. The server remains authoritative.
+                        if (!element.dataset.settlementRequested) {
+                            element.dataset.settlementRequested = 'true';
+                            window.setTimeout(() => settleExpiredTrades(), 0);
+                        }
                         return;
                     }
                     element.textContent = Math.floor(seconds / 60) + 'm ' + String(seconds % 60).padStart(2,
@@ -1564,9 +1570,8 @@
                     }
                 }
             }
-            // Keep this lightweight poll running even when the page initially
-            // had no trades; newly inserted rows are reconciled without reloads.
-            window.setInterval(reconcileOpenTrades, 5000);
+            // Rows are reconciled from the settlement response and expiry event.
+            // No periodic read loop is needed while the live market stream is connected.
             const stakeInput = document.getElementById('trade-stake');
             const tradeForm = document.getElementById('paper-trade-form');
             const payoutRate = {{ (int) config('shell.paper.payout_basis_points', 18000) / 10000 }};
@@ -1905,8 +1910,8 @@
                     updatePositionClock();
                     if (positionPollTimer) window.clearInterval(positionPollTimer);
                     if (positionClockTimer) window.clearInterval(positionClockTimer);
-                    positionPollTimer = window.setInterval(pollPosition, 2000);
-                    // Check expiry more frequently than the displayed one-second countdown.
+                    // The live market stream updates indicative prices. Expiry itself
+                    // triggers an immediate server settlement request; no 2-second poll.
                     positionClockTimer = window.setInterval(updatePositionClock, 100);
                     await pollPosition();
                 } catch (error) {
@@ -1996,12 +2001,11 @@
                 expiredSettlementTimer = window.setTimeout(() => {
                     expiredSettlementTimer = null;
                     settleExpiredTrades();
-                }, 10000);
+                }, 1000);
             }
             if (@json((bool) ($hasExpiredOpenTrades ?? false))) settleExpiredTrades();
-            // Keep reconciling while the terminal remains open so trades that expire
-            // later in this same browser session are also closed without a page reload.
-            window.setInterval(settleExpiredTrades, 15000);
+            // Every open row's countdown triggers one settlement request at expiry.
+            // The server scheduler is the independent fallback when this browser is offline.
 
             tradeForm.addEventListener('submit', async event => {
                 event.preventDefault();
