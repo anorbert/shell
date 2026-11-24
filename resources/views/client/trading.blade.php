@@ -105,13 +105,22 @@
 
     const requestJson = async (url, options = {}) => {
         const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
-        const response = await fetch(url, { ...options, headers: {
-            Accept:'application/json','X-Requested-With':'XMLHttpRequest',
-            ...(csrf?{'X-CSRF-TOKEN':csrf}:{}), ...(options.headers||{})
-        }});
-        const payload = await response.json().catch(()=>({}));
-        if(!response.ok) throw new Error(payload.message || 'The request could not be completed.');
-        return payload;
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), 8000);
+        try {
+            const response = await fetch(url, { ...options, signal:controller.signal, headers: {
+                Accept:'application/json','X-Requested-With':'XMLHttpRequest',
+                ...(csrf?{'X-CSRF-TOKEN':csrf}:{}), ...(options.headers||{})
+            }});
+            const payload = await response.json().catch(()=>({}));
+            if(!response.ok) throw new Error(payload.message || 'The request could not be completed.');
+            return payload;
+        } catch(error) {
+            if(error.name === 'AbortError') throw new Error('The server is taking too long to respond. Retrying automatically…');
+            throw error;
+        } finally {
+            window.clearTimeout(timeout);
+        }
     };
     const notify = (message,type='success') => {
         if(typeof window.shellToast==='function'){window.shellToast(message,type);return;}
@@ -329,7 +338,14 @@
         let lastError = null;
         for (const endpoint of endpoints) {
             try {
-                const response = await fetch(endpoint, {headers:{'Accept':'application/json'}, cache:'no-store'});
+                const controller = new AbortController();
+                const timeout = window.setTimeout(() => controller.abort(), 6000);
+                let response;
+                try {
+                    response = await fetch(endpoint, {headers:{'Accept':'application/json'}, cache:'no-store', signal:controller.signal});
+                } finally {
+                    window.clearTimeout(timeout);
+                }
                 if (!response.ok) throw new Error('Public market feed returned HTTP ' + response.status);
                 const rows = await response.json();
                 if (!Array.isArray(rows) || !rows.length) throw new Error('Public market feed returned no candles.');
@@ -464,7 +480,7 @@
     document.querySelectorAll('[data-direction]').forEach(button=>button.addEventListener('click',()=>{document.getElementById('trade-direction').value=button.dataset.direction;}));
 
     const positionModal=document.getElementById('position-modal');
-    let activePosition=null, positionPollTimer=null, positionClockTimer=null, latestStreamPrice=null;
+    let activePosition=null, positionPollTimer=null, positionClockTimer=null, positionRetryTimer=null, latestStreamPrice=null;
     const money=(value,maximum=8)=>new Intl.NumberFormat(undefined,{minimumFractionDigits:2,maximumFractionDigits:maximum}).format(Number(value)||0);
     const priceText=value=>{const n=Number(value);return Number.isFinite(n)?new Intl.NumberFormat(undefined,{maximumFractionDigits:n>=1000?2:n>=1?4:8}).format(n):'—';};
     function setPositionText(id,value){const el=document.getElementById(id);if(el)el.textContent=value;}
@@ -529,6 +545,7 @@
         setPositionText('position-close','Waiting for result…');
         try{
             const data=await requestJson(@json(url('/trading/paper'))+'/'+id,{method:'GET',headers:{'Accept':'application/json'}});
+            if(positionRetryTimer){window.clearTimeout(positionRetryTimer);positionRetryTimer=null;}
             activePosition=data.trade;latestStreamPrice=null;
             setPositionText('position-symbol',activePosition.symbol);
             setPositionText('position-direction',activePosition.direction+' · '+(activePosition.direction==='UP'?'PRICE RISE':'PRICE FALL'));
@@ -550,9 +567,15 @@
             positionClockTimer=window.setInterval(updatePositionClock,1000);
             await pollPosition();
         }catch(error){
-            setPositionText('position-result','Could not load this position: '+(error.message||'connection error')+'. Your trade remains recorded. Retry by refreshing this page.');
-            setPositionText('position-current-price','Live price unavailable');
-            setPositionText('position-live-outcome','Awaiting a verified market quote…');
+            setPositionText('position-result',(error.message||'Connection error')+' Your trade remains recorded. We will retry automatically.');
+            setPositionText('position-current-price','Live price temporarily unavailable');
+            setPositionText('position-live-outcome','Waiting for a verified server response…');
+            setPositionText('position-close','Retrying position…');
+            document.getElementById('position-close').disabled=true;
+            if(positionRetryTimer) window.clearTimeout(positionRetryTimer);
+            positionRetryTimer=window.setTimeout(()=>{
+                if(positionModal.classList.contains('is-visible')) openPositionModal(id);
+            },5000);
         }
     }
     document.getElementById('position-close').addEventListener('click',()=>{
