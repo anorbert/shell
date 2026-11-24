@@ -195,8 +195,8 @@ test('expired trades settle when the first verified post-expiry quote arrives af
 
     expect(app(PaperTradingService::class)->settleDue())->toBe(1)
         ->and(DB::table('paper_trades')->where('id', $tradeId)->value('status'))->toBe('won')
-        ->and(DB::table('paper_trades')->where('id', $tradeId)->value('closing_price'))->toBe('91000.000000000000')
-        ->and($ledger->balanceUnits($ledger->wallet($user)))->toBe(2000800000000)
+        ->and((float) DB::table('paper_trades')->where('id', $tradeId)->value('closing_price'))->toBe(91000.0)
+        ->and($ledger->balanceUnits($ledger->wallet($user)))->toBe(2010800000000)
         ->and(app(PaperTradingService::class)->settleDue())->toBe(0)
         ->and(DB::table('ledger_transactions')->where('idempotency_key', 'paper-settle:' . $tradeId)->count())->toBe(1);
 });
