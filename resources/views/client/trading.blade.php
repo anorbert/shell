@@ -1556,7 +1556,9 @@
                     }
                 }
             }
-            if (document.querySelector('[data-open-trade]')) window.setInterval(reconcileOpenTrades, 5000);
+            // Keep this lightweight poll running even when the page initially
+            // had no trades; newly inserted rows are reconciled without reloads.
+            window.setInterval(reconcileOpenTrades, 5000);
             const stakeInput = document.getElementById('trade-stake');
             const tradeForm = document.getElementById('paper-trade-form');
             const payoutRate = {{ (int) config('shell.paper.payout_basis_points', 18000) / 10000 }};
@@ -1595,6 +1597,48 @@
                     maximumFractionDigits: n >= 1000 ? 2 : n >= 1 ? 4 : 8
                 }).format(n) : '—';
             };
+
+            function upsertTradeRow(trade) {
+                const body = document.querySelector('.data-table tbody');
+                if (!body || !trade?.id) return;
+                let row = [...body.querySelectorAll('[data-open-trade]')]
+                    .find(item => Number(item.dataset.openTrade) === Number(trade.id));
+                if (row) return;
+
+                body.querySelector('.table-empty')?.closest('tr')?.remove();
+                row = document.createElement('tr');
+                row.setAttribute('data-open-trade', String(trade.id));
+                const values = [
+                    trade.symbol,
+                    trade.direction,
+                    money(trade.stake) + ' ' + trade.currency,
+                    priceText(trade.opening_price),
+                    '—',
+                    new Date(trade.expires_at).toLocaleString()
+                ];
+                values.forEach(value => {
+                    const cell = document.createElement('td');
+                    cell.textContent = value;
+                    row.appendChild(cell);
+                });
+
+                const countdownCell = document.createElement('td');
+                const countdown = document.createElement('span');
+                countdown.className = 'trade-countdown';
+                countdown.dataset.expiry = String(new Date(trade.expires_at).getTime());
+                countdown.textContent = 'Calculating…';
+                countdownCell.appendChild(countdown);
+                row.appendChild(countdownCell);
+
+                const resultCell = document.createElement('td');
+                const status = document.createElement('span');
+                status.className = 'table-status pending';
+                status.textContent = 'OPEN';
+                resultCell.appendChild(status);
+                row.appendChild(resultCell);
+                body.prepend(row);
+                updateTradeCountdowns();
+            }
 
             function setPositionText(id, value) {
                 const el = document.getElementById(id);
@@ -1988,6 +2032,7 @@
                         setText('demo-wallet-balance', money(result.wallet_balance) + ' {{ $currency }}');
                     }
                     if (result.trade_id) {
+                        if (result.trade) upsertTradeRow(result.trade);
                         await openPositionModal(result.trade_id, result.trade || null);
                     }
                 } catch (error) {
