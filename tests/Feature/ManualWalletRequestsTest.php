@@ -62,6 +62,16 @@ test('manual crypto deposit stays pending and never credits the real wallet befo
         ->and($ledger->balanceUnits($wallet))->toBe(12500000000);
 });
 
+test('clients cannot submit KYC before their first confirmed real deposit', function () {
+    $client = User::factory()->create();
+    $client->markEmailAsVerified();
+
+    $this->actingAs($client)->post('/wallet-requests/kyc', [])
+        ->assertSessionHasErrors(['kyc' => 'Complete and receive confirmation for at least one real-money deposit before submitting KYC.']);
+
+    expect(DB::table('kyc_submissions')->where('user_id', $client->id)->count())->toBe(0);
+});
+
 test('withdrawals are blocked until a real deposit has been confirmed', function () {
     $client = User::factory()->create();
     $client->markEmailAsVerified();
