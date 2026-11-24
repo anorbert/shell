@@ -3,6 +3,7 @@
 use App\Models\User;
 use App\Services\LedgerService;
 use App\Services\PaperTradingService;
+use App\Services\MarketQuoteService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
@@ -508,4 +509,86 @@ test('client cannot top up below the demo minimum and has no real withdrawal rou
     $wallets = $ledger->provisionClientWallets($user);
     expect($ledger->balanceUnits($wallets['demo']))->toBe(2000000000000)
         ->and($ledger->balanceUnits($wallets['real']))->toBe(0);
+});
+
+
+test('a stale server execution quote is rejected before any stake is reserved', function () {
+    $user = User::factory()->create();
+    $user->markEmailAsVerified();
+    $ledger = app(LedgerService::class);
+    $ledger->creditPaperWallet($user, '100.00000000');
+    $wallet = $ledger->demoWallet($user);
+    $balanceBefore = $ledger->balanceUnits($wallet);
+
+    $markets = Mockery::mock(MarketQuoteService::class);
+    $markets->shouldReceive('freshExecutionQuote')->once()->with('BTCUSDT')->andReturn((object) [
+        'symbol' => 'BTCUSDT',
+        'price' => '90000.000000000000',
+        'captured_at' => now('UTC')->subSeconds(20)->toDateTimeString(),
+    ]);
+    app()->instance(MarketQuoteService::class, $markets);
+
+    expect(fn () => app(PaperTradingService::class)->open(
+        $user,
+        'BTCUSDT',
+        'UP',
+        '10.00000000',
+        60,
+        'stale-server-quote-must-not-open'
+    ))->toThrow(RuntimeException::class, 'expired');
+
+    expect(DB::table('paper_trades')->where('user_id', $user->id)->count())->toBe(0)
+        ->and($ledger->balanceUnits($wallet))->toBe($balanceBefore)
+        ->and(DB::table('ledger_transactions')->where('idempotency_key', 'paper-open:stale-server-quote-must-not-open')->count())->toBe(0);
+});
+
+test('repeated settlement workers cannot credit the same expired trade twice', function () {
+    Http::fake([
+        'api.binance.com/api/v3/ticker/price*' => Http::response([
+            'symbol' => 'BTCUSDT',
+            'price' => '91000.00000000',
+        ], 200),
+    ]);
+
+    $user = User::factory()->create();
+    $user->markEmailAsVerified();
+    $ledger = app(LedgerService::class);
+    $ledger->creditPaperWallet($user, '100.00000000');
+
+    $openedAt = now('UTC')->subMinutes(2);
+    $tradeKey = 'two-settlement-workers-one-trade';
+    $wallet = $ledger->demoWallet($user);
+    $escrow = $ledger->system('PAPER_ESCROW', 'USD');
+    $ledger->post('paper-open:' . $tradeKey, 'Test stake reservation', [
+        ['account_id' => $wallet, 'side' => 'debit', 'amount' => '10.00000000'],
+        ['account_id' => $escrow, 'side' => 'credit', 'amount' => '10.00000000'],
+    ]);
+
+    $tradeId = DB::table('paper_trades')->insertGetId([
+        'user_id' => $user->id,
+        'symbol' => 'BTCUSDT',
+        'direction' => 'UP',
+        'stake' => '10.00000000',
+        'wallet_currency' => 'USD',
+        'opening_price' => '90000.000000000000',
+        'duration_seconds' => 60,
+        'status' => 'open',
+        'open_idempotency_key' => $tradeKey,
+        'opened_at' => $openedAt,
+        'expires_at' => $openedAt->copy()->addMinute(),
+        'created_at' => $openedAt,
+        'updated_at' => $openedAt,
+    ]);
+
+    // Exercise the same persisted trade through two independent service
+    // resolutions. The database row lock and unique settlement key make the
+    // second worker a no-op after the first worker commits.
+    $firstWorker = app(PaperTradingService::class);
+    $secondWorker = app(PaperTradingService::class);
+
+    expect($firstWorker->settleDue())->toBe(1)
+        ->and($secondWorker->settleDue())->toBe(0)
+        ->and(DB::table('paper_trades')->where('id', $tradeId)->value('status'))->toBe('won')
+        ->and(DB::table('ledger_transactions')->where('idempotency_key', 'paper-settle:' . $tradeId)->count())->toBe(1)
+        ->and($ledger->balanceUnits($wallet))->toBe(2010800000000);
 });
