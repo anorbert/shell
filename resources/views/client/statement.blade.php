@@ -12,7 +12,7 @@
 <button class="button button-primary" type="submit">Filter</button><a class="text-link" href="{{ route('statement.index') }}">Clear</a>
 </form>
 <div class="table-wrap"><table class="data-table"><thead><tr><th>DATE</th><th>DESCRIPTION</th><th>WALLET</th><th>ENTRY</th><th>AMOUNT</th><th>REFERENCE</th></tr></thead><tbody>
-@forelse($entries as $entry)<tr><td>{{ $entry->posted_at }}</td><td>{{ $entry->description }}</td><td>{{ $entry->code==='PAPER_WALLET'?'Demo':'Real' }} · {{ $entry->currency }}</td><td><span class="table-status {{ $entry->side==='credit'?'verified':'pending' }}">{{ strtoupper($entry->side) }}</span></td><td>{{ $entry->amount }}</td><td>{{ $entry->idempotency_key }}</td></tr>@empty<tr><td colspan="6" class="table-empty">No wallet entries match these filters.</td></tr>@endforelse
+@forelse($entries as $entry)<tr><td>{{ $entry->posted_at }}</td><td>{{ $entry->description }}</td><td>{{ $entry->code==='PAPER_WALLET'?'Demo':'Real' }} · {{ $entry->currency }}</td><td><span class="table-status {{ $entry->side==='credit'?'verified':'pending' }}">{{ strtoupper($entry->side) }}</span></td><td>@money($entry->amount)</td><td>{{ $entry->idempotency_key }}</td></tr>@empty<tr><td colspan="6" class="table-empty">No wallet entries match these filters.</td></tr>@endforelse
 </tbody></table></div><div class="pagination-wrap">{{ $entries->links() }}</div>
 </section>
 @endsection
