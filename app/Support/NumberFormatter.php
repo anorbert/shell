@@ -1,20 +1,14 @@
 <?php
 
-namespace App\\Support;
+namespace App\Support;
 
 final class NumberFormatter
 {
-    /**
-     * Format fiat / USD amounts without meaningless trailing zeroes.
-     */
     public static function money(mixed $value): string
     {
         return self::format($value, 2);
     }
 
-    /**
-     * Format prices and crypto quantities while preserving useful precision.
-     */
     public static function decimal(mixed $value, int $maxDecimals = 8): string
     {
         return self::format($value, max(0, min(12, $maxDecimals)));
