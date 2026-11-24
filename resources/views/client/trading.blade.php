@@ -128,7 +128,8 @@
             return;
         }
 
-        const visible = candles.slice(-visibleCandles);\n        const values=visible.flatMap(c=>[number(c.high),number(c.low)]).filter(Number.isFinite);
+        const visible = candles.slice(-visibleCandles); 
+        const values=visible.flatMap(c=>[number(c.high),number(c.low)]).filter(Number.isFinite);
         let min=Math.min(...values),max=Math.max(...values);
         const rawRange=max-min || Math.max(Math.abs(max)*.001,1e-8);
         const padding=rawRange*.09;min-=padding;max+=padding;
@@ -293,7 +294,13 @@
         }
     }
 
-    function updateZoomLabel(){setText('chart-zoom-level',visibleCandles+' candles');}\n    document.getElementById('chart-zoom-in').addEventListener('click',()=>{visibleCandles=Math.max(20,visibleCandles-10);updateZoomLabel();draw();});\n    document.getElementById('chart-zoom-out').addEventListener('click',()=>{visibleCandles=Math.min(200,visibleCandles+10);updateZoomLabel();draw();});\n    document.getElementById('chart-zoom-reset').addEventListener('click',()=>{visibleCandles=80;updateZoomLabel();draw();});\n    updateZoomLabel();\n\n    marketSelect.addEventListener('change',()=>{tradeSymbol.value=marketSelect.value;candles=[];loadCandles();});
+    function updateZoomLabel(){setText('chart-zoom-level',visibleCandles+' candles');} 
+    document.getElementById('chart-zoom-in').addEventListener('click',()=>{visibleCandles=Math.max(20,visibleCandles-10);updateZoomLabel();draw();}); 
+    document.getElementById('chart-zoom-out').addEventListener('click',()=>{visibleCandles=Math.min(200,visibleCandles+10);updateZoomLabel();draw();}); 
+    document.getElementById('chart-zoom-reset').addEventListener('click',()=>{visibleCandles=80;updateZoomLabel();draw();}); 
+    updateZoomLabel(); 
+ 
+    marketSelect.addEventListener('change',()=>{tradeSymbol.value=marketSelect.value;candles=[];loadCandles();});
     tradeSymbol.addEventListener('change',()=>{marketSelect.value=tradeSymbol.value;candles=[];loadCandles();});
     document.querySelectorAll('[data-interval]').forEach(button=>button.addEventListener('click',()=>{
         interval=button.dataset.interval;
