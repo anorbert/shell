@@ -173,6 +173,7 @@ class PaperTradingService
             ->where('captured_at', '<=', $deadline)
             ->where('captured_at', '<=', $now)
             ->orderBy('captured_at')
+            ->orderBy('id')
             ->first();
 
         if ($quote) {
