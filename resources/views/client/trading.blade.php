@@ -1,16 +1,16 @@
 @extends('layouts.app')
-@section('title','Paper trading')
+@section('title','Trading terminal')
 @section('eyebrow','FIXED-TIME OPTIONS SIMULATOR')
 @section('heading','Trading terminal')
 @section('content')
-<div class="notice-banner"><span class="notice-icon">i</span><div><strong>Simulation only — no real money</strong><p>Credits are non-withdrawable and have no cash value. The chart is provider-sourced market data; trade opening and settlement use server-captured quotes.</p></div><span class="mode-tag">PAPER ONLY</span></div>
+<div class="notice-banner"><span class="notice-icon">i</span><div><strong>Demo trading is ready</strong><p>Practise fixed-time UP and DOWN positions with demo credits. Market charts provide visual context, while the platform validates server-captured quotes for trade opening and settlement.</p></div><span class="mode-tag">PAPER ONLY</span></div>
 <div class="trading-layout">
 <section class="panel trading-chart-panel">
 <div class="panel-head"><div><span class="eyebrow">BINANCE SPOT · OHLCV</span><h2 id="chart-symbol">{{ $symbols[0] ?? 'BTCUSDT' }}</h2></div><span class="table-status verified" id="chart-health">LOADING</span></div>
 <div class="chart-toolbar"><label>Market<select id="chart-market">@foreach($symbols as $symbol)<option value="{{ $symbol }}">{{ $symbol }}</option>@endforeach</select></label><div class="chart-intervals">@foreach(['1m','5m','15m','1h','4h','1d'] as $interval)<button type="button" data-interval="{{ $interval }}" class="{{ $interval==='1m'?'active':'' }}">{{ $interval }}</button>@endforeach</div></div>
 <div class="market-chart-wrap"><canvas id="market-candles" aria-label="Candlestick market chart"></canvas></div>
 <div class="chart-foot"><span id="chart-last-price">Waiting for market data</span><span id="chart-updated">Chart data is informational</span></div>
-<p class="muted">Candles are fetched directly from Binance Spot for visual context. The simulator independently validates a fresh server-side quote when opening and settling each position. Chart prices are not guaranteed execution prices.</p>
+<p class="muted">Market candles are sourced from Binance Spot for chart context. Each position is validated and settled using a fresh server-side market quote.</p>
 </section>
 <section class="panel trade-ticket">
 <div class="panel-head"><div><span class="eyebrow">NEW POSITION</span><h2>Trade ticket</h2></div><span class="table-status verified">DEMO</span></div>
@@ -51,7 +51,7 @@ function drawCandles(){
     chartContext.clearRect(0,0,width,height);
     chartContext.strokeStyle='rgba(145,160,181,.13)';chartContext.lineWidth=1;
     for(let i=1;i<5;i++){const y=height*i/5;chartContext.beginPath();chartContext.moveTo(0,y);chartContext.lineTo(width,y);chartContext.stroke();}
-    if(!chartCandles.length){chartContext.fillStyle='#9aa8bb';chartContext.font='12px sans-serif';chartContext.fillText('Waiting for verified provider candles…',18,28);return;}
+    if(!chartCandles.length){chartContext.fillStyle='#9aa8bb';chartContext.font='12px sans-serif';chartContext.fillText('Loading market candles…',18,28);return;}
     const values=chartCandles.flatMap(c=>[Number(c.high),Number(c.low)]);
     const max=Math.max(...values),min=Math.min(...values),range=max-min||1;
     const y=value=>height-18-((value-min)/range)*(height-36);
