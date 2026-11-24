@@ -6,9 +6,9 @@
 <div class="notice-banner"><span class="notice-icon">i</span><div><strong>Two independent wallets</strong><p>Your demo wallet starts with $20,000 in non-withdrawable simulation credits. You can add demo credits. Real wallet deposits and withdrawals are handled through manual crypto requests and admin confirmation.</p></div><span class="mode-tag">SEPARATE LEDGERS</span></div>
 <div class="metric-grid">
     <article class="metric-card"><span class="metric-label">DEMO WALLET · USD</span><strong>@money($demoBalance)</strong><small>Simulation credits only</small></article>
-    <article class="metric-card"><span class="metric-label">REAL WALLET · USD</span><strong>@money($realBalance)</strong><small>Real deposit balance · starts at zero</small></article>
-    <article class="metric-card"><span class="metric-label">DEMO WITHDRAWALS</span><strong>Not allowed</strong><small>Simulation credits have no cash value</small></article>
-    <article class="metric-card"><span class="metric-label">REAL FUNDING</span><strong>Manual review</strong><small>Deposits and withdrawals require admin confirmation</small></article>
+    <article class="metric-card"><span class="metric-label">REAL WALLET · USD</span><strong>@money($realBalance)</strong><small>Available real-wallet balance</small></article>
+    <article class="metric-card"><span class="metric-label">DEMO WITHDRAWALS</span><strong>Demo only</strong><small>Simulation credits have no cash value</small></article>
+    <article class="metric-card"><span class="metric-label">REAL FUNDING</span><strong>Secure processing</strong><small>Deposits and withdrawals require admin confirmation</small></article>
 </div>
 <div class="content-grid">
     <section class="panel">
@@ -25,10 +25,10 @@
     </section>
     <section class="panel">
         <div class="panel-head"><div><span class="eyebrow">REAL-MONEY ENVIRONMENT</span><h2>Real wallet</h2></div><span class="table-status pending">NOT FUNDED</span></div>
-        <p class="muted">This wallet is independent of demo trading. Its opening balance is $0. Submit a crypto deposit request and it will be credited only after an administrator verifies the transaction.</p>
+        <p class="muted">Your real wallet is maintained separately from demo trading. Submit deposits through a supported asset and network; funds are credited after the transaction is verified by the operations team.</p>
         <div class="metric-card"><span class="metric-label">AVAILABLE USD</span><strong>@money($realBalance)</strong></div>
         <a class="button button-primary" href="{{ route('wallet-requests.index') }}">Open deposit / withdrawal center</a>
-        <p class="muted">Withdrawals require approved KYC and are manually paid by an administrator. Real-money trading remains disabled.</p>
+        <p class="muted">Withdrawals are available after identity verification and are processed by the operations team, with transaction details recorded in your request history. Demo trading remains separate from real-wallet funds.</p>
     </section>
 </div>
 <div class="modal" id="demo-topup-modal" aria-hidden="true">
