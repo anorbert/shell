@@ -360,7 +360,7 @@
     const priceText=value=>{const n=Number(value);return Number.isFinite(n)?new Intl.NumberFormat(undefined,{maximumFractionDigits:n>=1000?2:n>=1?4:8}).format(n):'—';};
     function setPositionText(id,value){const el=document.getElementById(id);if(el)el.textContent=value;}
     function updatePositionPrice(price){
-        if(!activePosition||!Number.isFinite(Number(price)))return;
+        if(!activePosition||activePosition.status!=='open'||!Number.isFinite(Number(price)))return;
         latestStreamPrice=Number(price);
         const opening=Number(activePosition.opening_price),delta=latestStreamPrice-opening;
         const favorable=activePosition.direction==='UP'?delta>0:delta<0;
