@@ -1,6 +1,6 @@
 <?php
 
-namespace App\\Support;
+namespace App\Support;
 
 use InvalidArgumentException;
 
@@ -15,7 +15,7 @@ final class Decimal
     {
         $value = trim((string) $value);
 
-        if (!preg_match('/^([0-9]+)(?:\\.([0-9]+))?$/', $value, $matches)) {
+        if (!preg_match('/^([0-9]+)(?:\.([0-9]+))?$/', $value, $matches)) {
             throw new InvalidArgumentException('Invalid decimal amount.');
         }
 
