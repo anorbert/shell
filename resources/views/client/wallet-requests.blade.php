@@ -26,8 +26,9 @@
 @endif
 @if($kyc?->review_note)<p class="muted">Admin review note: {{ $kyc->review_note }}</p>@endif
 </section>
-<section class="panel">
-<div class="panel-head"><div><span class="eyebrow">ADD REAL FUNDS</span><h2>Deposit crypto</h2></div></div>
+<section class="panel" id="deposit-form">
+<div class="panel-head"><div><span class="eyebrow">ADD REAL FUNDS</span><h2>Deposit crypto</h2></div><span class="table-status verified">KYC NOT REQUIRED</span></div>
+<p class="muted">You can submit a deposit without completing KYC. Choose the correct asset and network, send funds to the displayed address, then submit the transaction hash. Your real wallet is credited after operations verifies the transaction.</p>
 @if($methods->where('deposits_enabled', true)->isEmpty())<p class="muted">Available deposit networks will appear here. Always use the asset, network and wallet address displayed in your account before sending funds.</p>@else
 <form method="POST" action="{{ route('wallet-requests.deposit') }}" class="form-stack">@csrf
 <label>Asset / network<select name="method_id" id="deposit-method" required><option value="">Choose network</option>@foreach($methods->where('deposits_enabled', true) as $method)<option value="{{ $method->id }}" data-address="{{ $method->wallet_address }}" data-memo-label="{{ $method->memo_label }}" data-memo="{{ $method->memo_value }}" data-instructions="{{ $method->instructions }}">{{ $method->asset }} · {{ $method->network }}</option>@endforeach</select></label>
