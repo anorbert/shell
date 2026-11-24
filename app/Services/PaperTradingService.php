@@ -62,7 +62,7 @@ class PaperTradingService
         }
 
         // Reject stale data before reserving any balance.
-        $quote = $this->markets->freshQuote($symbol);
+        $quote = $this->markets->freshExecutionQuote($symbol);
         $currency = config('shell.paper.currency', 'USD');
 
         return DB::transaction(function () use ($user, $symbol, $direction, $stake, $duration, $key, $quote, $currency) {
