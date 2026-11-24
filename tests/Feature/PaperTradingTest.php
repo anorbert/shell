@@ -67,7 +67,7 @@ test('paper trade opening is blocked when quote is missing and provider refresh 
         'duration' => 60,
         'request_key' => 'test-open-no-quote',
     ])->assertStatus(422)->assertJsonFragment([
-        'message' => 'No fresh market quote is available for this pair. Trading is blocked.',
+        'message' => 'Live market data is temporarily unavailable for this pair. Please retry in a moment. Your stake has not been deducted.',
     ]);
 });
 
@@ -102,7 +102,7 @@ test('stale market quotes are refreshed from the provider before a trade is open
         'request_key' => 'test-open-after-stale-quote-refresh',
     ])->assertCreated()
         ->assertJsonPath('trade.status', 'open')
-        ->assertJsonPath('trade.opening_price', '92500.50000000');
+        ->assertJsonPath('trade.opening_price', '92500.500000000000');
 
     Http::assertSent(fn ($request) => str_contains($request->url(), '/api/v3/ticker/price'));
     expect(DB::table('paper_trades')->where('user_id', $user->id)->count())->toBe(1);
