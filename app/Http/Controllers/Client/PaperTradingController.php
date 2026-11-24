@@ -78,7 +78,7 @@ class PaperTradingController extends Controller
                 'has_due' => $hasDue,
                 'wallet_balance' => Decimal::fromUnits($ledger->balanceUnits($wallet)),
             ]);
-        } catch (\\Throwable $exception) {
+        } catch (\Throwable $exception) {
             report($exception);
             return response()->json([
                 'message' => 'Settlement is temporarily unavailable. Your expired position remains recorded and will be retried automatically.',
