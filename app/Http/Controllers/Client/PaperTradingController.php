@@ -33,13 +33,49 @@ class PaperTradingController extends Controller
             'activeTradeId' => DB::table('paper_trades')
                 ->where('user_id', $request->user()->id)
                 ->where('status', 'open')
+                ->where('expires_at', '>', now())
                 ->orderByDesc('opened_at')
                 ->value('id'),
+            'hasExpiredOpenTrades' => DB::table('paper_trades')
+                ->where('user_id', $request->user()->id)
+                ->where('status', 'open')
+                ->where('expires_at', '<=', now())
+                ->exists(),
             'symbols' => config('shell.market.symbols'),
             'durations' => config('shell.paper.durations'),
         ]);
     }
 
+
+
+    /**
+     * Trigger settlement asynchronously from the terminal when this client has
+     * expired positions. The page itself never waits for market-provider I/O.
+     */
+    public function settleExpired(Request $request, PaperTradingService $service)
+    {
+        $hasDue = DB::table('paper_trades')
+            ->where('user_id', $request->user()->id)
+            ->where('status', 'open')
+            ->where('expires_at', '<=', now())
+            ->exists();
+
+        if (!$hasDue) {
+            return response()->json(['settled_count' => 0, 'has_due' => false]);
+        }
+
+        try {
+            return response()->json([
+                'settled_count' => $service->settleDue(),
+                'has_due' => true,
+            ]);
+        } catch (\\Throwable $exception) {
+            report($exception);
+            return response()->json([
+                'message' => 'Settlement is temporarily unavailable. Your expired position remains recorded and will be retried.',
+            ], 503);
+        }
+    }
 
     public function show(Request $request, int $trade)
     {
