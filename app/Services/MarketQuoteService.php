@@ -132,6 +132,26 @@ class MarketQuoteService
     }
 
     /**
+     * Refresh and return one server-verified pair quote. Expiry settlement uses
+     * this targeted path rather than downloading the entire market catalogue.
+     */
+    public function refreshSymbolQuote(string $symbol): object
+    {
+        if (!in_array($symbol, config('shell.market.symbols', []), true)) {
+            throw new RuntimeException('Unsupported market pair.');
+        }
+
+        $this->refreshSymbol($symbol);
+        $quote = DB::table('market_quotes')->where('symbol', $symbol)->first();
+
+        if (!$quote) {
+            throw new RuntimeException('Market provider did not persist a verified quote for ' . $symbol . '.');
+        }
+
+        return $quote;
+    }
+
+    /**
      * Refresh one tradable pair on demand. This is intentionally lighter and
      * faster than downloading the entire ticker catalogue during a button click.
      */
