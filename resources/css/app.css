@@ -437,3 +437,76 @@ input,select,textarea{accent-color:var(--gold)}
   .page-action-row { justify-content: stretch; }
   .page-action-row .button { width: 100%; }
 }
+
+
+/* Mobile client navigation: fixed four-item bottom dock */
+@media (max-width: 720px) {
+  .app-shell { display: block !important; padding-bottom: calc(76px + env(safe-area-inset-bottom)) !important; }
+  .sidebar {
+    position: fixed !important;
+    top: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 500 !important;
+    width: 100% !important;
+    height: calc(68px + env(safe-area-inset-bottom)) !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    padding: 5px 8px env(safe-area-inset-bottom) !important;
+    border-top: 1px solid #2b3a50 !important;
+    border-right: 0 !important;
+    background: #0b1422f5 !important;
+    backdrop-filter: blur(18px);
+    box-shadow: 0 -10px 32px #0006;
+  }
+  .sidebar > .brand,
+  .sidebar > .sidebar-label,
+  .sidebar > .sidebar-bottom { display: none !important; }
+  .sidebar .side-nav {
+    display: grid !important;
+    grid-template-columns: repeat(4,minmax(0,1fr)) !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    gap: 3px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  .sidebar .side-nav > a {
+    display: flex !important;
+    flex: initial !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+    min-height: 54px !important;
+    padding: 5px 2px !important;
+    border: 1px solid transparent !important;
+    border-radius: 9px !important;
+    font-size: 10px !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+  }
+  .sidebar .side-nav > a .nav-icon {
+    width: 19px !important;
+    height: 19px !important;
+    flex: 0 0 19px !important;
+  }
+  .sidebar .side-nav > a.active {
+    background: #c8a96a18 !important;
+    border-color: #c8a96a35 !important;
+    box-shadow: none !important;
+    color: #f0d99f !important;
+  }
+  .main-panel { min-width: 0; }
+  .page-content { padding-bottom: 24px !important; }
+}
+@media (max-width: 380px) {
+  .sidebar .side-nav > a { font-size: 9px !important; }
+  .sidebar .side-nav > a .nav-icon { width: 18px !important; height: 18px !important; flex-basis: 18px !important; }
+}
