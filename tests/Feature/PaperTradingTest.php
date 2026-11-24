@@ -79,6 +79,7 @@ test('a recent cached quote cannot authorize a new trade when the provider is un
     $user = User::factory()->create();
     $user->markEmailAsVerified();
     $ledger = app(LedgerService::class);
+    $ledger->provisionClientWallets($user);
     $ledger->creditPaperWallet($user, '100.00000000');
 
     DB::table('market_quotes')->insert([
@@ -142,6 +143,14 @@ test('stale market quotes are refreshed from the provider before a trade is open
 });
 
 test('a retry returns the already persisted trade without another provider request or stake debit', function () {
+    Http::fake([
+        'api.binance.com/api/v3/ticker/price*' => Http::response([
+            'symbol' => 'BTCUSDT',
+            'price' => '90000.00000000',
+        ], 200),
+    ]);
+
+
     $user = User::factory()->create();
     $user->markEmailAsVerified();
     $ledger = app(LedgerService::class);
@@ -190,6 +199,14 @@ test('a retry returns the already persisted trade without another provider reque
 });
 
 test('paper trade cannot be opened without sufficient simulation funds', function () {
+    Http::fake([
+        'api.binance.com/api/v3/ticker/price*' => Http::response([
+            'symbol' => 'BTCUSDT',
+            'price' => '90000.00000000',
+        ], 200),
+    ]);
+
+
     $user = User::factory()->create();
     $user->markEmailAsVerified();
     $ledger = app(LedgerService::class);
@@ -220,6 +237,14 @@ test('paper trade cannot be opened without sufficient simulation funds', functio
 });
 
 test('paper trade opens and reserves the stake from the client wallet', function () {
+    Http::fake([
+        'api.binance.com/api/v3/ticker/price*' => Http::response([
+            'symbol' => 'BTCUSDT',
+            'price' => '90000.00000000',
+        ], 200),
+    ]);
+
+
     $user = User::factory()->create();
     $user->markEmailAsVerified();
     $ledger = app(LedgerService::class);
@@ -289,6 +314,14 @@ test('a trade is not settled using a quote captured before expiry', function () 
 });
 
 test('expired trades settle when the first verified post-expiry quote arrives after the former grace period', function () {
+    Http::fake([
+        'api.binance.com/api/v3/ticker/price*' => Http::response([
+            'symbol' => 'BTCUSDT',
+            'price' => '90000.00000000',
+        ], 200),
+    ]);
+
+
     $user = User::factory()->create();
     $user->markEmailAsVerified();
     $ledger = app(LedgerService::class);
@@ -329,6 +362,14 @@ test('expired trades settle when the first verified post-expiry quote arrives af
 });
 
 test('an expired winning paper trade settles once using a post-expiry quote', function () {
+    Http::fake([
+        'api.binance.com/api/v3/ticker/price*' => Http::response([
+            'symbol' => 'BTCUSDT',
+            'price' => '90000.00000000',
+        ], 200),
+    ]);
+
+
     $user = User::factory()->create();
     $user->markEmailAsVerified();
     $ledger = app(LedgerService::class);
