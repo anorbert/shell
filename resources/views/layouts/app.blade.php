@@ -55,12 +55,23 @@
                     <a href="{{ route('admin.kyc.index') }}" class="{{ request()->routeIs('admin.kyc.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-shield"/></svg><span>KYC review</span><span class="nav-count">{{ \Illuminate\Support\Facades\DB::table('kyc_submissions')->where('status','pending')->count() }}</span></a>
                     <a href="{{ route('admin.support.index') }}" class="{{ request()->routeIs('admin.support.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-message"/></svg><span>Support inbox</span></a>
                 @else
-                    <a href="{{ route('convert.index') }}" class="{{ request()->routeIs('convert.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-repeat"/></svg><span>Convert</span></a>
-                    <a href="{{ route('wallet-requests.index') }}" class="{{ request()->routeIs('wallet-requests.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-wallet"/></svg><span>Wallet</span></a>
+                    <details class="topbar-nav-group {{ request()->routeIs('markets.*','convert.*')?'is-active':'' }}">
+                        <summary><svg class="nav-icon"><use href="#i-chart"/></svg><span>Markets</span><span class="menu-chevron">⌄</span></summary>
+                        <div class="topbar-submenu">
+                            <a href="{{ route('markets.index') }}" class="{{ request()->routeIs('markets.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-chart"/></svg><span>Market overview</span></a>
+                            <a href="{{ route('convert.index') }}" class="{{ request()->routeIs('convert.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-repeat"/></svg><span>Convert assets</span></a>
+                        </div>
+                    </details>
+                    <details class="topbar-nav-group {{ request()->routeIs('wallet-requests.*','statement.*')?'is-active':'' }}">
+                        <summary><svg class="nav-icon"><use href="#i-wallet"/></svg><span>Wallet</span><span class="menu-chevron">⌄</span></summary>
+                        <div class="topbar-submenu">
+                            <a href="{{ route('wallet-requests.index') }}" class="{{ request()->routeIs('wallet-requests.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-wallet"/></svg><span>Deposit & withdrawal</span></a>
+                            <a href="{{ route('statement.index') }}" class="{{ request()->routeIs('statement.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-receipt"/></svg><span>Wallet statement</span></a>
+                        </div>
+                    </details>
                     <a href="{{ route('activity.index') }}" class="{{ request()->routeIs('activity.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-clock"/></svg><span>Activity</span></a>
-                    <a href="{{ route('statement.index') }}" class="{{ request()->routeIs('statement.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-receipt"/></svg><span>Statement</span></a>
                     <a href="{{ route('support.index') }}" class="{{ request()->routeIs('support.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-life"/></svg><span>Support</span></a>
-                    <a class="topbar-icon-link {{ request()->routeIs('notifications.*')?'active':'' }}" href="{{ route('notifications.index') }}" aria-label="Notifications" title="Notifications"><svg class="nav-icon"><use href="#i-bell"/></svg><span class="nav-count">{{ \Illuminate\Support\Facades\DB::table('user_notifications')->where('user_id',auth()->id())->whereNull('read_at')->count() }}</span></a>
+                    <a class="topbar-icon-link {{ request()->routeIs('notifications.*')?'active':'' }}" href="{{ route('notifications.index') }}" aria-label="Notifications" title="Notifications"><svg class="nav-icon"><use href="#i-bell"/></svg><span class="nav-count">{{ \\Illuminate\\Support\\Facades\\DB::table('user_notifications')->where('user_id',auth()->id())->whereNull('read_at')->count() }}</span></a>
                 @endif
             </nav>
             <div class="topbar-right">
