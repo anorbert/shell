@@ -109,7 +109,7 @@ test('KYC-verified withdrawal reserves funds and admin marks it paid only with a
         'wallet_address' => 'TClientReceivingAddress123456789',
     ])->assertRedirect();
 
-    $request = DB::table('wallet_requests')->where('user_id', $client->id)->first();
+    $request = DB::table('wallet_requests')->where('user_id', $client->id)->where('type', 'withdrawal')->first();
     expect($request->status)->toBe('pending')
         ->and($ledger->balanceUnits($wallet))->toBe(7000000000);
 
@@ -144,7 +144,7 @@ test('rejecting a withdrawal releases its reserved balance', function () {
         'method_id' => $method, 'amount_usd' => '20.00000000',
         'wallet_address' => 'TClientReceivingAddress123456789',
     ])->assertRedirect();
-    $request = DB::table('wallet_requests')->where('user_id', $client->id)->first();
+    $request = DB::table('wallet_requests')->where('user_id', $client->id)->where('type', 'withdrawal')->first();
 
     $admin = createVerifiedAdminForTest();
     $this->actingAs($admin)->post('/admin/wallet-operations/'.$request->id.'/reject', [
