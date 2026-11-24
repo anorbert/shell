@@ -3,7 +3,7 @@
 @section('eyebrow','ACCOUNT RECORDS')
 @section('heading','Wallet statement')
 @section('content')
-<div class="notice-banner"><span class="notice-icon">i</span><div><strong>Ledger-backed account history</strong><p>This statement shows posted entries affecting your own demo and real wallets. Demo credits are simulation-only. Pending real deposits are not wallet credits.</p></div></div>
+<x-client-attention title="Ledger-backed account history"><p>This statement shows posted entries affecting your own demo and real wallets. Demo credits are simulation-only. Pending real deposits are not wallet credits.</p></x-client-attention>
 <section class="panel">
 <form method="GET" action="{{ route('statement.index') }}" class="filter-row">
 <label>Wallet<select name="wallet"><option value="">All wallets</option><option value="PAPER_WALLET" @selected(request('wallet')==='PAPER_WALLET')>Demo wallet</option><option value="REAL_WALLET" @selected(request('wallet')==='REAL_WALLET')>Real wallet</option></select></label>
