@@ -53,6 +53,8 @@ test('public registration creates a client account only', function () {
         'password' => 'StrongPassword123!',
         'password_confirmation' => 'StrongPassword123!',
         'role' => 'admin',
+        'country_code' => 'RW',
+        'phone_number' => '788123456',
     ])->assertRedirect('/dashboard');
 
     expect(User::where('email', 'client@example.com')->first()->role)->toBe('client');
