@@ -208,6 +208,14 @@
             overflow: hidden
         }
 
+        .data-table tbody tr[data-open-trade] {
+            cursor: pointer
+        }
+
+        .data-table tbody tr[data-open-trade]:hover {
+            background: rgba(255, 255, 255, .035)
+        }
+
         .trading-chart-heading {
             align-items: center
         }
@@ -1937,6 +1945,14 @@
             }
             document.getElementById('position-close').addEventListener('click', closeSettledPosition);
             document.getElementById('position-modal-x').addEventListener('click', closeSettledPosition);
+
+            // A hidden position monitor can be reopened directly from its open
+            // history row without refreshing the terminal.
+            document.querySelector('.data-table tbody')?.addEventListener('click', event => {
+                const row = event.target.closest('tr[data-open-trade]');
+                if (!row) return;
+                openPositionModal(Number(row.dataset.openTrade));
+            });
 
             // Resume an active trade, or reopen the latest expired position directly
             // in the modal so the client sees its confirmed result without a page reload.
