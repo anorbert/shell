@@ -70,8 +70,9 @@ test('paper conversion rejects a changed market quote and leaves balances untouc
     $quote = $service->quote('USDT', 'BTC', '10.00000000');
     DB::table('market_quotes')->where('symbol', 'BTCUSDT')->update([
         'price' => '51000.000000000000',
-        'captured_at' => now()->addSecond(),
-        'updated_at' => now()->addSecond(),
+        // A changed but valid server timestamp; future-dated quotes are rejected.
+        'captured_at' => now()->subSecond(),
+        'updated_at' => now()->subSecond(),
     ]);
 
     expect(fn () => $service->convert(
