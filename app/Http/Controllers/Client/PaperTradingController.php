@@ -31,6 +31,34 @@ class PaperTradingController extends Controller
         ]);
     }
 
+
+    public function show(Request $request, int $trade)
+    {
+        $position = DB::table('paper_trades')
+            ->where('id', $trade)
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        abort_unless($position, 404);
+
+        return response()->json([
+            'trade' => [
+                'id' => (int) $position->id,
+                'symbol' => $position->symbol,
+                'direction' => $position->direction,
+                'stake' => (string) $position->stake,
+                'currency' => $position->wallet_currency ?: config('shell.paper.currency', 'USD'),
+                'opening_price' => (string) $position->opening_price,
+                'duration_seconds' => (int) $position->duration_seconds,
+                'opened_at' => $position->opened_at,
+                'expires_at' => $position->expires_at,
+                'status' => $position->status,
+                'closing_price' => $position->closing_price !== null ? (string) $position->closing_price : null,
+                'settled_at' => $position->settled_at,
+            ],
+        ]);
+    }
+
     public function store(Request $request, PaperTradingService $service, LedgerService $ledger)
     {
         $values = $request->validate([
