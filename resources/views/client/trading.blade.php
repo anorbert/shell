@@ -1555,6 +1555,7 @@
                 if (positionClockTimer) { window.clearInterval(positionClockTimer); positionClockTimer = null; }
                 if (positionSettlementRetryTimer) { window.clearTimeout(positionSettlementRetryTimer); positionSettlementRetryTimer = null; }
                 activePosition = trade;
+                positionSettlementInFlight = false;
                 const status = trade.status.toUpperCase();
                 const card = document.getElementById('position-modal-card');
                 const hero = document.getElementById('position-result-hero');
@@ -1586,7 +1587,7 @@
                     historyRow.removeAttribute('data-open-trade');
                 }
                 if (status === 'WON') {
-                    const payout = (Number(trade.stake) || 0) * payoutRate;
+                    const payout = Number(trade.payout_amount ?? ((Number(trade.stake) || 0) * payoutRate));
                     icon.textContent = '↗';
                     setPositionText('position-result-kicker', 'SUCCESSFUL PREDICTION');
                     setPositionText('position-result-title', 'You won ' + money(trade.profit_amount ?? (payout - Number(trade.stake))) + ' ' + trade.currency);
@@ -1643,53 +1644,31 @@
                 if (left === 0 && activePosition.status === 'open') beginImmediateSettlement();
             }
             async function pollPosition() {
-                if (!activePosition) return;
+                if (!activePosition || activePosition.status !== 'open') return;
                 try {
                     const data = await requestJson(@json(url('/trading/paper')) + '/' + activePosition.id, {
                         method: 'GET',
-                        headers: {
-                            'Accept': 'application/json'
-                        }
+                        headers: { 'Accept': 'application/json' }
                     });
                     const trade = data.trade;
-                    activePosition = trade;
-                    setPositionText('position-status', trade.status.toUpperCase());
                     if (trade.status === 'open') {
+                        activePosition = trade;
+                        setPositionText('position-status', 'OPEN');
                         if (new Date(trade.expires_at).getTime() <= Date.now()) beginImmediateSettlement();
                         return;
                     }
-                    const settlement = await requestJson(@json(url('/trading/paper')) + '/' + activePosition.id + '/settle', { method: 'POST' });
+
+                    // A scheduler or another request may have settled it first.
+                    // Ask the same idempotent endpoint for the final payout and balance.
+                    const settlement = await requestJson(@json(url('/trading/paper')) + '/' + trade.id + '/settle', {
+                        method: 'POST'
+                    });
                     const settledTrade = settlement.trade || trade;
                     settledTrade.wallet_balance = settlement.wallet_balance;
                     showSettledResult(settledTrade);
-                    return;
-                    if (positionPollTimer) {
-                        window.clearInterval(positionPollTimer);
-                        positionPollTimer = null;
-                    }
-                    if (positionClockTimer) {
-                        window.clearInterval(positionClockTimer);
-                        positionClockTimer = null;
-                    }
-                    setPositionText('position-price-label', 'CONFIRMED CLOSING PRICE');
-                    setPositionText('position-current-price', priceText(trade.closing_price));
-                    setPositionText('position-price-move', 'Confirmed settlement price');
-                    const result = document.getElementById('position-result');
-                    const status = trade.status.toUpperCase();
-                    result.textContent = status === 'WON' ?
-                        'WIN — Your UP/DOWN prediction was correct. Demo payout has been settled to your demo wallet.' :
-                        status === 'LOST' ?
-                        'LOSS — The market closed against your prediction. The demo stake was lost.' :
-                        'TIE — The closing price matched the opening price. Your demo stake was returned.';
-                    result.classList.toggle('is-win', status === 'WON');
-                    result.classList.toggle('is-loss', status === 'LOST');
-                    setPositionText('position-countdown', 'Settled');
-                    setPositionText('position-close', 'Close result');
-                    document.getElementById('position-close').disabled = false;
-                    notify('Trade settled: ' + status);
                 } catch (error) {
                     setPositionText('position-result',
-                        'Connection interrupted. This position remains recorded. Reconnecting to retrieve the confirmed result…'
+                        'Connection interrupted. Your position remains recorded. Reconnecting automatically for the confirmed result…'
                     );
                 }
             }
@@ -1712,6 +1691,14 @@
                         positionRetryTimer = null;
                     }
                     activePosition = data.trade;
+                    positionSettlementInFlight = false;
+                    if (positionSettlementRetryTimer) { window.clearTimeout(positionSettlementRetryTimer); positionSettlementRetryTimer = null; }
+                    const resultHero = document.getElementById('position-result-hero');
+                    resultHero.hidden = true;
+                    document.getElementById('position-modal-card').classList.remove('is-win', 'is-loss', 'is-tie');
+                    document.getElementById('position-modal-title').textContent = 'Trade opened';
+                    document.getElementById('position-status').textContent = 'OPEN';
+                    document.getElementById('position-modal-x').disabled = true;
                     latestStreamPrice = null;
                     setPositionText('position-symbol', activePosition.symbol);
                     setPositionText('position-direction', activePosition.direction + ' · ' + (activePosition
@@ -1761,6 +1748,7 @@
                 if (positionClockTimer) { window.clearInterval(positionClockTimer); positionClockTimer = null; }
                 if (positionSettlementRetryTimer) { window.clearTimeout(positionSettlementRetryTimer); positionSettlementRetryTimer = null; }
                 activePosition = null;
+                positionSettlementInFlight = false;
                 // Keep the user on the terminal; the confirmed wallet and history
                 // values have already been updated in place.
             }
