@@ -116,5 +116,5 @@ test('clients can open the paper conversion workspace', function () {
     $this->actingAs($client)->get('/convert')
         ->assertOk()
         ->assertSee('Currency conversion')
-        ->assertSee('Paper conversion only');
+        ->assertSee('PAPER ONLY');
 });
