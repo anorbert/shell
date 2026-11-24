@@ -339,6 +339,11 @@ test('expired trades settle when the first verified post-expiry quote arrives af
 
     $tradeId = app(PaperTradingService::class)->open($user, 'BTCUSDT', 'UP', '10.00000000', 60, 'test-delayed-expiry-quote');
     $expiredAt = now()->subMinutes(7);
+    // The provider quote used to open the trade must remain before the
+    // artificially backdated expiry in this test fixture.
+    DB::table('market_quote_snapshots')->where('symbol', 'BTCUSDT')->update([
+        'captured_at' => $expiredAt->copy()->subSecond(),
+    ]);
     DB::table('paper_trades')->where('id', $tradeId)->update([
         'opened_at' => $expiredAt->copy()->subMinute(),
         'expires_at' => $expiredAt,
@@ -387,6 +392,10 @@ test('an expired winning paper trade settles once using a post-expiry quote', fu
 
     $tradeId = app(PaperTradingService::class)->open($user, 'BTCUSDT', 'UP', '10.00000000', 60, 'test-winning-trade');
     $expiredAt = now()->subMinute();
+    // Move the opening snapshot before this test's backdated expiry.
+    DB::table('market_quote_snapshots')->where('symbol', 'BTCUSDT')->update([
+        'captured_at' => $expiredAt->copy()->subSecond(),
+    ]);
     DB::table('paper_trades')->where('id', $tradeId)->update([
         'expires_at' => $expiredAt,
         'opened_at' => $expiredAt->copy()->subMinute(),
