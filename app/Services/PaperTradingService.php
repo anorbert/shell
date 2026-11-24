@@ -116,7 +116,6 @@ class PaperTradingService
             ->where('status', 'open')
             ->where('expires_at', '<=', now())
             ->orderBy('expires_at')
-            ->limit(500)
             ->get();
 
         $settled = 0;
