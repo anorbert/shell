@@ -40,10 +40,10 @@
                 <a href="{{ route('admin.operations') }}" class="{{ request()->routeIs('admin.operations')?'active':'' }}"><svg class="nav-icon"><use href="#i-chart"/></svg><span>Trading operations</span></a>
                 <a href="{{ route('admin.wallet-operations.index') }}" class="{{ request()->routeIs('admin.wallet-operations.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-wallet"/></svg><span>Wallet operations</span></a>
             @else
-                <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard')?'active':'' }}"><svg class="nav-icon"><use href="#i-grid"/></svg><span>Overview</span></a>
-                <a href="{{ route('trading.index') }}" class="{{ request()->routeIs('trading.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-clock"/></svg><span>Trade</span></a>
-                <a href="{{ route('markets.index') }}" class="{{ request()->routeIs('markets.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-chart"/></svg><span>Markets</span></a>
-                <a href="{{ route('portfolio.index') }}" class="{{ request()->routeIs('portfolio.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-briefcase"/></svg><span>Portfolio</span></a>
+                <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard')?'active':'' }}"><svg class="nav-icon"><use href="#i-grid"/></svg><span>Home</span></a>
+                <a href="{{ route('trading.index','') }}" class="{{ request()->routeIs('trading.*','activity.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-clock"/></svg><span>Trade</span></a>
+                <a href="{{ route('wallet-requests.index') }}" class="{{ request()->routeIs('wallet-requests.*','statement.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-wallet"/></svg><span>Wallet</span></a>
+                <a href="{{ route('markets.index') }}" class="{{ request()->routeIs('markets.*','convert.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-chart"/></svg><span>Markets</span></a>
             @endif
         </nav>
     </aside>
@@ -55,7 +55,6 @@
                     <a href="{{ route('admin.kyc.index') }}" class="{{ request()->routeIs('admin.kyc.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-shield"/></svg><span>KYC review</span><span class="nav-count">{{ \Illuminate\Support\Facades\DB::table('kyc_submissions')->where('status','pending')->count() }}</span></a>
                     <a href="{{ route('admin.support.index') }}" class="{{ request()->routeIs('admin.support.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-message"/></svg><span>Support inbox</span></a>
                 @else
-                    <a href="{{ route('wallet-requests.index') }}" class="{{ request()->routeIs('wallet-requests.*','statement.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-wallet"/></svg><span>Wallet</span></a>
                     <a href="{{ route('support.index') }}" class="{{ request()->routeIs('support.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-life"/></svg><span>Support</span></a>
                     <a class="topbar-icon-link {{ request()->routeIs('notifications.*')?'active':'' }}" href="{{ route('notifications.index') }}" aria-label="Notifications" title="Notifications"><svg class="nav-icon"><use href="#i-bell"/></svg><span class="nav-count">{{ Illuminate\Support\Facades\DB::table('user_notifications')->where('user_id',auth()->id())->whereNull('read_at')->count() }}</span></a>
                 @endif
