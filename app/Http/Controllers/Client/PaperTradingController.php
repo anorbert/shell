@@ -197,7 +197,7 @@ class PaperTradingController extends Controller
             'direction' => ['required', 'in:UP,DOWN'],
             'stake' => ['required', 'string', 'max:24'],
             'duration' => ['required', 'integer'],
-            'request_key' => ['required', 'string', 'min:16', 'max:100'],
+            'request_key' => ['required', 'string', 'max:100'],
         ]);
 
         try {
