@@ -141,7 +141,7 @@ class PaperTradingController extends Controller
                 'settled_count' => $settledCount,
                 'settled' => $position->status !== 'open',
             ]);
-        } catch (\\Throwable $exception) {
+        } catch (\Throwable $exception) {
             report($exception);
 
             return response()->json([
