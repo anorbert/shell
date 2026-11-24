@@ -19,7 +19,13 @@ class PaperTradingController extends Controller
     {
         // Opportunistic server-side settlement ensures expired positions are processed
         // whenever the client returns, even if the scheduler was temporarily offline.
-        $tradesService->settleDue();
+        try {
+            $tradesService->settleDue();
+        } catch (\Throwable $exception) {
+            // A settlement-provider/ledger failure must not prevent the trading
+            // terminal from rendering. The scheduler and next request can retry.
+            report($exception);
+        }
 
         $currency = config('shell.paper.currency', 'USD');
         $wallet = $ledger->provisionClientWallets($request->user(), $currency)['demo'];
@@ -44,9 +50,8 @@ class PaperTradingController extends Controller
 
     public function show(Request $request, int $trade, PaperTradingService $tradesService)
     {
-        // The status endpoint also triggers settlement for this user's expired positions.
-        $tradesService->settleDue();
-
+        // Keep this endpoint read-only and dependable: settlement runs through
+        // the scheduler and the trading-page request, not during modal hydration.
         $position = DB::table('paper_trades')
             ->where('id', $trade)
             ->where('user_id', $request->user()->id)
