@@ -237,9 +237,36 @@ class PaperTradingController extends Controller
                 $values['request_key'] ?: Str::uuid()->toString()
             );
 
+            // Return the persisted position in the opening response. The client
+            // can display the live trade immediately without a second hydration
+            // request that could fail after the stake has already been reserved.
+            $position = DB::table('paper_trades')
+                ->where('id', $id)
+                ->where('user_id', $request->user()->id)
+                ->first();
+
+            if (!$position) {
+                throw new RuntimeException('The trade was reserved but its position record could not be loaded.');
+            }
+
             return response()->json([
                 'message' => 'Your demo trade has been opened successfully.',
                 'trade_id' => $id,
+                'wallet_balance' => Decimal::fromUnits($ledger->balanceUnits($demoWallet)),
+                'trade' => [
+                    'id' => (int) $position->id,
+                    'symbol' => $position->symbol,
+                    'direction' => $position->direction,
+                    'stake' => (string) $position->stake,
+                    'currency' => $position->wallet_currency ?: $currency,
+                    'opening_price' => (string) $position->opening_price,
+                    'duration_seconds' => (int) $position->duration_seconds,
+                    'opened_at' => $position->opened_at,
+                    'expires_at' => $position->expires_at,
+                    'status' => $position->status,
+                    'closing_price' => null,
+                    'settled_at' => null,
+                ],
             ], 201);
         } catch (RuntimeException | InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
