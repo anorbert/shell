@@ -5,8 +5,8 @@
 @section('content')
 <div class="notice-banner"><span class="notice-icon">i</span><div><strong>Two independent wallets</strong><p>Your demo wallet starts with $20,000 in non-withdrawable simulation credits. You can add demo funds. The real wallet starts at $0 and will only be credited after a confirmed real-money deposit.</p></div><span class="mode-tag">DUAL WALLET</span></div>
 <div class="metric-grid">
-    <article class="metric-card"><span class="metric-label">DEMO WALLET · USD</span><strong>{{ $demoBalance }}</strong><small>Active · simulated funds</small></article>
-    <article class="metric-card"><span class="metric-label">REAL WALLET · USD</span><strong>{{ $realBalance }}</strong><small>Separate ledger · not funded</small></article>
+    <article class="metric-card"><span class="metric-label">DEMO WALLET · USD</span><strong>@money($demoBalance)</strong><small>Active · simulated funds</small></article>
+    <article class="metric-card"><span class="metric-label">REAL WALLET · USD</span><strong>@money($realBalance)</strong><small>Separate ledger · not funded</small></article>
     <article class="metric-card"><span class="metric-label">FRESH MARKET PAIRS</span><strong>{{ $quotes->count() }}</strong><small>{{ $marketConnected ? 'Provider quotes available' : 'No fresh provider quotes' }}</small></article>
     <article class="metric-card"><span class="metric-label">REAL-MONEY STATUS</span><strong>Disabled</strong><small>Deposits and withdrawals unavailable</small></article>
 </div>
@@ -19,7 +19,7 @@
 <a href="{{ route('activity.index') }}"><span class="quick-icon">04</span><span><strong>Review results</strong><small>Track settlement status and export your demo activity.</small></span><b>→</b></a>
 </div></section>
 <section class="panel"><div class="panel-head"><div><span class="eyebrow">MARKET WATCH</span><h2>Market overview</h2></div><a href="{{ route('markets.index') }}" class="text-link">View markets ↗</a></div>
-@if($marketConnected)<div class="table-wrap"><table class="data-table"><thead><tr><th>PAIR</th><th>PRICE (USDT)</th><th>PROVIDER</th><th>CAPTURED</th></tr></thead><tbody>@foreach($quotes->take(6) as $quote)<tr><td><strong>{{ $quote->symbol }}</strong></td><td>{{ $quote->price }}</td><td>{{ $quote->provider }}</td><td>{{ $quote->captured_at }}</td></tr>@endforeach</tbody></table></div>
+@if($marketConnected)<div class="table-wrap"><table class="data-table"><thead><tr><th>PAIR</th><th>PRICE (USDT)</th><th>PROVIDER</th><th>CAPTURED</th></tr></thead><tbody>@foreach($quotes->take(6) as $quote)<tr><td><strong>{{ $quote->symbol }}</strong></td><td>@decimal($quote->price)</td><td>{{ $quote->provider }}</td><td>{{ $quote->captured_at }}</td></tr>@endforeach</tbody></table></div>
 @else<div class="empty-state"><div class="empty-icon">⌁</div><strong>No fresh provider quotes</strong><p>Trading is blocked until a valid fresh quote is available. Check the administrator Operations page for provider health.</p></div>@endif
 </section></div>
 @endsection
