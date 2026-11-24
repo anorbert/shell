@@ -36,6 +36,12 @@ class PaperTradingController extends Controller
                 ->where('expires_at', '>', now())
                 ->orderByDesc('opened_at')
                 ->value('id'),
+            'expiredTradeId' => DB::table('paper_trades')
+                ->where('user_id', $request->user()->id)
+                ->where('status', 'open')
+                ->where('expires_at', '<=', now())
+                ->orderByDesc('expires_at')
+                ->value('id'),
             'hasExpiredOpenTrades' => DB::table('paper_trades')
                 ->where('user_id', $request->user()->id)
                 ->where('status', 'open')
@@ -113,6 +119,8 @@ class PaperTradingController extends Controller
                 );
             } elseif ($position->status === 'void') {
                 $payout = (string) $position->stake;
+            } elseif ($position->status === 'lost') {
+                $profit = '-' . (string) $position->stake;
             }
 
             if ($position->status !== 'open') {
