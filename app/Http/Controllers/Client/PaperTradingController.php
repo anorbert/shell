@@ -58,27 +58,30 @@ class PaperTradingController extends Controller
      * Trigger settlement asynchronously from the terminal when this client has
      * expired positions. The page itself never waits for market-provider I/O.
      */
-    public function settleExpired(Request $request, PaperTradingService $service)
+    public function settleExpired(Request $request, PaperTradingService $service, LedgerService $ledger)
     {
-        $hasDue = DB::table('paper_trades')
-            ->where('user_id', $request->user()->id)
-            ->where('status', 'open')
-            ->where('expires_at', '<=', now())
-            ->exists();
-
-        if (!$hasDue) {
-            return response()->json(['settled_count' => 0, 'has_due' => false]);
-        }
-
         try {
+            // This is a recovery trigger, not the authority for settlement. The
+            // scheduler runs the same service even when no client is connected.
+            $settledCount = $service->settleDue();
+            $hasDue = DB::table('paper_trades')
+                ->where('user_id', $request->user()->id)
+                ->where('status', 'open')
+                ->where('expires_at', '<=', now())
+                ->exists();
+
+            $currency = config('shell.paper.currency', 'USD');
+            $wallet = $ledger->demoWallet($request->user(), $currency);
+
             return response()->json([
-                'settled_count' => $service->settleDue(),
-                'has_due' => true,
+                'settled_count' => $settledCount,
+                'has_due' => $hasDue,
+                'wallet_balance' => Decimal::fromUnits($ledger->balanceUnits($wallet)),
             ]);
-        } catch (\Throwable $exception) {
+        } catch (\\Throwable $exception) {
             report($exception);
             return response()->json([
-                'message' => 'Settlement is temporarily unavailable. Your expired position remains recorded and will be retried.',
+                'message' => 'Settlement is temporarily unavailable. Your expired position remains recorded and will be retried automatically.',
             ], 503);
         }
     }
