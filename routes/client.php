@@ -21,6 +21,7 @@ Route::middleware(['auth', 'client', 'verified'])->group(function () {
 
     Route::get('/trading', [PaperTradingController::class, 'index'])->name('trading.index');
     Route::post('/trading/paper', [PaperTradingController::class, 'store'])->middleware('throttle:20,1')->name('trading.store');
+    Route::get('/trading/paper/{trade}', [PaperTradingController::class, 'show'])->whereNumber('trade')->middleware('throttle:60,1')->name('trading.show');
 
     Route::get('/portfolio', PortfolioController::class)->name('portfolio.index');
     Route::get('/wallet-requests', [WalletRequestController::class, 'index'])->name('wallet-requests.index');
