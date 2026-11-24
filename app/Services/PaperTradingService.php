@@ -42,6 +42,25 @@ class PaperTradingService
             throw new RuntimeException('Stake is outside paper limits.');
         }
 
+        // Idempotency must be checked before any provider I/O. If the first
+        // request committed but its HTTP response was lost, a retry must return
+        // that saved position even when the market provider is currently down.
+        $existing = DB::table('paper_trades')->where('open_idempotency_key', $key)->first();
+
+        if ($existing) {
+            if ((int) $existing->user_id !== $user->id) {
+                throw new RuntimeException('Request key already used.');
+            }
+
+            if ($existing->symbol !== $symbol || $existing->direction !== $direction
+                || Decimal::compare((string) $existing->stake, $stake) !== 0
+                || (int) $existing->duration_seconds !== $duration) {
+                throw new RuntimeException('Request key was already used for a different trade.');
+            }
+
+            return (int) $existing->id;
+        }
+
         // Reject stale data before reserving any balance.
         $quote = $this->markets->freshQuote($symbol);
         $currency = config('shell.paper.currency', 'USD');
