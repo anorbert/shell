@@ -146,8 +146,8 @@ class PaperTradingService
         }
 
         foreach ($dueTrades as $candidate) {
-            // Use the first server-received snapshot after expiry, but only within
-            // the configured grace window. Never substitute a much later price.
+            // Use the first server-received snapshot at or after expiry. A delayed
+            // scheduler must not make an expired trade permanently un-settleable.
             $quote = DB::table('market_quote_snapshots')
                 ->where('symbol', $candidate->symbol)
                 ->where('captured_at', '>=', $candidate->expires_at)
