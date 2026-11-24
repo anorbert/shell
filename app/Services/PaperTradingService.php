@@ -120,10 +120,10 @@ class PaperTradingService
 
         $settled = 0;
 
-        // Capture a fresh server-side snapshot when trades are due. This makes
-        // settlement self-contained instead of relying on a separate scheduler
-        // refresh having happened after each expiry time. Continue settlement in
-        // this same request once the server has captured the post-expiry quote.
+        // Capture a fresh server-side snapshot when any due trade lacks a
+        // post-expiry quote. This makes settlement self-healing: it does not rely
+        // on the browser or on a previous scheduler tick. Provider failures are
+        // retried by the scheduler and client reconciliation endpoint.
         if ($dueTrades->isNotEmpty()) {
             $needsRefresh = $dueTrades->contains(function ($trade) {
                 return !DB::table('market_quote_snapshots')
@@ -171,21 +171,26 @@ class PaperTradingService
                 }
             }
 
-            $maxDelay = (int) config('shell.market.settlement_quote_window_seconds', 60);
-            if (!$quote || $quote->captured_at > date('Y-m-d H:i:s', strtotime($candidate->expires_at) + $maxDelay)) {
+            // Never strand an expired position because the scheduler or quote
+            // provider was delayed beyond an arbitrary grace window. Use the
+            // earliest verified server snapshot at/after expiry. If no such
+            // snapshot exists yet, keep the position pending and retry shortly.
+            if (!$quote) {
                 continue;
             }
 
-            DB::transaction(function () use ($candidate, $quote, $maxDelay, &$settled) {
+            DB::transaction(function () use ($candidate, $quote, &$settled) {
                 $trade = DB::table('paper_trades')->where('id', $candidate->id)->lockForUpdate()->first();
 
                 if (!$trade || $trade->status !== 'open' || now()->lt($trade->expires_at)) {
                     return;
                 }
 
-                // Recheck the expiry window after acquiring the trade lock.
-                if ($quote->captured_at < $trade->expires_at
-                    || $quote->captured_at > date('Y-m-d H:i:s', strtotime($trade->expires_at) + $maxDelay)) {
+                // Recheck that this is a server-captured post-expiry quote
+                // after acquiring the trade lock. There is intentionally no
+                // arbitrary maximum delay: that old cutoff could permanently
+                // strand a trade when the scheduler was offline for too long.
+                if ($quote->captured_at < $trade->expires_at) {
                     return;
                 }
 
