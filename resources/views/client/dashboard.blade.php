@@ -10,7 +10,7 @@
 <div class="notice-banner"><span class="notice-icon">i</span><div><strong>Two independent wallets</strong><p>Your demo wallet starts with $20,000 in non-withdrawable simulation credits. You can add demo funds. The real wallet starts at $0 and will only be credited after a confirmed real-money deposit.</p></div><span class="mode-tag">DUAL WALLET</span></div>
 <div class="metric-grid">
     <article class="metric-card"><span class="metric-label">DEMO WALLET · USD</span><strong>@money($demoBalance)</strong><small>Active · simulated funds</small></article>
-    <article class="metric-card"><span class="metric-label">REAL WALLET · USD</span><strong>@money($realBalance)</strong><small>Separate ledger · not funded</small></article>
+    <article class="metric-card"><span class="metric-label">REAL WALLET · USD</span><strong>@money($realBalance)</strong><small>Separate ledger · credited after deposit confirmation</small></article>
     <article class="metric-card"><span class="metric-label">FRESH MARKET PAIRS</span><strong>{{ $quotes->count() }}</strong><small>{{ $marketConnected ? 'Provider quotes available' : 'No fresh provider quotes' }}</small></article>
     <article class="metric-card"><span class="metric-label">TRADING MODE</span><strong>Demo active</strong><small>Fixed-time simulated trading</small></article>
 </div>
