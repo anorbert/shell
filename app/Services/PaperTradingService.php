@@ -124,12 +124,32 @@ class PaperTradingService
         // Capture a fresh server-side snapshot when trades are due. This makes
         // settlement self-contained instead of relying on a separate scheduler
         // refresh having happened after each expiry time.
+        $deferSettlementAfterRefresh = false;
+
         if ($dueTrades->isNotEmpty()) {
-            try {
-                $this->markets->refresh();
-            } catch (\Throwable $exception) {
-                report($exception);
+            $needsRefresh = $dueTrades->contains(function ($trade) {
+                return !DB::table('market_quote_snapshots')
+                    ->where('symbol', $trade->symbol)
+                    ->where('captured_at', '>=', $trade->expires_at)
+                    ->exists()
+                    && !DB::table('market_quotes')
+                        ->where('symbol', $trade->symbol)
+                        ->where('captured_at', '>=', $trade->expires_at)
+                        ->exists();
+            });
+
+            if ($needsRefresh) {
+                try {
+                    $this->markets->refresh();
+                    $deferSettlementAfterRefresh = true;
+                } catch (\Throwable $exception) {
+                    report($exception);
+                }
             }
+        }
+
+        if ($deferSettlementAfterRefresh) {
+            return 0;
         }
 
         foreach ($dueTrades as $candidate) {
@@ -141,6 +161,22 @@ class PaperTradingService
                 ->where('captured_at', '<=', now())
                 ->orderBy('captured_at')
                 ->first();
+
+            if (!$quote) {
+                $liveQuote = DB::table('market_quotes')
+                    ->where('symbol', $candidate->symbol)
+                    ->orderByDesc('captured_at')
+                    ->first();
+
+                if ($liveQuote) {
+                    $capturedTimestamp = strtotime((string) $liveQuote->captured_at);
+                    $expiryTimestamp = strtotime((string) $candidate->expires_at);
+
+                    if ($capturedTimestamp >= $expiryTimestamp && $capturedTimestamp <= time()) {
+                        $quote = $liveQuote;
+                    }
+                }
+            }
 
             $maxDelay = (int) config('shell.market.settlement_quote_window_seconds', 60);
             if (!$quote || $quote->captured_at > date('Y-m-d H:i:s', strtotime($candidate->expires_at) + $maxDelay)) {

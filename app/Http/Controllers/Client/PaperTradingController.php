@@ -77,6 +77,46 @@ class PaperTradingController extends Controller
         }
     }
 
+    public function settlePosition(Request $request, int $trade, PaperTradingService $service)
+    {
+        $owned = DB::table('paper_trades')
+            ->where('id', $trade)
+            ->where('user_id', $request->user()->id)
+            ->exists();
+
+        abort_unless($owned, 404);
+
+        try {
+            $settledCount = $service->settleDue();
+
+            $position = DB::table('paper_trades')->where('id', $trade)->first();
+
+            return response()->json([
+                'trade' => $position ? [
+                    'id' => (int) $position->id,
+                    'symbol' => $position->symbol,
+                    'direction' => $position->direction,
+                    'stake' => (string) $position->stake,
+                    'currency' => $position->wallet_currency ?: config('shell.paper.currency', 'USD'),
+                    'opening_price' => (string) $position->opening_price,
+                    'duration_seconds' => (int) $position->duration_seconds,
+                    'opened_at' => $position->opened_at,
+                    'expires_at' => $position->expires_at,
+                    'status' => $position->status,
+                    'closing_price' => $position->closing_price !== null ? (string) $position->closing_price : null,
+                    'settled_at' => $position->settled_at,
+                ] : null,
+                'settled_count' => $settledCount,
+            ]);
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return response()->json([
+                'message' => 'Settlement is temporarily unavailable. The position remains open and will retry automatically.',
+            ], 503);
+        }
+    }
+
     public function show(Request $request, int $trade)
     {
         // Keep this endpoint read-only and dependable: settlement runs through

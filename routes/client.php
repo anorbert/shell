@@ -22,6 +22,7 @@ Route::middleware(['auth', 'client', 'verified'])->group(function () {
     Route::get('/trading', [PaperTradingController::class, 'index'])->name('trading.index');
     Route::post('/trading/paper', [PaperTradingController::class, 'store'])->middleware('throttle:20,1')->name('trading.store');
     Route::post('/trading/settle-expired', [PaperTradingController::class, 'settleExpired'])->middleware('throttle:6,1')->name('trading.settle-expired');
+    Route::post('/trading/paper/{trade}/settle', [PaperTradingController::class, 'settlePosition'])->whereNumber('trade')->middleware('throttle:60,1')->name('trading.settle-position');
     Route::get('/trading/paper/{trade}', [PaperTradingController::class, 'show'])->whereNumber('trade')->middleware('throttle:60,1')->name('trading.show');
 
     Route::get('/portfolio', PortfolioController::class)->name('portfolio.index');

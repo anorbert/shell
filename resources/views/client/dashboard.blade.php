@@ -1,29 +1,95 @@
 @extends('layouts.app')
 @section('title', 'Client overview')
 @section('eyebrow', 'CLIENT WORKSPACE')
-@section('heading', 'Good day, '.explode(' ', $user->name)[0])
+@section('heading', 'Good day, ' . explode(' ', $user->name)[0])
 @section('content')
-<div class="page-action-row dashboard-primary-actions">
-    <a href="{{ route('wallet-requests.index') }}#deposit-form" class="button button-primary button-large"><svg class="nav-icon"><use href="#i-wallet"/></svg> Deposit funds</a>
-    <a href="{{ route('wallet-requests.index') }}" class="button button-quiet">Wallet activity</a>
-</div>
-<div class="notice-banner"><span class="notice-icon">i</span><div><strong>Two independent wallets</strong><p>Your demo wallet starts with $20,000 in non-withdrawable simulation credits. You can add demo funds. The real wallet starts at $0 and will only be credited after a confirmed real-money deposit.</p></div><span class="mode-tag">DUAL WALLET</span></div>
-<div class="metric-grid">
-    <article class="metric-card"><span class="metric-label">DEMO WALLET · USD</span><strong>@money($demoBalance)</strong><small>Active · simulated funds</small></article>
-    <article class="metric-card"><span class="metric-label">REAL WALLET · USD</span><strong>@money($realBalance)</strong><small>Separate ledger · credited after deposit confirmation</small></article>
-    <article class="metric-card"><span class="metric-label">FRESH MARKET PAIRS</span><strong>{{ $quotes->count() }}</strong><small>{{ $marketConnected ? 'Provider quotes available' : 'No fresh provider quotes' }}</small></article>
-    <article class="metric-card"><span class="metric-label">TRADING MODE</span><strong>Demo active</strong><small>Fixed-time simulated trading</small></article>
-</div>
-<div class="content-grid">
-<section class="panel"><div class="panel-head"><div><span class="eyebrow">YOUR FIRST SESSION</span><h2>Start trading in demo mode</h2></div><span class="table-status verified">GUIDE</span></div>
-<div class="quick-links">
-<a href="{{ route('markets.index') }}"><span class="quick-icon">01</span><span><strong>Explore markets</strong><small>Review provider quotes and save pairs to your watchlist.</small></span><b>→</b></a>
-<a href="{{ route('portfolio.index') }}"><span class="quick-icon">02</span><span><strong>Check your demo wallet</strong><small>Your $20,000 demo balance is separate from the real wallet.</small></span><b>→</b></a>
-<a href="{{ route('trading.index') }}"><span class="quick-icon">03</span><span><strong>Open your first demo position</strong><small>Choose UP or DOWN, stake, duration and review the payout estimate.</small></span><b>→</b></a>
-<a href="{{ route('activity.index') }}"><span class="quick-icon">04</span><span><strong>Review results</strong><small>Track settlement status and export your demo activity.</small></span><b>→</b></a>
-</div></section>
-<section class="panel"><div class="panel-head"><div><span class="eyebrow">MARKET WATCH</span><h2>Market overview</h2></div><a href="{{ route('markets.index') }}" class="text-link">View markets ↗</a></div>
-@if($marketConnected)<div class="table-wrap"><table class="data-table"><thead><tr><th>PAIR</th><th>PRICE (USDT)</th><th>PROVIDER</th><th>CAPTURED</th></tr></thead><tbody>@foreach($quotes->take(6) as $quote)<tr><td><strong>{{ $quote->symbol }}</strong></td><td>@decimal($quote->price)</td><td>{{ $quote->provider }}</td><td>{{ $quote->captured_at }}</td></tr>@endforeach</tbody></table></div>
-@else<div class="empty-state"><div class="empty-icon">⌁</div><strong>Market overview</strong><p>Fresh provider prices appear here when available. Your demo wallet, trading history and account tools remain accessible at all times.</p></div>@endif
-</section></div>
+    <div class="page-action-row dashboard-primary-actions">
+        <a href="{{ route('wallet-requests.index') }}#deposit-form" class="button button-primary button-large"><svg
+                class="nav-icon">
+                <use href="#i-wallet" />
+            </svg> Deposit funds</a>
+        <a href="{{ route('wallet-requests.index') }}" class="button button-quiet">Wallet activity</a>
+    </div>
+    <div class="notice-banner">
+        <span class="notice-icon">i</span>
+        <div>
+            <strong>Two independent wallets</strong>
+            <p>
+                Your demo wallet starts with $20,000 in non-withdrawable simulation credits. You can add demo funds.
+                The real wallet starts at $0 and will only be credited after a confirmed real-money deposit.
+            </p>
+        </div>
+        <span class="mode-tag">DUAL WALLET</span>
+    </div>
+    <div class="metric-grid">
+        <article class="metric-card"><span class="metric-label">DEMO WALLET ·
+                USD</span><strong>@money($demoBalance)</strong><small>Active · simulated funds</small></article>
+        <article class="metric-card"><span class="metric-label">REAL WALLET ·
+                USD</span><strong>@money($realBalance)</strong><small>Separate ledger · credited after deposit
+                confirmation</small></article>
+        <article class="metric-card"><span class="metric-label">FRESH MARKET
+                PAIRS</span><strong>{{ $quotes->count() }}</strong><small>{{ $marketConnected ? 'Provider quotes available' : 'No fresh provider quotes' }}</small>
+        </article>
+        <article class="metric-card"><span class="metric-label">TRADING MODE</span><strong>Demo
+                active</strong><small>Fixed-time simulated trading</small></article>
+    </div>
+    <div class="content-grid">
+        <section class="panel">
+            <div class="panel-head">
+                <div><span class="eyebrow">YOUR FIRST SESSION</span>
+                    <h2>Start trading in demo mode</h2>
+                </div><span class="table-status verified">GUIDE</span>
+            </div>
+            <div class="quick-links">
+                <a href="{{ route('markets.index') }}"><span class="quick-icon">01</span><span><strong>Explore
+                            markets</strong><small>Review provider quotes and save pairs to your
+                            watchlist.</small></span><b>→</b></a>
+                <a href="{{ route('portfolio.index') }}"><span class="quick-icon">02</span><span><strong>Check your demo
+                            wallet</strong><small>Your $20,000 demo balance is separate from the real
+                            wallet.</small></span><b>→</b></a>
+                <a href="{{ route('trading.index') }}"><span class="quick-icon">03</span><span><strong>Open your first demo
+                            position</strong><small>Choose UP or DOWN, stake, duration and review the payout
+                            estimate.</small></span><b>→</b></a>
+                <a href="{{ route('activity.index') }}"><span class="quick-icon">04</span><span><strong>Review
+                            results</strong><small>Track settlement status and export your demo
+                            activity.</small></span><b>→</b></a>
+            </div>
+        </section>
+        <section class="panel">
+            <div class="panel-head">
+                <div><span class="eyebrow">MARKET WATCH</span>
+                    <h2>Market overview</h2>
+                </div><a href="{{ route('markets.index') }}" class="text-link">View markets ↗</a>
+            </div>
+            @if ($marketConnected)
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>PAIR</th>
+                                <th>PRICE (USDT)</th>
+                                <th>PROVIDER</th>
+                                <th>CAPTURED</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($quotes->take(6) as $quote)
+                                <tr>
+                                    <td><strong>{{ $quote->symbol }}</strong></td>
+                                    <td>@decimal($quote->price)</td>
+                                    <td>{{ $quote->provider }}</td>
+                                    <td>{{ $quote->captured_at }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else<div class="empty-state">
+                    <div class="empty-icon">⌁</div><strong>Market overview</strong>
+                    <p>Fresh provider prices appear here when available. Your demo wallet, trading history and account tools
+                        remain accessible at all times.</p>
+                </div>
+            @endif
+        </section>
+    </div>
 @endsection

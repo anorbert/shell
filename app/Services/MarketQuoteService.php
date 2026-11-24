@@ -137,25 +137,11 @@ class MarketQuoteService
             throw new RuntimeException('Unsupported market pair.');
         }
 
-        $isFresh = fn ($quote) => $quote
-            && !now()->subSeconds((int) config('shell.market.max_age_seconds', 90))->gt($quote->captured_at);
-
         $quote = DB::table('market_quotes')->where('symbol', $symbol)->first();
+        $minimumCapturedAt = now()->subSeconds((int) config('shell.market.max_age_seconds', 90));
 
-        // The scheduled refresh is a cache warmer, not a hard dependency for trading.
-        // Refresh synchronously once when the cached quote is missing or stale.
-        if (!$isFresh($quote)) {
-            try {
-                $this->refresh();
-            } catch (\Throwable $exception) {
-                report($exception);
-            }
-
-            $quote = DB::table('market_quotes')->where('symbol', $symbol)->first();
-        }
-
-        if (!$isFresh($quote)) {
-            throw new RuntimeException('A live market price could not be verified right now. Please wait a moment and try again.');
+        if (!$quote || $quote->captured_at < $minimumCapturedAt) {
+            throw new RuntimeException('No fresh market quote is available for this pair. Trading is blocked.');
         }
 
         return $quote;

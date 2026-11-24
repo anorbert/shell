@@ -4,8 +4,8 @@
 <div class="notice-banner"><span class="notice-icon">i</span><div><strong>Convert assets in your demo wallet</strong><p>Exchange supported demo assets using current market quotes. USD and USDT are treated as a 1:1 reference for simulation purposes; displayed conversion values are indicative and do not represent a real cryptocurrency purchase.</p></div><span class="mode-tag">PAPER ONLY</span></div>
 <div class="content-grid"><section class="panel"><div class="panel-head"><div><span class="eyebrow">CONVERT ASSETS</span><h2>New paper conversion</h2></div></div>
 <form id="conversion-form" class="form-stack"><input type="hidden" name="request_key" value="{{ (string)\Illuminate\Support\Str::uuid() }}"><input type="hidden" name="source_quote_at"><input type="hidden" name="target_quote_at">
-<label>From<select name="from_currency" id="conversion-from">@foreach($currencies as $c)<option value="{{ $c }}" data-balance="{{ $balances[$c] ?? 0 }}" @selected($c===$currency)>{{ $c }} · available {{ \App\Support\NumberFormatter::decimal($balances[$c] ?? 0) }}</option>@endforeach</select></label>
-<p class="muted" id="conversion-available">Available balance: {{ \App\Support\NumberFormatter::decimal($balances[$currency] ?? 0) }} {{ $currency }}</p>
+<label>From<select name="from_currency" id="conversion-from">@foreach($currencies as $c)<option value="{{ $c }}" data-balance="{{ $balances[$c] ?? 0 }}" @selected($c===$currency)>{{ $c }} · available {{ $balances[$c] ?? '0.00000000' }}</option>@endforeach</select></label>
+<p class="muted" id="conversion-available">Available balance: {{ $balances[$currency] ?? '0.00000000' }} {{ $currency }}</p>
 <label>To<select name="to_currency">@foreach($currencies as $c)<option value="{{ $c }}" @selected($c==='BTC')>{{ $c }}</option>@endforeach</select></label>
 <label>Amount<input name="amount" type="number" min="0.00000001" step="0.00000001" max="{{ $balances[$currency] ?? 0 }}" value="10.00000000" required></label>
 <button class="button button-primary button-full" id="preview-conversion" type="button">Preview conversion</button>

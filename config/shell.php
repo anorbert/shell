@@ -4,6 +4,7 @@ return [
     'market' => [
         'base_url' => env('SHELL_MARKET_BASE_URL', 'https://api.binance.com'),
         'max_age_seconds' => (int) env('SHELL_MARKET_MAX_AGE', 90),
+        'settlement_quote_window_seconds' => (int) env('SHELL_SETTLEMENT_QUOTE_WINDOW', 300),
         'symbols' => ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'AVAXUSDT', 'DOTUSDT', 'LTCUSDT', 'LINKUSDT', 'UNIUSDT', 'ATOMUSDT', 'XLMUSDT', 'ALGOUSDT', 'NEARUSDT', 'AAVEUSDT', 'TRXUSDT', 'ETCUSDT', 'BCHUSDT'],
     ],
     'paper' => [
