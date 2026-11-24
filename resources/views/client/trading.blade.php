@@ -889,32 +889,65 @@
 
             const requestJson = async (url, options = {}) => {
                 const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
-                const controller = new AbortController();
                 const timeoutMs = options.timeoutMs || 8000;
-                const { timeoutMs: ignoredTimeout, ...fetchOptions } = options;
-                const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
-                try {
-                    const response = await fetch(url, {
-                        ...fetchOptions,
-                        signal: controller.signal,
-                        headers: {
-                            Accept: 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest',
-                            ...(csrf ? {
-                                'X-CSRF-TOKEN': csrf
-                            } : {}),
-                            ...(options.headers || {})
+                const retries = Math.max(0, Math.min(3, Number(options.retries || 0)));
+                const { timeoutMs: ignoredTimeout, retries: ignoredRetries, ...fetchOptions } = options;
+
+                for (let attempt = 0; ; attempt++) {
+                    const controller = new AbortController();
+                    const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+                    try {
+                        const response = await fetch(url, {
+                            ...fetchOptions,
+                            signal: controller.signal,
+                            headers: {
+                                Accept: 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                ...(csrf ? { 'X-CSRF-TOKEN': csrf } : {}),
+                                ...(options.headers || {})
+                            }
+                        });
+
+                        if (response.status === 401 || response.status === 419) {
+                            notify('Your session has expired. Please sign in again.', 'error');
+                            window.location.assign('/login');
+                            throw new Error('Your session has expired. Sign in again to continue.');
                         }
-                    });
-                    const payload = await response.json().catch(() => ({}));
-                    if (!response.ok) throw new Error(payload.message || 'The request could not be completed.');
-                    return payload;
-                } catch (error) {
-                    if (error.name === 'AbortError') throw new Error(
-                        'The server is taking too long to respond. Retrying automatically…');
-                    throw error;
-                } finally {
-                    window.clearTimeout(timeout);
+
+                        const contentType = response.headers.get('content-type') || '';
+                        if (!contentType.includes('application/json')) {
+                            if (response.redirected || response.status === 200) {
+                                window.location.assign('/login');
+                                throw new Error('Your session has expired. Sign in again to continue.');
+                            }
+                        }
+
+                        const payload = await response.json().catch(() => ({}));
+                        if (!response.ok) {
+                            const error = new Error(payload.message || 'The request could not be completed.');
+                            error.status = response.status;
+                            if (response.status >= 500 && attempt < retries) {
+                                await new Promise(resolve => window.setTimeout(resolve,
+                                    Math.min(4000, 300 * Math.pow(2, attempt)) + Math.random() * 200));
+                                continue;
+                            }
+                            throw error;
+                        }
+                        return payload;
+                    } catch (error) {
+                        const retryable = error.name === 'AbortError' || !Number.isInteger(error.status);
+                        if (retryable && attempt < retries) {
+                            await new Promise(resolve => window.setTimeout(resolve,
+                                Math.min(4000, 300 * Math.pow(2, attempt)) + Math.random() * 200));
+                            continue;
+                        }
+                        if (error.name === 'AbortError') {
+                            throw new Error('The server is taking too long to respond. Please retry using the same request.');
+                        }
+                        throw error;
+                    } finally {
+                        window.clearTimeout(timeout);
+                    }
                 }
             };
             const notify = (message, type = 'success') => {
@@ -1875,7 +1908,8 @@
                     // Ask the same idempotent endpoint for the final payout and balance.
                     const settlement = await requestJson(@json(url('/trading/paper')) + '/' + trade.id + '/settle', {
                         method: 'POST',
-                        timeoutMs: 40000
+                        timeoutMs: 40000,
+                        retries: 2
                     });
                     const settledTrade = settlement.trade || trade;
                     settledTrade.wallet_balance = settlement.wallet_balance;
@@ -2080,6 +2114,7 @@
                     const result = await requestJson(@json(route('trading.store')), {
                         method: 'POST',
                         timeoutMs: 18000,
+                        retries: 2,
                         headers: {
                             'Content-Type': 'application/json'
                         },
