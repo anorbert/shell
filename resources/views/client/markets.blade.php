@@ -1,6 +1,9 @@
 @extends('layouts.app')
 @section('title','Markets') @section('eyebrow','MARKET DATA') @section('heading','Spot markets')
 @section('content')
+<div class="page-action-row">
+    <a href="{{ route('convert.index') }}" class="button button-secondary"><svg class="nav-icon"><use href="#i-repeat"/></svg> Convert assets</a>
+</div>
 <div class="notice-banner"><span class="notice-icon">i</span><div><strong>Provider-sourced quotes only</strong><p>Binance Spot quotes older than {{ config('shell.market.max_age_seconds') }} seconds are hidden and cannot open paper trades.</p></div><span class="mode-tag">SPOT DATA</span></div>
 <section class="panel"><div class="panel-head"><div><span class="eyebrow">USDT PAIRS</span><h2>Available quotes</h2></div><button class="button button-quiet" id="refresh-markets" type="button">Refresh view</button></div>
 <form id="market-filters" class="filter-row"><label>Search pair <input name="search" placeholder="Search BTC, ETH..."></label><label>Sort <select name="sort"><option value="symbol">Symbol</option><option value="price_desc">Price: high to low</option><option value="price_asc">Price: low to high</option></select></label><label class="inline-check"><input type="checkbox" name="favorites" value="1"> Favorites only</label></form>
