@@ -148,7 +148,7 @@ class MarketQuoteService
         if (!$quote || $quote->captured_at < $minimumCapturedAt) {
             try {
                 $this->refresh();
-            } catch (\\Throwable $exception) {
+            } catch (\Throwable $exception) {
                 report($exception);
             }
 
