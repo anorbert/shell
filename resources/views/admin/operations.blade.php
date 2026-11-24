@@ -1,10 +1,10 @@
 @extends('layouts.app')
 @section('title','Trading operations') @section('eyebrow','ADMINISTRATION / CONTROL ROOM') @section('heading','Trading operations')
 @section('content')
-<div class="notice-banner"><span class="notice-icon">i</span><div><strong>Read-only operational monitoring</strong><p>Administrators can inspect quote health, settlement state and access logs. Trade outcomes and posted ledger entries cannot be manually edited here.</p></div><span class="mode-tag">MONITORING</span></div>
+<div class="notice-banner"><span class="notice-icon">i</span><div><strong>Platform operations</strong><p>Monitor market-data freshness, trade settlement, conversion activity and security events. Financial records remain ledger-controlled to preserve a reliable audit trail.</p></div><span class="mode-tag">MONITORING</span></div>
 <div class="metric-grid">
 <article class="metric-card"><span class="metric-label">STALE QUOTES</span><strong>{{ $staleQuoteCount }}</strong><small>Configured markets without a fresh quote</small></article>
-<article class="metric-card"><span class="metric-label">OVERDUE POSITIONS</span><strong>{{ $overdueTradeCount }}</strong><small>Expired but not yet settled</small></article>
+<article class="metric-card"><span class="metric-label">OVERDUE POSITIONS</span><strong>{{ $overdueTradeCount }}</strong><small>Positions awaiting settlement</small></article>
 <article class="metric-card"><span class="metric-label">OPEN POSITIONS</span><strong>{{ $openTradeCount }}</strong><small>Currently awaiting expiry or settlement</small></article>
 <article class="metric-card"><span class="metric-label">LAST MARKET REFRESH</span><strong>{{ $marketLastSuccess ? $marketLastSuccess->diffForHumans() : 'Never' }}</strong><small>Last successful refresh</small></article>
 </div>
