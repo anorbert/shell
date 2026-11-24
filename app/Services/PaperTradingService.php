@@ -123,9 +123,8 @@ class PaperTradingService
 
         // Capture a fresh server-side snapshot when trades are due. This makes
         // settlement self-contained instead of relying on a separate scheduler
-        // refresh having happened after each expiry time.
-        $deferSettlementAfterRefresh = false;
-
+        // refresh having happened after each expiry time. Continue settlement in
+        // this same request once the server has captured the post-expiry quote.
         if ($dueTrades->isNotEmpty()) {
             $needsRefresh = $dueTrades->contains(function ($trade) {
                 return !DB::table('market_quote_snapshots')
@@ -141,15 +140,10 @@ class PaperTradingService
             if ($needsRefresh) {
                 try {
                     $this->markets->refresh();
-                    $deferSettlementAfterRefresh = true;
                 } catch (\Throwable $exception) {
                     report($exception);
                 }
             }
-        }
-
-        if ($deferSettlementAfterRefresh) {
-            return 0;
         }
 
         foreach ($dueTrades as $candidate) {
