@@ -879,7 +879,8 @@
                 reconnectTimer = null,
                 retryTimer = null,
                 reconnectAttempts = 0,
-                streamGeneration = 0;
+                streamGeneration = 0,
+                tickerFallbackBusy = false;
 
             const requestJson = async (url, options = {}) => {
                 const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
@@ -1304,6 +1305,64 @@
                 throw lastError || new Error('No public market feed is available.');
             }
 
+            // The kline WebSocket is the primary live feed. Poll the lightweight
+            // ticker endpoint as a fallback so the modal and current price remain
+            // usable when a browser/network blocks WebSocket connections.
+            async function pollPublicTicker() {
+                if (tickerFallbackBusy || !marketSelect.value) return;
+                const symbol = marketSelect.value;
+                tickerFallbackBusy = true;
+                const query = new URLSearchParams({ symbol });
+                const endpoints = [
+                    'https://data-api.binance.vision/api/v3/ticker/price?' + query,
+                    'https://api.binance.com/api/v3/ticker/price?' + query
+                ];
+                try {
+                    let ticker = null;
+                    for (const endpoint of endpoints) {
+                        const controller = new AbortController();
+                        const timeout = window.setTimeout(() => controller.abort(), 3500);
+                        try {
+                            const response = await fetch(endpoint, {
+                                headers: { 'Accept': 'application/json' },
+                                cache: 'no-store',
+                                signal: controller.signal
+                            });
+                            if (!response.ok) continue;
+                            const data = await response.json();
+                            if (data?.symbol === symbol && Number.isFinite(Number(data.price)) && Number(data.price) > 0) {
+                                ticker = data;
+                                break;
+                            }
+                        } catch (_) {
+                            // Try the alternate public endpoint.
+                        } finally {
+                            window.clearTimeout(timeout);
+                        }
+                    }
+
+                    if (!ticker || marketSelect.value !== symbol) return;
+                    const price = String(ticker.price);
+                    const last = candles[candles.length - 1];
+                    if (last) {
+                        last.close = price;
+                        last.high = String(Math.max(Number(last.high), Number(price)));
+                        last.low = String(Math.min(Number(last.low), Number(price)));
+                        updateSummary();
+                        draw();
+                    } else {
+                        setText('chart-current-price', formatPrice(price));
+                    }
+                    window.dispatchEvent(new CustomEvent('shell:market-price', {
+                        detail: { symbol, price }
+                    }));
+                    setText('chart-health', 'LIVE');
+                    setText('chart-updated', 'Live price · ' + new Date().toLocaleTimeString());
+                } finally {
+                    tickerFallbackBusy = false;
+                }
+            }
+
             async function loadCandles() {
                 closeLiveStream();
                 const generation = streamGeneration;
@@ -1431,6 +1490,8 @@
             }
             draw(); // Paint the chart frame immediately, before the first network response.
             loadCandles();
+            pollPublicTicker();
+            window.setInterval(pollPublicTicker, 5000);
             window.addEventListener('beforeunload', closeLiveStream);
 
             function updateTradeCountdowns() {
@@ -1899,6 +1960,7 @@
                     const payload = Object.fromEntries(new FormData(form).entries());
                     const result = await requestJson(@json(route('trading.store')), {
                         method: 'POST',
+                        timeoutMs: 18000,
                         headers: {
                             'Content-Type': 'application/json'
                         },
@@ -1906,6 +1968,15 @@
                     });
                     feedback.textContent = result.message;
                     notify(result.message);
+                    // A new confirmed submission needs a new idempotency key.
+                    // Keep the old key only when the request failed, so retries
+                    // can safely recover a trade whose response was interrupted.
+                    const requestKeyInput = form.querySelector('[name="request_key"]');
+                    if (requestKeyInput) {
+                        requestKeyInput.value = window.crypto?.randomUUID
+                            ? window.crypto.randomUUID()
+                            : 'trade-' + Date.now() + '-' + Math.random().toString(36).slice(2, 12);
+                    }
                     if (result.wallet_balance !== undefined && result.wallet_balance !== null) {
                         setText('demo-wallet-balance', money(result.wallet_balance) + ' {{ $currency }}');
                     }
