@@ -198,7 +198,7 @@ class PaperTradingController extends Controller
             'direction' => ['required', 'in:UP,DOWN'],
             'stake' => ['required', 'string', 'max:24'],
             'duration' => ['required', 'integer'],
-            'request_key' => ['nullable', 'string', 'max:100'],
+            'request_key' => ['required', 'string', 'min:16', 'max:100'],
         ]);
 
         try {
@@ -236,7 +236,7 @@ class PaperTradingController extends Controller
                 $values['direction'],
                 $stake,
                 (int) $values['duration'],
-                $values['request_key'] ?: Str::uuid()->toString()
+                $values['request_key']
             );
 
             // Return the persisted position in the opening response. The client
