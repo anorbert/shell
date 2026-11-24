@@ -48,7 +48,7 @@ class PaperTradingController extends Controller
     }
 
 
-    public function show(Request $request, int $trade, PaperTradingService $tradesService)
+    public function show(Request $request, int $trade)
     {
         // Keep this endpoint read-only and dependable: settlement runs through
         // the scheduler and the trading-page request, not during modal hydration.
