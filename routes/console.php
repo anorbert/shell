@@ -17,5 +17,5 @@ Schedule::command('shell:markets:refresh')
 // Run settlement throughout the minute, not only once per minute. A short lock
 // expiry prevents a killed scheduler process from blocking settlement all day.
 Schedule::command('shell:paper:settle')
-    ->everyTenSeconds()
+    ->everySecond()
     ->withoutOverlapping(1);
