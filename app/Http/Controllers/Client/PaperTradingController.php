@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Http\Controllers\Client;
+namespace App\\Http\\Controllers\\Client;
 
-use App\Http\Controllers\Controller;
-use App\Services\LedgerService;
-use App\Services\MarketQuoteService;
-use App\Services\PaperTradingService;
-use App\Support\Decimal;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use App\\Http\\Controllers\\Controller;
+use App\\Services\\LedgerService;
+use App\\Services\\MarketQuoteService;
+use App\\Services\\PaperTradingService;
+use App\\Support\\Decimal;
+use Illuminate\\Http\\Request;
+use Illuminate\\Support\\Facades\\DB;
+use Illuminate\\Support\\Str;
 use RuntimeException;
 use InvalidArgumentException;
 
@@ -36,17 +36,37 @@ class PaperTradingController extends Controller
         $values = $request->validate([
             'symbol' => ['required', 'string', 'max:24'],
             'direction' => ['required', 'in:UP,DOWN'],
-            'stake' => ['required', 'regex:/^(0|[1-9][0-9]{0,9})(\.[0-9]{1,8})?$/'],
+            'stake' => ['required', 'string', 'max:24', 'regex:/^[0-9]+(?:\\.[0-9]{1,8})?$/'],
             'duration' => ['required', 'integer'],
             'request_key' => ['nullable', 'string', 'max:100'],
         ]);
 
         try {
+            // Canonicalize decimal input before fixed-point ledger arithmetic.
+            // This accepts 10, 10.0, 10.00 and leading-zero input safely.
+            $rawStake = trim($values['stake']);
+            [$whole, $fraction] = array_pad(explode('.', $rawStake, 2), 2, '');
+            $whole = ltrim($whole, '0');
+            $whole = $whole === '' ? '0' : $whole;
+            $fraction = rtrim($fraction, '0');
+            $stake = $whole . ($fraction !== '' ? '.' . $fraction : '');
+
+            if (Decimal::units($stake) <= 0) {
+                return response()->json(['message' => 'Enter a stake greater than zero.'], 422);
+            }
+
             $currency = config('shell.paper.currency', 'USD');
+            $maxStake = (string) config('shell.paper.max_stake');
+            if (Decimal::compare($stake, $maxStake) > 0) {
+                return response()->json(['message' => 'The maximum stake is ' . $maxStake . ' ' . $currency . '.'], 422);
+            }
+
             $demoWallet = $ledger->provisionClientWallets($request->user(), $currency)['demo'];
             $available = Decimal::fromUnits($ledger->balanceUnits($demoWallet));
             if (Decimal::compare($stake, $available) > 0) {
-                return response()->json(['message' => 'Insufficient demo balance. Your available balance is ' . $available . ' ' . $currency . '. Reduce your stake or add demo funds.'], 422);
+                return response()->json([
+                    'message' => 'Insufficient demo balance. Available: ' . $available . ' ' . $currency . '. Reduce your stake or add demo funds.',
+                ], 422);
             }
 
             $id = $service->open(
@@ -58,7 +78,10 @@ class PaperTradingController extends Controller
                 $values['request_key'] ?: Str::uuid()->toString()
             );
 
-            return response()->json(['message' => 'Paper trade opened.', 'trade_id' => $id], 201);
+            return response()->json([
+                'message' => 'Your demo trade has been opened successfully.',
+                'trade_id' => $id,
+            ], 201);
         } catch (RuntimeException | InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
         }
