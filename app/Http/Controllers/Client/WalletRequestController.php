@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\ManualWalletService;
+use App\Services\LedgerService;
+use App\Support\Decimal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -14,9 +16,15 @@ use RuntimeException;
 
 class WalletRequestController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, LedgerService $ledger)
     {
         $user = $request->user();
+        $currency = config('shell.paper.currency', 'USD');
+        $wallets = $ledger->provisionClientWallets($user, $currency);
+        $selectedAccount = $request->query('account') === 'demo' ? 'demo' : 'real';
+        $selectedBalance = Decimal::fromUnits($ledger->balanceUnits($wallets[$selectedAccount]));
+        $demoBalance = Decimal::fromUnits($ledger->balanceUnits($wallets['demo']));
+        $realBalance = Decimal::fromUnits($ledger->balanceUnits($wallets['real']));
         $methods = DB::table('crypto_payment_methods')->orderBy('asset')->orderBy('network')->get();
         $requests = DB::table('wallet_requests')->where('user_id', $user->id)->latest()->paginate(15);
         $kyc = DB::table('kyc_submissions')->where('user_id', $user->id)->latest()->first();
