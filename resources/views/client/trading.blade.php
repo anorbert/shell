@@ -34,14 +34,14 @@
     <form id="paper-trade-form" class="form-stack">
         <input type="hidden" name="request_key" value="{{ \Illuminate\Support\Str::uuid() }}">
         <label>Market pair<select name="symbol" id="trade-symbol" required>@foreach($symbols as $symbol)<option value="{{ $symbol }}">{{ $symbol }}</option>@endforeach</select></label>
-        <label>Stake ({{ $currency }})<input id="trade-stake" name="stake" type="number" inputmode="decimal" min="0.00000001" max="{{ config('shell.paper.max_stake') }}" step="0.00000001" value="10" required aria-describedby="stake-help"><small id="stake-help" class="muted">Enter an amount above zero. Maximum stake: {{ config('shell.paper.max_stake') }} {{ $currency }}. The stake is reserved from your demo balance when the trade opens.</small></label>
+        <label>Stake ({{ $currency }})<input id="trade-stake" name="stake" type="number" inputmode="decimal" min="0.00000001" max="{{ config('shell.paper.max_stake') }}" step="0.00000001" value="10" required></label>
         <div class="stake-presets"><button type="button" data-stake="10">$10</button><button type="button" data-stake="25">$25</button><button type="button" data-stake="50">$50</button><button type="button" data-stake="100">$100</button></div>
         <label>Expiry duration<select name="duration">@foreach($durations as $duration)<option value="{{ $duration }}">{{ $duration>=3600?($duration/3600).' hour':($duration/60).' minutes' }}</option>@endforeach</select></label>
-        <div class="payout-preview"><span>Configured payout rate</span><strong>{{ $payoutPercentage }}%</strong><small>Potential total return: <b id="potential-return">—</b> {{ $currency }} including stake, if the prediction wins. A losing position loses the reserved stake; a tie returns the stake.</small></div>
+        <div class="payout-preview"><span>Potential total payout</span><strong><b id="potential-return">—</b> {{ $currency }}</strong><small>Estimated amount returned if this position wins, including your stake. A loss forfeits the stake; a tie returns the stake.</small></div>
         <details class="trade-process-hint"><summary>How this trade works <span>Quick guide</span></summary><ol><li>Choose the market, stake and expiry.</li><li>Select UP if you expect the price to rise, or DOWN if you expect it to fall.</li><li>We verify a fresh server price and reserve the stake from your demo wallet.</li><li>At expiry, the position settles against the next eligible server-captured quote. Your result appears in Trade history.</li></ol></details>
         <div class="direction-buttons"><button class="direction-up" type="submit" data-direction="UP">↗ UP <small>Price rises</small></button><button class="direction-down" type="submit" data-direction="DOWN">↘ DOWN <small>Price falls</small></button></div>
         <input type="hidden" name="direction" id="trade-direction" value="UP">
-        <p class="muted" id="trade-feedback" role="status">Select a direction to preview and open a simulated position.</p>
+        <p class="muted" id="trade-feedback" role="status" aria-live="polite"></p>
     </form>
 </section>
 </div>
