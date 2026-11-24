@@ -15,8 +15,12 @@ use InvalidArgumentException;
 
 class PaperTradingController extends Controller
 {
-    public function index(Request $request, LedgerService $ledger, MarketQuoteService $markets)
+    public function index(Request $request, LedgerService $ledger, MarketQuoteService $markets, PaperTradingService $tradesService)
     {
+        // Opportunistic server-side settlement ensures expired positions are processed
+        // whenever the client returns, even if the scheduler was temporarily offline.
+        $tradesService->settleDue();
+
         $currency = config('shell.paper.currency', 'USD');
         $wallet = $ledger->provisionClientWallets($request->user(), $currency)['demo'];
 
@@ -32,8 +36,11 @@ class PaperTradingController extends Controller
     }
 
 
-    public function show(Request $request, int $trade)
+    public function show(Request $request, int $trade, PaperTradingService $tradesService)
     {
+        // The status endpoint also triggers settlement for this user's expired positions.
+        $tradesService->settleDue();
+
         $position = DB::table('paper_trades')
             ->where('id', $trade)
             ->where('user_id', $request->user()->id)
