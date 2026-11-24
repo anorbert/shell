@@ -617,3 +617,17 @@ input,select,textarea{accent-color:var(--gold)}
   .topbar-nav > a { flex-basis: 30px !important; width: 30px !important; min-width: 30px !important; }
   .profile-trigger { width: 32px; }
 }
+
+
+/* Wallet account selector and selected-account workspace */
+.wallet-account-switch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.wallet-account-option{display:grid;gap:8px;padding:18px 20px;border:1px solid #2b3a50;border-radius:11px;background:#101a29;transition:border-color .18s,background .18s,transform .18s}
+.wallet-account-option:hover{border-color:#8b7449;transform:translateY(-1px)}
+.wallet-account-option.active{border-color:var(--gold);background:linear-gradient(145deg,#252315,#121b29);box-shadow:inset 0 0 0 1px #c8a96a30}
+.wallet-account-name{font-size:12px;font-weight:700;color:#dce3ed}
+.wallet-account-option strong{font:800 clamp(21px,2.5vw,29px) 'Manrope';color:#f1f4f8;font-variant-numeric:tabular-nums}
+.wallet-account-option strong small{font:600 11px 'DM Sans';color:#a8b4c5}
+.wallet-account-hint{font-size:11px;color:#8795a9}
+.wallet-detail-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+.wallet-topup-form{max-width:480px}
+@media(max-width:520px){.wallet-account-switch{gap:8px}.wallet-account-option{padding:13px 12px;gap:6px}.wallet-account-name{font-size:11px}.wallet-account-option strong{font-size:20px}.wallet-account-hint{font-size:9px;line-height:1.4}.wallet-detail-metrics{grid-template-columns:1fr 1fr}}
