@@ -39,6 +39,9 @@ class ManualWalletService
 
     public function requestWithdrawal(User $user, array $data): int
     {
+        if (!$this->hasSuccessfulDeposit($user)) {
+            throw new RuntimeException('At least one real-money deposit must be successfully confirmed before withdrawals are available.');
+        }
         if (!$this->hasApprovedKyc($user)) {
             throw new RuntimeException('An approved KYC profile is required before requesting a withdrawal.');
         }
@@ -138,6 +141,16 @@ class ManualWalletService
                 'Your withdrawal request #'.$requestId.' was marked paid by an administrator. Transaction reference: '.$transactionHash,
                 ['wallet_request_id' => $requestId, 'transaction_hash' => $transactionHash]);
         }, 3);
+    }
+
+    public function hasSuccessfulDeposit(User $user): bool
+    {
+        return DB::table('wallet_requests')
+            ->where('user_id', $user->id)
+            ->where('type', 'deposit')
+            ->where('status', 'confirmed')
+            ->whereNotNull('ledger_key')
+            ->exists();
     }
 
     public function hasApprovedKyc(User $user): bool
