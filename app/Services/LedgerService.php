@@ -147,7 +147,8 @@ class LedgerService
         $canonicalEntries = static function (array $rows): array {
             $totals = [];
             foreach ($rows as $row) {
-                $accountId = (int) ($row['account_id'] ?? $row->ledger_account_id ?? 0);
+                $row = (array) $row;
+                $accountId = (int) ($row['account_id'] ?? $row['ledger_account_id'] ?? 0);
                 $side = (string) ($row['side'] ?? '');
                 $amount = (string) ($row['amount'] ?? '0');
                 if ($accountId <= 0 || !in_array($side, ['debit', 'credit'], true)) {
