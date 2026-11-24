@@ -327,3 +327,88 @@ input,select,textarea{accent-color:var(--gold)}
     align-items: center !important;
   }
 }
+
+
+/* Client navigation hierarchy: dropdowns keep related wallet and market tools together */
+.topbar-nav-group {
+  position: relative;
+  flex: 0 0 auto;
+}
+.topbar-nav-group > summary {
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: #a3b0c2;
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.topbar-nav-group > summary::-webkit-details-marker { display: none; }
+.topbar-nav-group > summary:hover,
+.topbar-nav-group[open] > summary,
+.topbar-nav-group.is-active > summary {
+  background: #1a2638;
+  color: var(--gold2);
+  border-color: #c8a96a32;
+}
+.topbar-nav-group > summary .nav-icon { width: 15px; height: 15px; flex: 0 0 15px; }
+.topbar-nav-group .menu-chevron {
+  color: #8190a5;
+  font-size: 13px;
+  margin-left: 1px;
+  transition: transform .15s ease;
+}
+.topbar-nav-group[open] .menu-chevron { transform: rotate(180deg); }
+.topbar-submenu {
+  position: absolute;
+  z-index: 220;
+  top: calc(100% + 9px);
+  left: 0;
+  width: 220px;
+  display: grid;
+  gap: 3px;
+  padding: 7px;
+  border: 1px solid #35445a;
+  border-radius: 10px;
+  background: #111c2b;
+  box-shadow: 0 18px 55px #000b;
+}
+.topbar-submenu a {
+  display: flex !important;
+  flex: 0 0 auto !important;
+  align-items: center;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  min-height: 39px;
+  padding: 9px 10px !important;
+  border: 1px solid transparent !important;
+  border-radius: 7px;
+  color: #b4c0d0;
+  font-size: 11px;
+  line-height: 1.2 !important;
+  white-space: nowrap;
+}
+.topbar-submenu a:hover,
+.topbar-submenu a.active {
+  background: #1a2638;
+  border-color: #c8a96a32 !important;
+  color: var(--gold2);
+}
+.topbar-submenu .nav-icon { width: 16px; height: 16px; flex: 0 0 16px; }
+@media (min-width: 721px) and (max-width: 1250px) {
+  .topbar-nav-group > summary { padding-inline: 8px; }
+  .topbar-nav-group > summary > span:not(.menu-chevron) { display: none; }
+  .topbar-nav-group > summary .menu-chevron { display: none; }
+}
+@media (max-width: 720px) {
+  .topbar-nav { gap: 5px !important; }
+  .topbar-nav-group > summary { min-height: 36px; padding: 7px 9px; font-size: 10px; }
+  .topbar-submenu { position: fixed; top: auto; left: 12px; right: 12px; bottom: auto; width: auto; max-width: 360px; }
+}
