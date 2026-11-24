@@ -1858,7 +1858,7 @@
                 setPositionText('position-result', 'Trade expired. Settlement is being confirmed securely with the latest server-captured market quote…');
                 setPositionText('position-close', 'Settling securely…');
                 try {
-                    const data = await requestJson(@json(url('/trading/paper')) + '/' + activePosition.id + '/settle', { method: 'POST', timeoutMs: 40000 });
+                    const data = await requestJson(@json(url('/trading/paper')) + '/' + activePosition.id + '/settle', { method: 'POST', timeoutMs: 40000, retries: 2 });
                     if (data.trade?.status && data.trade.status !== 'open') {
                         data.trade.wallet_balance = data.wallet_balance;
                         showSettledResult(data.trade);
@@ -1977,7 +1977,7 @@
                     if (activePosition.status !== 'open') {
                         const settlement = await requestJson(@json(url('/trading/paper')) + '/' + activePosition.id + '/settle', {
                             method: 'POST',
-                            timeoutMs: 40000
+                            timeoutMs: 40000, retries: 2
                         });
                         const settledTrade = settlement.trade || activePosition;
                         settledTrade.wallet_balance = settlement.wallet_balance;
@@ -2052,7 +2052,7 @@
                 try {
                     const response = await requestJson(@json(url('/trading/settle-expired')), {
                         method: 'POST',
-                        timeoutMs: 40000
+                        timeoutMs: 40000, retries: 2
                     });
                     if (response.wallet_balance !== undefined && response.wallet_balance !== null) {
                         setText('demo-wallet-balance', money(response.wallet_balance) + ' {{ $currency }}');
