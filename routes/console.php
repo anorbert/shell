@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\\Foundation\\Inspiring;
-use Illuminate\\Support\\Facades\\Artisan;
-use Illuminate\\Support\\Facades\\Schedule;
+use Illuminate\Foundation\Inspiring;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -14,8 +14,8 @@ Schedule::command('shell:markets:refresh')
     ->everyMinute()
     ->withoutOverlapping(2);
 
-// Run settlement throughout the minute, not only once per minute. The one-minute
-// lock expiry prevents a killed scheduler process from blocking settlement all day.
+// Run settlement throughout the minute, not only once per minute. A short lock
+// expiry prevents a killed scheduler process from blocking settlement all day.
 Schedule::command('shell:paper:settle')
     ->everyTenSeconds()
     ->withoutOverlapping(1);
