@@ -4,7 +4,7 @@
 <div class="page-action-row">
     <a href="{{ route('convert.index') }}" class="button button-secondary"><svg class="nav-icon"><use href="#i-repeat"/></svg> Convert assets</a>
 </div>
-<div class="notice-banner"><span class="notice-icon">i</span><div><strong>Live market overview</strong><p>Prices are sourced from Binance Spot. The platform prioritises fresh quotes for market browsing and demo trade validation.</p></div><span class="mode-tag">SPOT DATA</span></div>
+<x-client-attention title="Live market overview" tag="SPOT DATA"><p>Prices are sourced from Binance Spot. The platform prioritises fresh quotes for market browsing and demo trade validation.</p></x-client-attention>
 <section class="panel"><div class="panel-head"><div><span class="eyebrow">USDT PAIRS</span><h2>Available quotes</h2></div><button class="button button-quiet" id="refresh-markets" type="button">Refresh view</button></div>
 <form id="market-filters" class="filter-row"><label>Search pair <input name="search" placeholder="Search BTC, ETH..."></label><label>Sort <select name="sort"><option value="symbol">Symbol</option><option value="price_desc">Price: high to low</option><option value="price_asc">Price: low to high</option></select></label><label class="inline-check"><input type="checkbox" name="favorites" value="1"> Favorites only</label></form>
 <div class="table-wrap"><table class="data-table"><thead><tr><th>PAIR</th><th>PRICE (USDT)</th><th>PROVIDER</th><th>CAPTURED</th><th>WATCHLIST</th></tr></thead><tbody id="market-rows">
