@@ -63,7 +63,7 @@
             <div><span>Expiry</span><strong id="position-expiry">—</strong></div>
             <div><span>Time remaining</span><strong id="position-countdown">—</strong></div>
         </div>
-        <div class="position-result" id="position-result" aria-live="polite">Your position is active. Live movement is indicative; the final result is confirmed by server settlement.</div>
+        <div class="position-result" id="position-result" aria-live="polite">LIVE POSITION · Current price and movement update as the market changes.</div>
         <button type="button" class="button button-primary position-close" id="position-close" disabled>Waiting for result…</button>
     </section>
 </div>
@@ -85,7 +85,7 @@
 @media(max-width:720px){.market-chart-wrap{height:330px}.chart-market-summary{align-items:flex-start;flex-direction:column}.chart-ohlc{justify-content:flex-start;gap:8px 12px}.chart-toolbar{align-items:flex-start;flex-direction:column}.chart-intervals{width:100%;justify-content:space-between}.chart-foot{font-size:9px}}
 @media(max-width:420px){.market-chart-wrap{height:290px}.chart-ohlc{font-size:9px;gap:7px}.chart-toolbar{padding-inline:12px}.chart-intervals button{min-width:32px;padding-inline:5px}}
 
-.position-modal{display:none;position:fixed;inset:0;z-index:10000;align-items:center;justify-content:center;padding:18px}.position-modal.is-visible{display:flex}.position-modal-backdrop{position:absolute;inset:0;background:rgba(2,7,15,.82);backdrop-filter:blur(7px)}.position-modal-card{position:relative;width:min(100%,490px);max-height:calc(100vh - 36px);overflow:auto;border:1px solid #35445a;border-radius:16px;background:#101b2b;box-shadow:0 24px 90px #0009;padding:22px;color:#e8eef7}.position-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.position-modal-head h2{margin:5px 0 0;font-size:21px}.position-market-line{display:flex;align-items:center;gap:10px;margin:20px 0 12px}.position-market-line strong{font-size:17px}.position-market-line span{font-size:11px;font-weight:800;border-radius:5px;padding:5px 9px;background:#173a36;color:#53d6aa}.position-market-line span.down{background:#44252d;color:#ff8996}.position-live-price{padding:16px;border-radius:10px;background:#0a1422;border:1px solid #29384d;display:grid;gap:6px}.position-live-price>span,.position-details-grid span{font-size:10px;color:#91a0b4;letter-spacing:.06em}.position-live-price strong{font-size:clamp(25px,6vw,34px);font-variant-numeric:tabular-nums}.position-live-price small{font-size:11px;color:#9aa9bc}.position-details-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:13px 0}.position-details-grid>div{display:grid;gap:6px;padding:12px;border:1px solid #29384d;border-radius:8px}.position-details-grid strong{font-size:13px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.position-result{padding:12px;border-radius:8px;background:#19283a;color:#c2cede;font-size:12px;line-height:1.5}.position-result.is-win{background:#12382f;color:#7de0bd}.position-result.is-loss{background:#42232c;color:#ff9aa5}.position-close{width:100%;margin-top:14px}.position-close:disabled{opacity:.55;cursor:not-allowed}@media(max-width:420px){.position-modal-card{padding:17px}.position-details-grid{gap:7px}.position-details-grid>div{padding:10px}}
+.position-modal{display:none;position:fixed;inset:0;z-index:10000;align-items:center;justify-content:center;padding:18px}.position-modal.is-visible{display:flex}.position-modal-backdrop{position:absolute;inset:0;background:rgba(2,7,15,.82);backdrop-filter:blur(7px)}.position-modal-card{position:relative;width:min(100%,490px);max-height:calc(100vh - 36px);overflow:auto;border:1px solid #35445a;border-radius:16px;background:#101b2b;box-shadow:0 24px 90px #0009;padding:22px;color:#e8eef7}.position-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.position-modal-head h2{margin:5px 0 0;font-size:21px}.position-market-line{display:flex;align-items:center;gap:10px;margin:20px 0 12px}.position-market-line strong{font-size:17px}.position-market-line span{font-size:11px;font-weight:800;border-radius:5px;padding:5px 9px;background:#173a36;color:#53d6aa}.position-market-line span.down{background:#44252d;color:#ff8996}.position-live-price{padding:16px;border-radius:10px;background:#0a1422;border:1px solid #29384d;display:grid;gap:6px}.position-live-price>span,.position-details-grid span{font-size:10px;color:#91a0b4;letter-spacing:.06em}.position-live-price strong{font-size:clamp(25px,6vw,34px);font-variant-numeric:tabular-nums}.position-live-price strong{transition:color .15s ease,text-shadow .15s ease}.position-live-price small{font-size:11px;color:#9aa9bc}.position-details-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:13px 0}.position-details-grid>div{display:grid;gap:6px;padding:12px;border:1px solid #29384d;border-radius:8px}.position-details-grid strong{font-size:13px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.position-result{padding:12px;border-radius:8px;background:#19283a;color:#c2cede;font-size:12px;line-height:1.5}.position-result.is-win{background:#12382f;color:#7de0bd}.position-result.is-loss{background:#42232c;color:#ff9aa5}.position-close{width:100%;margin-top:14px}.position-close:disabled{opacity:.55;cursor:not-allowed}@media(max-width:420px){.position-modal-card{padding:17px}.position-details-grid{gap:7px}.position-details-grid>div{padding:10px}}
 </style>
 @endpush
 
@@ -101,6 +101,22 @@
     const palette = { text:'#8b9ab0', muted:'#65758b', grid:'rgba(139,154,176,.13)', border:'#26364b', up:'#22b78b', down:'#ed6474', crosshair:'rgba(190,204,222,.55)', panel:'#0b1421' };
     let interval = '15m', candles = [], loadingRequest = false, failed = false, crosshair = null, visibleCandles = 80;
     let plot = null, liveSocket = null, reconnectTimer = null, reconnectAttempts = 0, streamGeneration = 0;
+
+    const requestJson = async (url, options = {}) => {
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+        const response = await fetch(url, { ...options, headers: {
+            Accept:'application/json','X-Requested-With':'XMLHttpRequest',
+            ...(csrf?{'X-CSRF-TOKEN':csrf}:{}), ...(options.headers||{})
+        }});
+        const payload = await response.json().catch(()=>({}));
+        if(!response.ok) throw new Error(payload.message || 'The request could not be completed.');
+        return payload;
+    };
+    const notify = (message,type='success') => {
+        if(typeof window.shellToast==='function'){notify(message,type);return;}
+        const region=document.getElementById('toast-region');
+        if(region){const item=document.createElement('div');item.className='toast toast-'+type;item.textContent=message;region.appendChild(item);window.setTimeout(()=>item.remove(),4200);}
+    };
 
     const number = value => Number(value);
     const formatPrice = value => {
@@ -290,7 +306,7 @@
         setText('chart-health', 'LOADING');
         setText('chart-symbol', symbol);
         try {
-            const result = await window.shellAjax(@json(route('markets.candles')) + '?' + new URLSearchParams({symbol,interval:selectedInterval,limit:'200'}));
+            const result = await requestJson(@json(route('markets.candles')) + '?' + new URLSearchParams({symbol,interval:selectedInterval,limit:'200'}));
             if (generation !== streamGeneration) return;
             if (!Array.isArray(result.candles) || !result.candles.length) throw new Error('No candle data is available for this market.');
             candles = result.candles.map(c => ({...c,time:number(c.time)}))
@@ -298,6 +314,8 @@
             if (!candles.length) throw new Error('The market returned invalid candle data.');
             updateSummary();
             draw();
+            const initialCandle=candles[candles.length-1];
+            if(initialCandle)window.dispatchEvent(new CustomEvent('shell:market-price',{detail:{symbol,price:initialCandle.close}}));
             setText('chart-health', 'CONNECTING');
             setText('chart-updated', 'Opening live market stream…');
             connectLiveStream(symbol, selectedInterval, generation);
@@ -365,10 +383,14 @@
         const opening=Number(activePosition.opening_price),delta=latestStreamPrice-opening;
         const favorable=activePosition.direction==='UP'?delta>0:delta<0;
         const pct=opening?Math.abs(delta/opening*100):0;
-        setPositionText('position-current-price',priceText(latestStreamPrice));
+        const price=document.getElementById('position-current-price');
+        price.textContent=priceText(latestStreamPrice);
+        price.style.color=delta===0?'#dce5f2':favorable?'#53d6aa':'#ff8996';
+        price.style.textShadow=delta===0?'none':favorable?'0 0 22px #22b78b44':'0 0 22px #ed647444';
         const move=document.getElementById('position-price-move');
-        move.textContent=(delta>0?'+':'')+priceText(delta)+' ('+(delta>0?'+':'')+(opening?(delta/opening*100).toFixed(4):'0.0000')+'%) · '+(delta===0?'At opening':favorable?'Currently favorable':'Currently unfavorable');
+        move.textContent=(delta>0?'+':'')+priceText(delta)+'  ('+(delta>0?'+':'')+(opening?(delta/opening*100).toFixed(4):'0.0000')+'%)  ·  '+(delta===0?'AT OPEN':favorable?'IN THE MONEY':'OUT OF THE MONEY');
         move.style.color=delta===0?'#aab8c9':favorable?'#53d6aa':'#ff8996';
+        move.style.fontWeight='800';
     }
     window.addEventListener('shell:market-price',event=>{if(activePosition&&event.detail?.symbol===activePosition.symbol)updatePositionPrice(event.detail.price);});
     function updatePositionClock(){
@@ -379,12 +401,11 @@
     async function pollPosition(){
         if(!activePosition)return;
         try{
-            const data=await window.shellAjax(@json(url('/trading/paper'))+'/'+activePosition.id,{method:'GET',headers:{'Accept':'application/json'}});
+            const data=await requestJson(@json(url('/trading/paper'))+'/'+activePosition.id,{method:'GET',headers:{'Accept':'application/json'}});
             const trade=data.trade;
             activePosition=trade;
             setPositionText('position-status',trade.status.toUpperCase());
             if(trade.status==='open'){
-                setPositionText('position-result','Your position is active. Live movement is indicative; the final result is confirmed by server settlement.');
                 return;
             }
             if(positionPollTimer){window.clearInterval(positionPollTimer);positionPollTimer=null;}
@@ -398,17 +419,17 @@
             setPositionText('position-countdown','Settled');
             setPositionText('position-close','Close result');
             document.getElementById('position-close').disabled=false;
-            window.shellToast('Trade settled: '+status);
+            notify('Trade settled: '+status);
         }catch(error){setPositionText('position-result','Connection interrupted. This position remains recorded. Reconnecting to retrieve the confirmed result…');}
     }
     async function openPositionModal(id){
         const modal=positionModal;
         modal.classList.add('is-visible');modal.setAttribute('aria-hidden','false');
         document.getElementById('position-close').disabled=true;
-        setPositionText('position-result','Trade opened. Connecting to live position updates…');
+        setPositionText('position-result','LIVE POSITION · Waiting for the first market update…');
         setPositionText('position-close','Waiting for result…');
         try{
-            const data=await window.shellAjax(@json(url('/trading/paper'))+'/'+id,{method:'GET',headers:{'Accept':'application/json'}});
+            const data=await requestJson(@json(url('/trading/paper'))+'/'+id,{method:'GET',headers:{'Accept':'application/json'}});
             activePosition=data.trade;latestStreamPrice=null;
             setPositionText('position-symbol',activePosition.symbol);
             setPositionText('position-direction',activePosition.direction+' · '+(activePosition.direction==='UP'?'PRICE RISE':'PRICE FALL'));
@@ -443,10 +464,10 @@
         const feedback=document.getElementById('trade-feedback');feedback.textContent='Validating fresh market price and reserving demo stake…';
         try{
             const payload=Object.fromEntries(new FormData(form).entries());
-            const result=await window.shellAjax(@json(route('trading.store')),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-            feedback.textContent=result.message;window.shellToast(result.message);
+            const result=await requestJson(@json(route('trading.store')),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+            feedback.textContent=result.message;notify(result.message);
             if(result.trade_id){await openPositionModal(result.trade_id);}
-        }catch(error){feedback.textContent=error.message;window.shellToast(error.message,'error');}
+        }catch(error){feedback.textContent=error.message;notify(error.message,'error');}
         finally{form.dataset.submitting='false';buttons.forEach(button=>button.disabled=false);}
     });
 })();
