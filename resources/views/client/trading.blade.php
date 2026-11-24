@@ -3,13 +3,10 @@
 @section('eyebrow', 'FIXED-TIME OPTIONS SIMULATOR')
 @section('heading', 'Trading terminal')
 @section('content')
-    <div class="notice-banner">
-        <span class="notice-icon">i</span>
-        <div><strong>Demo trading is ready</strong>
-            <p>Practise fixed-time UP and DOWN positions with demo credits. Market charts provide visual context, while the
-                platform validates server-captured quotes for trade opening and settlement.</p>
-        </div><span class="mode-tag">PAPER ONLY</span>
-    </div>
+    <x-client-attention title="Demo trading is ready" tag="PAPER ONLY">
+        <p>Practise fixed-time UP and DOWN positions with demo credits. Market charts provide visual context, while the
+            platform validates server-captured quotes for trade opening and settlement.</p>
+    </x-client-attention>
 
     <div class="trading-layout">
         <section class="panel trading-chart-panel">
