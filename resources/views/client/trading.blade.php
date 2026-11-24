@@ -1465,9 +1465,22 @@
                         });
                         const trade = response.trade;
                         if (trade.status !== 'open') {
+                            if (activePosition && Number(activePosition.id) === Number(trade.id)) {
+                                await pollPosition();
+                                return;
+                            }
+                            if (row.cells[4]) row.cells[4].textContent = priceText(trade.closing_price);
+                            if (row.cells[6]) row.cells[6].textContent = 'Settled';
+                            if (row.cells[7]) {
+                                const status = String(trade.status).toUpperCase();
+                                row.cells[7].textContent = status === 'WON' ? 'WIN' : status === 'LOST' ? 'LOSS' : 'TIE';
+                                row.cells[7].className = 'table-status ' + (status === 'WON' ? 'verified' : status === 'LOST' ? 'rejected' : 'pending');
+                            }
+                            row.removeAttribute('data-open-trade');
+                            // Do not reload the terminal underneath another live position.
+                            if (activePosition && activePosition.status === 'open') return;
                             settlementRefreshPending = true;
-                            window.location
-                                .reload(); // refreshes closing price, result and wallet balance from server
+                            window.location.reload();
                             return;
                         }
                     } catch (error) {
@@ -1704,7 +1717,7 @@
                     );
                 }
             }
-            async function openPositionModal(id) {
+            async function openPositionModal(id, initialTrade = null) {
                 const modal = positionModal;
                 modal.classList.add('is-visible');
                 modal.setAttribute('aria-hidden', 'false');
@@ -1712,7 +1725,7 @@
                 setPositionText('position-result', 'LIVE POSITION · Waiting for the first market update…');
                 setPositionText('position-close', 'Waiting for result…');
                 try {
-                    const data = await requestJson(@json(url('/trading/paper')) + '/' + id, {
+                    const data = initialTrade ? { trade: initialTrade } : await requestJson(@json(url('/trading/paper')) + '/' + id, {
                         method: 'GET',
                         headers: {
                             'Accept': 'application/json'
@@ -1823,8 +1836,17 @@
                         method: 'POST',
                         timeoutMs: 40000
                     });
+                    if (response.wallet_balance !== undefined && response.wallet_balance !== null) {
+                        setText('demo-wallet-balance', money(response.wallet_balance) + ' {{ $currency }}');
+                    }
                     if (Number(response.settled_count || 0) > 0) {
-                        window.location.reload();
+                        // If the visible position was settled by the scheduler or
+                        // this recovery request, hydrate its result in-place.
+                        if (activePosition && activePosition.status === 'open') {
+                            await pollPosition();
+                        } else {
+                            window.location.reload();
+                        }
                         return;
                     }
                     if (response.has_due) scheduleExpiredSettlementRetry();
@@ -1884,8 +1906,11 @@
                     });
                     feedback.textContent = result.message;
                     notify(result.message);
+                    if (result.wallet_balance !== undefined && result.wallet_balance !== null) {
+                        setText('demo-wallet-balance', money(result.wallet_balance) + ' {{ $currency }}');
+                    }
                     if (result.trade_id) {
-                        await openPositionModal(result.trade_id);
+                        await openPositionModal(result.trade_id, result.trade || null);
                     }
                 } catch (error) {
                     feedback.textContent = error.message;
