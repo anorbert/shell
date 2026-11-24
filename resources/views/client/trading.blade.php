@@ -911,14 +911,18 @@
                         if (response.status === 401 || response.status === 419) {
                             notify('Your session has expired. Please sign in again.', 'error');
                             window.location.assign('/login');
-                            throw new Error('Your session has expired. Sign in again to continue.');
+                            const authError = new Error('Your session has expired. Sign in again to continue.');
+                            authError.status = response.status;
+                            throw authError;
                         }
 
                         const contentType = response.headers.get('content-type') || '';
                         if (!contentType.includes('application/json')) {
                             if (response.redirected || response.status === 200) {
                                 window.location.assign('/login');
-                                throw new Error('Your session has expired. Sign in again to continue.');
+                                const authError = new Error('Your session has expired. Sign in again to continue.');
+                                authError.status = response.status || 401;
+                                throw authError;
                             }
                         }
 
