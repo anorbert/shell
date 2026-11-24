@@ -69,7 +69,7 @@ class PaperTradingController extends Controller
                 'settled_count' => $service->settleDue(),
                 'has_due' => true,
             ]);
-        } catch (\\Throwable $exception) {
+        } catch (\Throwable $exception) {
             report($exception);
             return response()->json([
                 'message' => 'Settlement is temporarily unavailable. Your expired position remains recorded and will be retried.',
