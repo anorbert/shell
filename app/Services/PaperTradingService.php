@@ -194,6 +194,7 @@ class PaperTradingService
             ->where('captured_at', '<=', $deadline)
             ->where('captured_at', '<=', now('UTC'))
             ->orderBy('captured_at')
+            ->orderBy('id')
             ->first();
     }
 
