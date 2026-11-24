@@ -22,14 +22,14 @@ class MarketQuoteService
         $allowed = array_flip(config('shell.market.symbols', []));
         // Record server receipt time after the provider response, not before
         // the network request. This prevents snapshots being timestamped early.
-        $capturedAt = now();
+        $capturedAt = now('UTC');
         $count = 0;
 
         foreach ($response->json() as $item) {
             $symbol = $item['symbol'] ?? null;
             $price = $item['price'] ?? null;
 
-            if (!is_string($symbol) || !isset($allowed[$symbol]) || !is_string($price) || !preg_match('/^[0-9]{1,16}(?:\.[0-9]{1,12})?$/', $price) || (float) $price <= 0) {
+            if (!is_string($symbol) || !isset($allowed[$symbol]) || !is_string($price) || !preg_match('/^[0-9]{1,16}(?:\.[0-9]{1,12})?$/', $price) || !preg_match('/[1-9]/', $price)) {
                 continue;
             }
 
@@ -172,11 +172,11 @@ class MarketQuoteService
             || ($item['symbol'] ?? null) !== $symbol
             || !is_string($price)
             || !preg_match('/^[0-9]{1,16}(?:\\.[0-9]{1,12})?$/', $price)
-            || (float) $price <= 0) {
+            || !preg_match('/[1-9]/', $price)) {
             throw new RuntimeException('Market provider did not return a valid live price for ' . $symbol . '.');
         }
 
-        $capturedAt = now();
+        $capturedAt = now('UTC');
         DB::table('market_quotes')->updateOrInsert(
             ['symbol' => $symbol],
             [
@@ -216,8 +216,8 @@ class MarketQuoteService
             );
         }
 
-        $capturedAt = strtotime((string) $quote->captured_at);
-        if ($capturedAt === false || $capturedAt > time() || $capturedAt < now()->subSeconds(10)->timestamp) {
+        $capturedAt = \\Illuminate\\Support\\Carbon::parse((string) $quote->captured_at, 'UTC');
+        if ($capturedAt->greaterThan(now('UTC')) || $capturedAt->lessThan(now('UTC')->subSeconds(10))) {
             throw new RuntimeException(
                 'The market quote for ' . $symbol . ' is stale or has an invalid timestamp. Your demo stake has not been deducted.'
             );
@@ -239,9 +239,9 @@ class MarketQuoteService
 
         $maxAge = max(5, (int) config('shell.market.max_age_seconds', 90));
         $quote = DB::table('market_quotes')->where('symbol', $symbol)->first();
-        $minimumCapturedAt = now()->subSeconds($maxAge);
+        $minimumCapturedAt = now('UTC')->subSeconds($maxAge);
 
-        if (!$quote || $quote->captured_at < $minimumCapturedAt || $quote->captured_at > now()) {
+        if (!$quote || \\Illuminate\\Support\\Carbon::parse((string) $quote->captured_at, 'UTC')->lessThan($minimumCapturedAt) || \\Illuminate\\Support\\Carbon::parse((string) $quote->captured_at, 'UTC')->greaterThan(now('UTC'))) {
             throw new RuntimeException('A recent server market quote is unavailable for ' . $symbol . '.');
         }
 
