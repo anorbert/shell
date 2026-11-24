@@ -3,6 +3,10 @@
 @section('eyebrow', 'CLIENT WORKSPACE')
 @section('heading', 'Good day, '.explode(' ', $user->name)[0])
 @section('content')
+<div class="page-action-row dashboard-primary-actions">
+    <a href="{{ route('wallet-requests.index') }}#deposit-form" class="button button-primary button-large"><svg class="nav-icon"><use href="#i-wallet"/></svg> Deposit funds</a>
+    <a href="{{ route('wallet-requests.index') }}" class="button button-quiet">Wallet activity</a>
+</div>
 <div class="notice-banner"><span class="notice-icon">i</span><div><strong>Two independent wallets</strong><p>Your demo wallet starts with $20,000 in non-withdrawable simulation credits. You can add demo funds. The real wallet starts at $0 and will only be credited after a confirmed real-money deposit.</p></div><span class="mode-tag">DUAL WALLET</span></div>
 <div class="metric-grid">
     <article class="metric-card"><span class="metric-label">DEMO WALLET · USD</span><strong>@money($demoBalance)</strong><small>Active · simulated funds</small></article>
