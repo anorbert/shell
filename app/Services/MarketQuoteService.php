@@ -20,6 +20,8 @@ class MarketQuoteService
         }
 
         $allowed = array_flip(config('shell.market.symbols', []));
+        // Record server receipt time after the provider response, not before
+        // the network request. This prevents snapshots being timestamped early.
         $capturedAt = now();
         $count = 0;
 
