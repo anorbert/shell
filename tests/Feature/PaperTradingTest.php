@@ -319,7 +319,7 @@ test('a trade without a verified post-expiry quote is voided and fully refunded'
         ->and($ledger->balanceUnits($wallet))->toBe(10000000000)
         ->and(DB::table('ledger_transactions')->where('idempotency_key', 'paper-settle:' . $tradeId)->count())->toBe(1);
 });
-test('expired trades settle when the first verified post-expiry quote arrives after the former grace period', function () {
+test('a quote captured outside the expiry window causes a full void refund', function () {
     Http::fake([
         'api.binance.com/api/v3/ticker/price*' => Http::response([
             'symbol' => 'BTCUSDT',
@@ -327,13 +327,12 @@ test('expired trades settle when the first verified post-expiry quote arrives af
         ], 200),
     ]);
 
-
     $user = User::factory()->create();
     $user->markEmailAsVerified();
     $ledger = app(LedgerService::class);
     $ledger->creditPaperWallet($user, '100.00000000');
 
-    $openingAt = now();
+    $openingAt = now('UTC');
     DB::table('market_quotes')->insert([
         'symbol' => 'BTCUSDT',
         'price' => '90000.000000000000',
@@ -344,9 +343,7 @@ test('expired trades settle when the first verified post-expiry quote arrives af
     ]);
 
     $tradeId = app(PaperTradingService::class)->open($user, 'BTCUSDT', 'UP', '10.00000000', 60, 'test-delayed-expiry-quote');
-    $expiredAt = now()->subMinutes(7);
-    // The provider quote used to open the trade must remain before the
-    // artificially backdated expiry in this test fixture.
+    $expiredAt = now('UTC')->subMinutes(7);
     DB::table('market_quote_snapshots')->where('symbol', 'BTCUSDT')->update([
         'captured_at' => $expiredAt->copy()->subSecond(),
     ]);
@@ -354,24 +351,19 @@ test('expired trades settle when the first verified post-expiry quote arrives af
         'opened_at' => $expiredAt->copy()->subMinute(),
         'expires_at' => $expiredAt,
     ]);
-
-    // The only available post-expiry snapshot is seven minutes late. The former
-    // five-minute cutoff selected this earliest snapshot, rejected it forever,
-    // and left the position open even when newer quotes were available.
     DB::table('market_quote_snapshots')->insert([
         'symbol' => 'BTCUSDT',
         'price' => '91000.000000000000',
-        'captured_at' => now(),
+        'captured_at' => now('UTC'),
     ]);
 
     expect(app(PaperTradingService::class)->settleDue())->toBe(1)
-        ->and(DB::table('paper_trades')->where('id', $tradeId)->value('status'))->toBe('won')
-        ->and((float) DB::table('paper_trades')->where('id', $tradeId)->value('closing_price'))->toBe(91000.0)
-        ->and($ledger->balanceUnits($ledger->wallet($user)))->toBe(2010800000000)
+        ->and(DB::table('paper_trades')->where('id', $tradeId)->value('status'))->toBe('void')
+        ->and(DB::table('paper_trades')->where('id', $tradeId)->value('closing_price'))->toBeNull()
+        ->and($ledger->balanceUnits($ledger->wallet($user)))->toBe(10000000000)
         ->and(app(PaperTradingService::class)->settleDue())->toBe(0)
         ->and(DB::table('ledger_transactions')->where('idempotency_key', 'paper-settle:' . $tradeId)->count())->toBe(1);
 });
-
 test('an expired winning paper trade settles once using a post-expiry quote', function () {
     Http::fake([
         'api.binance.com/api/v3/ticker/price*' => Http::response([
@@ -397,7 +389,7 @@ test('an expired winning paper trade settles once using a post-expiry quote', fu
     ]);
 
     $tradeId = app(PaperTradingService::class)->open($user, 'BTCUSDT', 'UP', '10.00000000', 60, 'test-winning-trade');
-    $expiredAt = now()->subMinute();
+    $expiredAt = now('UTC')->subSeconds(5);
     // Move the opening snapshot before this test's backdated expiry.
     DB::table('market_quote_snapshots')->where('symbol', 'BTCUSDT')->update([
         'captured_at' => $expiredAt->copy()->subSecond(),
@@ -563,7 +555,7 @@ test('repeated settlement workers cannot credit the same expired trade twice', f
     $ledger = app(LedgerService::class);
     $ledger->creditPaperWallet($user, '100.00000000');
 
-    $openedAt = now('UTC')->subMinutes(2);
+    $openedAt = now('UTC')->subSeconds(65);
     $tradeKey = 'two-settlement-workers-one-trade';
     $wallet = $ledger->demoWallet($user);
     $escrow = $ledger->system('PAPER_ESCROW', 'USD');
