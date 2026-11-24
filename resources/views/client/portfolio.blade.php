@@ -5,8 +5,8 @@
 @section('content')
 <div class="notice-banner"><span class="notice-icon">i</span><div><strong>Two independent wallets</strong><p>Your demo wallet starts with $20,000 in non-withdrawable simulation credits. You can add demo credits. Real wallet deposits and withdrawals are handled through manual crypto requests and admin confirmation.</p></div><span class="mode-tag">SEPARATE LEDGERS</span></div>
 <div class="metric-grid">
-    <article class="metric-card"><span class="metric-label">DEMO WALLET · USD</span><strong>{{ $demoBalance }}</strong><small>Simulation credits only</small></article>
-    <article class="metric-card"><span class="metric-label">REAL WALLET · USD</span><strong>{{ $realBalance }}</strong><small>Real deposit balance · starts at zero</small></article>
+    <article class="metric-card"><span class="metric-label">DEMO WALLET · USD</span><strong>@money($demoBalance)</strong><small>Simulation credits only</small></article>
+    <article class="metric-card"><span class="metric-label">REAL WALLET · USD</span><strong>@money($realBalance)</strong><small>Real deposit balance · starts at zero</small></article>
     <article class="metric-card"><span class="metric-label">DEMO WITHDRAWALS</span><strong>Not allowed</strong><small>Simulation credits have no cash value</small></article>
     <article class="metric-card"><span class="metric-label">REAL FUNDING</span><strong>Manual review</strong><small>Deposits and withdrawals require admin confirmation</small></article>
 </div>
@@ -14,10 +14,10 @@
     <section class="panel">
         <div class="panel-head"><div><span class="eyebrow">SIMULATION ENVIRONMENT</span><h2>Demo wallet</h2></div><span class="table-status verified">ACTIVE</span></div>
         <p class="muted">Used for demo trading and simulated conversions. Add $100–$20,000 per top-up. Demo credits cannot be withdrawn or transferred to the real wallet. Crypto conversion prices use USDT market quotes as a 1:1 USD reference.</p>
-        <div class="metric-card"><span class="metric-label">AVAILABLE USD</span><strong id="demo-wallet-balance">{{ $demoBalance }}</strong></div>
+        <div class="metric-card"><span class="metric-label">AVAILABLE USD</span><strong id="demo-wallet-balance">@money($demoBalance)</strong></div>
         <button class="button button-primary" type="button" data-modal-open="#demo-topup-modal">Add demo funds</button>
         <div class="table-wrap"><table class="data-table"><thead><tr><th>ASSET</th><th>DEMO BALANCE</th><th>TYPE</th></tr></thead><tbody>
-        @forelse($demoBalances as $asset)<tr><td><strong>{{ $asset['currency'] }}</strong></td><td>{{ $asset['balance'] }}</td><td><span class="table-status verified">DEMO</span></td></tr>@empty<tr><td colspan="3" class="table-empty">No demo balances yet.</td></tr>@endforelse
+        @forelse($demoBalances as $asset)<tr><td><strong>{{ $asset['currency'] }}</strong></td><td>@decimal($asset['balance'])</td><td><span class="table-status verified">DEMO</span></td></tr>@empty<tr><td colspan="3" class="table-empty">No demo balances yet.</td></tr>@endforelse
         </tbody></table></div>
         <a class="text-link" href="{{ route('trading.index') }}">Open demo trading ↗</a>
         <span class="muted"> · </span>
@@ -26,7 +26,7 @@
     <section class="panel">
         <div class="panel-head"><div><span class="eyebrow">REAL-MONEY ENVIRONMENT</span><h2>Real wallet</h2></div><span class="table-status pending">NOT FUNDED</span></div>
         <p class="muted">This wallet is independent of demo trading. Its opening balance is $0. Submit a crypto deposit request and it will be credited only after an administrator verifies the transaction.</p>
-        <div class="metric-card"><span class="metric-label">AVAILABLE USD</span><strong>{{ $realBalance }}</strong></div>
+        <div class="metric-card"><span class="metric-label">AVAILABLE USD</span><strong>@money($realBalance)</strong></div>
         <a class="button button-primary" href="{{ route('wallet-requests.index') }}">Open deposit / withdrawal center</a>
         <p class="muted">Withdrawals require approved KYC and are manually paid by an administrator. Real-money trading remains disabled.</p>
     </section>
@@ -60,7 +60,7 @@ document.getElementById('demo-topup-form')?.addEventListener('submit', async (ev
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ amount: form.amount.value, request_key: crypto.randomUUID() }),
         });
-        document.getElementById('demo-wallet-balance').textContent = result.balance;
+        document.getElementById('demo-wallet-balance').textContent = new Intl.NumberFormat(undefined,{maximumFractionDigits:2}).format(Number(result.balance));
         message.textContent = result.message;
         window.shellToast(result.message);
         form.reset();
