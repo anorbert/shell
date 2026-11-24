@@ -27,8 +27,11 @@ class ActivityController extends Controller
             ->orderByDesc('opened_at');
     }
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request, \\App\\Services\\PaperTradingService $settlement)
     {
+        // Catch up expired demo positions when the user opens trade activity.
+        $settlement->settleDue();
+
         $trades = $this->query($request)->paginate(20)->withQueryString();
 
         return view('client.activity', compact('trades'));
