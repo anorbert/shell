@@ -8,7 +8,7 @@
     <article class="metric-card"><span class="metric-label">DEMO WALLET · USD</span><strong>@money($demoBalance)</strong><small>Active · simulated funds</small></article>
     <article class="metric-card"><span class="metric-label">REAL WALLET · USD</span><strong>@money($realBalance)</strong><small>Separate ledger · not funded</small></article>
     <article class="metric-card"><span class="metric-label">FRESH MARKET PAIRS</span><strong>{{ $quotes->count() }}</strong><small>{{ $marketConnected ? 'Provider quotes available' : 'No fresh provider quotes' }}</small></article>
-    <article class="metric-card"><span class="metric-label">REAL-MONEY STATUS</span><strong>Disabled</strong><small>Deposits and withdrawals unavailable</small></article>
+    <article class="metric-card"><span class="metric-label">TRADING MODE</span><strong>Demo active</strong><small>Fixed-time simulated trading</small></article>
 </div>
 <div class="content-grid">
 <section class="panel"><div class="panel-head"><div><span class="eyebrow">YOUR FIRST SESSION</span><h2>Start trading in demo mode</h2></div><span class="table-status verified">GUIDE</span></div>
@@ -20,6 +20,6 @@
 </div></section>
 <section class="panel"><div class="panel-head"><div><span class="eyebrow">MARKET WATCH</span><h2>Market overview</h2></div><a href="{{ route('markets.index') }}" class="text-link">View markets ↗</a></div>
 @if($marketConnected)<div class="table-wrap"><table class="data-table"><thead><tr><th>PAIR</th><th>PRICE (USDT)</th><th>PROVIDER</th><th>CAPTURED</th></tr></thead><tbody>@foreach($quotes->take(6) as $quote)<tr><td><strong>{{ $quote->symbol }}</strong></td><td>@decimal($quote->price)</td><td>{{ $quote->provider }}</td><td>{{ $quote->captured_at }}</td></tr>@endforeach</tbody></table></div>
-@else<div class="empty-state"><div class="empty-icon">⌁</div><strong>No fresh provider quotes</strong><p>Trading is blocked until a valid fresh quote is available. Check the administrator Operations page for provider health.</p></div>@endif
+@else<div class="empty-state"><div class="empty-icon">⌁</div><strong>Market prices are being refreshed</strong><p>Current provider prices appear here as soon as a fresh market quote is available. Your demo wallet and account tools remain accessible.</p></div>@endif
 </section></div>
 @endsection
