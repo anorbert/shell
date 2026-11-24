@@ -137,7 +137,7 @@ class MarketQuoteService
         if (!$isFresh($quote)) {
             try {
                 $this->refresh();
-            } catch (\\Throwable $exception) {
+            } catch (\Throwable $exception) {
                 report($exception);
             }
 
