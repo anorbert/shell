@@ -100,7 +100,7 @@
     const loading = document.getElementById('chart-loading');
     const palette = { text:'#8b9ab0', muted:'#65758b', grid:'rgba(139,154,176,.13)', border:'#26364b', up:'#22b78b', down:'#ed6474', crosshair:'rgba(190,204,222,.55)', panel:'#0b1421' };
     let interval = '15m', candles = [], loadingRequest = false, failed = false, crosshair = null, visibleCandles = 80;
-    let plot = null, liveSocket = null, reconnectTimer = null, reconnectAttempts = 0, streamGeneration = 0;
+    let plot = null, liveSocket = null, reconnectTimer = null, retryTimer = null, reconnectAttempts = 0, streamGeneration = 0;
 
     const requestJson = async (url, options = {}) => {
         const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
@@ -233,6 +233,7 @@
     function closeLiveStream() {
         streamGeneration++;
         if (reconnectTimer) { window.clearTimeout(reconnectTimer); reconnectTimer = null; }
+        if (retryTimer) { window.clearTimeout(retryTimer); retryTimer = null; }
         if (liveSocket) {
             liveSocket.onopen = liveSocket.onmessage = liveSocket.onerror = liveSocket.onclose = null;
             try { liveSocket.close(); } catch (_) {}
@@ -261,12 +262,26 @@
         setText('chart-updated', 'Live · ' + new Date().toLocaleTimeString());
     }
 
-    function connectLiveStream(symbol, selectedInterval, generation) {
+    function connectLiveStream(symbol, selectedInterval, generation, hostIndex = 0) {
         if (generation !== streamGeneration) return;
         const streamKey = symbol.toLowerCase() + '@kline_' + selectedInterval;
+        const hosts = [
+            'wss://stream.binance.com:443/ws/',
+            'wss://data-stream.binance.vision:443/ws/'
+        ];
         setText('chart-health', 'CONNECTING');
-        const socket = new WebSocket('wss://stream.binance.com:443/ws/' + streamKey);
-        liveSocket = socket;
+        let socket;
+        try {
+            socket = new WebSocket(hosts[hostIndex] + streamKey);
+            liveSocket = socket;
+        } catch (_) {
+            if (hostIndex + 1 < hosts.length) {
+                connectLiveStream(symbol, selectedInterval, generation, hostIndex + 1);
+            } else {
+                scheduleStreamReconnect(symbol, selectedInterval, generation);
+            }
+            return;
+        }
 
         socket.onopen = () => {
             if (generation !== streamGeneration) { socket.close(); return; }
@@ -288,11 +303,20 @@
         };
         socket.onclose = () => {
             if (generation !== streamGeneration) return;
-            setText('chart-health', 'RECONNECTING');
-            const delay = Math.min(30000, 1000 * Math.pow(2, Math.min(reconnectAttempts, 5)));
-            reconnectAttempts++;
-            reconnectTimer = window.setTimeout(() => connectLiveStream(symbol, selectedInterval, generation), delay);
+            if (hostIndex + 1 < hosts.length) {
+                connectLiveStream(symbol, selectedInterval, generation, hostIndex + 1);
+                return;
+            }
+            scheduleStreamReconnect(symbol, selectedInterval, generation);
         };
+    }
+
+    function scheduleStreamReconnect(symbol, selectedInterval, generation) {
+        if (generation !== streamGeneration) return;
+        setText('chart-health', 'RECONNECTING');
+        const delay = Math.min(30000, 1000 * Math.pow(2, Math.min(reconnectAttempts, 5)));
+        reconnectAttempts++;
+        reconnectTimer = window.setTimeout(() => connectLiveStream(symbol, selectedInterval, generation, 0), delay);
     }
 
     async function fetchPublicCandles(symbol, selectedInterval) {
@@ -333,17 +357,20 @@
         setText('chart-health', 'LOADING');
         setText('chart-symbol', symbol);
         try {
-            let result;
+            let candleRows = null;
             try {
-                result = await requestJson(@json(route('markets.candles')) + '?' + new URLSearchParams({symbol,interval:selectedInterval,limit:'200'}));
-            } catch (serverError) {
-                // If the Laravel host cannot reach the market provider, load the public
-                // read-only candle feed directly in the browser as a chart-only fallback.
-                result = {candles: await fetchPublicCandles(symbol, selectedInterval)};
+                const result = await requestJson(@json(route('markets.candles')) + '?' + new URLSearchParams({symbol,interval:selectedInterval,limit:'200'}));
+                if (Array.isArray(result.candles) && result.candles.length) candleRows = result.candles;
+            } catch (_) {
+                // Fall through to the public read-only feed if the Laravel market provider fails.
             }
             if (generation !== streamGeneration) return;
-            if (!Array.isArray(result.candles) || !result.candles.length) throw new Error('No candle data is available for this market.');
-            candles = result.candles.map(c => ({...c,time:number(c.time)}))
+            // A redirected HTML response or an empty JSON response must also trigger fallback.
+            if (!Array.isArray(candleRows) || !candleRows.length) {
+                candleRows = await fetchPublicCandles(symbol, selectedInterval);
+            }
+            if (generation !== streamGeneration) return;
+            candles = candleRows.map(c => ({...c,time:number(c.time)}))
                 .filter(c => [c.time,c.open,c.high,c.low,c.close].every(v => Number.isFinite(number(v))));
             if (!candles.length) throw new Error('The market returned invalid candle data.');
             updateSummary();
@@ -357,9 +384,13 @@
             if (generation !== streamGeneration) return;
             failed = true;
             if (!candles.length) draw();
-            setText('chart-health', 'UNAVAILABLE');
+            setText('chart-health', 'RETRYING');
             setText('chart-updated', error.message || 'Market data unavailable');
-            loading.textContent = 'Market feed unavailable · retrying may restore the chart';
+            loading.textContent = 'Market feed unavailable · reconnecting automatically…';
+            // Keep the chart from remaining permanently blank after a temporary provider outage.
+            retryTimer = window.setTimeout(() => {
+                if (generation === streamGeneration) loadCandles();
+            }, 5000);
         } finally {
             if (generation === streamGeneration) {
                 loadingRequest = false;
@@ -387,6 +418,7 @@
     });
     canvas.addEventListener('pointerleave',()=>{crosshair=null;draw();});
     if('ResizeObserver' in window){new ResizeObserver(draw).observe(canvas.parentElement);}else{window.addEventListener('resize',draw);}
+    draw(); // Paint the chart frame immediately, before the first network response.
     loadCandles();
     window.addEventListener('beforeunload', closeLiveStream);
 
