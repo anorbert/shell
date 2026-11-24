@@ -51,7 +51,7 @@
 </tbody></table></div><div class="pagination-wrap">{{ $trades->links() }}</div></section>
 @endsection
 
-@push('styles')
+@push('scripts')
 <style>
 .trading-chart-panel{min-width:0;overflow:hidden}.trading-chart-heading{align-items:center}.trading-chart-heading h2{font-variant-numeric:tabular-nums;letter-spacing:.02em}
 .chart-market-summary{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:15px 19px 13px;border-top:1px solid #253247;border-bottom:1px solid #253247;background:#0c1523}
@@ -85,7 +85,7 @@
         const n = number(value);
         if (!Number.isFinite(n)) return '—';
         const decimals = n >= 1000 ? 2 : n >= 1 ? 4 : n >= .01 ? 6 : 8;
-        return new Intl.NumberFormat(undefined,{minimumFractionDigits:Math.min(decimals, n % 1 === 0 ? 0 : 2),maximumFractionDigits:decimals}).format(n);
+        return new Intl.NumberFormat(undefined,{minimumFractionDigits:0,maximumFractionDigits:decimals}).format(n);
     };
     const formatAxis = value => {
         const n = number(value);
