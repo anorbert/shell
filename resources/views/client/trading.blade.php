@@ -1203,9 +1203,49 @@
                 setText('chart-updated', 'Live · ' + new Date().toLocaleTimeString());
             }
 
+            function applyLiveTrade(trade) {
+                const price = Number(trade.p);
+                const timestamp = Number(trade.T || Date.now());
+                if (!Number.isFinite(price) || price <= 0 || !Number.isFinite(timestamp)) return;
+
+                const intervalMs = ({
+                    '1m': 60000, '5m': 300000, '15m': 900000,
+                    '1h': 3600000, '4h': 14400000, '1d': 86400000
+                })[interval] || 60000;
+                const bucket = Math.floor(timestamp / intervalMs) * intervalMs;
+                const value = String(trade.p);
+                const last = candles[candles.length - 1];
+
+                if (!last || bucket > last.time) {
+                    candles.push({
+                        time: bucket, open: value, high: value, low: value,
+                        close: value, volume: String(trade.q || '0')
+                    });
+                } else if (bucket === last.time) {
+                    last.high = String(Math.max(Number(last.high), price));
+                    last.low = String(Math.min(Number(last.low), price));
+                    last.close = value;
+                    last.volume = String((Number(last.volume) || 0) + (Number(trade.q) || 0));
+                } else {
+                    return;
+                }
+
+                if (candles.length > 200) candles.shift();
+                failed = false;
+                updateSummary();
+                draw();
+                window.dispatchEvent(new CustomEvent('shell:market-price', {
+                    detail: { symbol: marketSelect.value, price: value }
+                }));
+                setText('chart-health', 'LIVE');
+                setText('chart-updated', 'Live tick · ' + new Date(timestamp).toLocaleTimeString());
+            }
+
             function connectLiveStream(symbol, selectedInterval, generation, hostIndex = 0) {
                 if (generation !== streamGeneration) return;
-                const streamKey = symbol.toLowerCase() + '@kline_' + selectedInterval;
+                // Trade stream delivers every executed market trade. Kline streams
+                // can update only once every 1–2 seconds for larger intervals.
+                const streamKey = symbol.toLowerCase() + '@trade';
                 const hosts = [
                     'wss://stream.binance.com:443/ws/',
                     'wss://data-stream.binance.vision:443/ws/'
@@ -1237,7 +1277,7 @@
                     if (generation !== streamGeneration) return;
                     try {
                         const message = JSON.parse(event.data);
-                        if (message.k) applyLiveCandle(message.k);
+                        if (message.e === 'trade' && message.p !== undefined) applyLiveTrade(message);
                     } catch (_) {
                         // Ignore malformed stream messages; the next valid candle update will recover.
                     }
@@ -1313,9 +1353,9 @@
                 throw lastError || new Error('No public market feed is available.');
             }
 
-            // The kline WebSocket is the primary live feed. Poll the lightweight
-            // ticker endpoint as a fallback so the modal and current price remain
-            // usable when a browser/network blocks WebSocket connections.
+            // The public trade WebSocket is the live tick source. The HTTP ticker
+            // helper is retained only as an unused compatibility fallback; it is not
+            // polled on a timer and never authorizes a trade or settlement.
             async function pollPublicTicker() {
                 if (tickerFallbackBusy || !marketSelect.value) return;
                 const symbol = marketSelect.value;
@@ -1515,14 +1555,21 @@
                 const now = Date.now();
                 document.querySelectorAll('[data-expiry]').forEach(element => {
                     const seconds = Math.max(0, Math.ceil((Number(element.dataset.expiry) - now) / 1000));
+                    const expiresAt = Number(element.dataset.expiry);
+                    if (!element.dataset.expiryTriggerScheduled) {
+                        element.dataset.expiryTriggerScheduled = 'true';
+                        // Schedule against the exact server-provided expiry timestamp.
+                        // The countdown's one-second repaint is display-only.
+                        window.setTimeout(() => {
+                            element.textContent = 'Awaiting settlement';
+                            if (!element.dataset.settlementRequested) {
+                                element.dataset.settlementRequested = 'true';
+                                settleExpiredTrades();
+                            }
+                        }, Math.max(0, expiresAt - Date.now()));
+                    }
                     if (seconds === 0) {
                         element.textContent = 'Awaiting settlement';
-                        // Trigger settlement at the expiry boundary, not on a later
-                        // 15-second reconciliation cycle. The server remains authoritative.
-                        if (!element.dataset.settlementRequested) {
-                            element.dataset.settlementRequested = 'true';
-                            window.setTimeout(() => settleExpiredTrades(), 0);
-                        }
                         return;
                     }
                     element.textContent = Math.floor(seconds / 60) + 'm ' + String(seconds % 60).padStart(2,
