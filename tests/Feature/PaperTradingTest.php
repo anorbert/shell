@@ -53,7 +53,7 @@ test('client portfolio starts with a $20,000 demo balance and an empty real wall
 
 test('paper trade opening is blocked when quote is missing and provider refresh fails', function () {
     Http::fake([
-        'api.binance.com/api/v3/ticker/price' => Http::response([], 200),
+        'api.binance.com/api/v3/ticker/price*' => Http::response([], 200),
     ]);
 
     $user = User::factory()->create();
@@ -73,9 +73,9 @@ test('paper trade opening is blocked when quote is missing and provider refresh 
 
 test('stale market quotes are refreshed from the provider before a trade is opened', function () {
     Http::fake([
-        'api.binance.com/api/v3/ticker/price' => Http::response([
-            ['symbol' => 'BTCUSDT', 'price' => '92500.50000000'],
-            ['symbol' => 'ETHUSDT', 'price' => '3100.25000000'],
+        'api.binance.com/api/v3/ticker/price*' => Http::response([
+            'symbol' => 'BTCUSDT',
+            'price' => '92500.50000000',
         ], 200),
     ]);
 
