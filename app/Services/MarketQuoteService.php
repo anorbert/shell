@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Carbon;
 use RuntimeException;
 
 class MarketQuoteService
@@ -216,7 +217,7 @@ class MarketQuoteService
             );
         }
 
-        $capturedAt = \\Illuminate\\Support\\Carbon::parse((string) $quote->captured_at, 'UTC');
+        $capturedAt = \Illuminate\Support\Carbon::parse((string) $quote->captured_at, 'UTC');
         if ($capturedAt->greaterThan(now('UTC')) || $capturedAt->lessThan(now('UTC')->subSeconds(10))) {
             throw new RuntimeException(
                 'The market quote for ' . $symbol . ' is stale or has an invalid timestamp. Your demo stake has not been deducted.'
@@ -241,7 +242,7 @@ class MarketQuoteService
         $quote = DB::table('market_quotes')->where('symbol', $symbol)->first();
         $minimumCapturedAt = now('UTC')->subSeconds($maxAge);
 
-        if (!$quote || \\Illuminate\\Support\\Carbon::parse((string) $quote->captured_at, 'UTC')->lessThan($minimumCapturedAt) || \\Illuminate\\Support\\Carbon::parse((string) $quote->captured_at, 'UTC')->greaterThan(now('UTC'))) {
+        if (!$quote || \Illuminate\Support\Carbon::parse((string) $quote->captured_at, 'UTC')->lessThan($minimumCapturedAt) || \Illuminate\Support\Carbon::parse((string) $quote->captured_at, 'UTC')->greaterThan(now('UTC'))) {
             throw new RuntimeException('A recent server market quote is unavailable for ' . $symbol . '.');
         }
 
