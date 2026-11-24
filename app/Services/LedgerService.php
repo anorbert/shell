@@ -78,16 +78,16 @@ class LedgerService
         if ($key === '' || strlen($key) > 120) throw new RuntimeException('Invalid ledger idempotency key.');
 
         return DB::transaction(function () use ($key, $description, $entries, $metadata) {
-            $existing = DB::table('ledger_transactions')->where('idempotency_key', $key)->value('id');
-            if ($existing) return (int) $existing;
+            $existing = $this->existingPostingId($key, $description, $entries, $metadata);
+            if ($existing !== null) return $existing;
 
             $accountIds = collect($entries)->pluck('account_id')->map(fn ($id) => (int) $id)->unique()->sort()->values();
             if ($accountIds->isEmpty()) throw new RuntimeException('A ledger transaction requires entries.');
 
             $accounts = DB::table('ledger_accounts')->whereIn('id', $accountIds)->orderBy('id')->lockForUpdate()->get()->keyBy('id');
             if ($accounts->count() !== $accountIds->count()) throw new RuntimeException('Ledger account missing.');
-            $existing = DB::table('ledger_transactions')->where('idempotency_key', $key)->value('id');
-            if ($existing) return (int) $existing;
+            $existing = $this->existingPostingId($key, $description, $entries, $metadata);
+            if ($existing !== null) return $existing;
 
             $debit = 0; $credit = 0; $currency = null;
             foreach ($entries as $entry) {
@@ -131,6 +131,65 @@ class LedgerService
             }
             return (int) $transactionId;
         }, 3);
+    }
+
+    /**
+     * Idempotency means "same key, same posting", not merely "same key".
+     * Reject a reused key whose account movements or metadata differ.
+     */
+    private function existingPostingId(string $key, string $description, array $entries, array $metadata): ?int
+    {
+        $transaction = DB::table('ledger_transactions')->where('idempotency_key', $key)->first();
+        if (!$transaction) {
+            return null;
+        }
+
+        $canonicalEntries = static function (array $rows): array {
+            $totals = [];
+            foreach ($rows as $row) {
+                $accountId = (int) ($row['account_id'] ?? $row->ledger_account_id ?? 0);
+                $side = (string) ($row['side'] ?? '');
+                $amount = (string) ($row['amount'] ?? '0');
+                if ($accountId <= 0 || !in_array($side, ['debit', 'credit'], true)) {
+                    throw new RuntimeException('Invalid ledger entry in idempotency comparison.');
+                }
+                $identity = $accountId . ':' . $side;
+                $totals[$identity] = ($totals[$identity] ?? 0) + Decimal::units($amount);
+            }
+            ksort($totals);
+            return $totals;
+        };
+
+        $storedEntries = DB::table('ledger_entries')
+            ->where('ledger_transaction_id', $transaction->id)
+            ->get(['ledger_account_id', 'side', 'amount'])
+            ->all();
+
+        $canonicalize = static function (&$value) use (&$canonicalize): void {
+            if (!is_array($value)) {
+                return;
+            }
+            foreach ($value as &$child) {
+                $canonicalize($child);
+            }
+            unset($child);
+            if (array_keys($value) !== range(0, count($value) - 1)) {
+                ksort($value);
+            }
+        };
+
+        $storedMetadata = json_decode((string) $transaction->metadata, true) ?: [];
+        $expectedMetadata = $metadata;
+        $canonicalize($storedMetadata);
+        $canonicalize($expectedMetadata);
+
+        if ($transaction->description !== $description
+            || $canonicalEntries($storedEntries) !== $canonicalEntries($entries)
+            || $storedMetadata !== $expectedMetadata) {
+            throw new RuntimeException('Ledger idempotency key was already used for a different posting.');
+        }
+
+        return (int) $transaction->id;
     }
 
     public function addDemoFunds(User $user, string $amount, string $requestKey, string $currency = 'USD'): int
