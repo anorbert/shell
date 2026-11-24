@@ -1502,6 +1502,7 @@
                 positionClockTimer = null,
                 positionRetryTimer = null,
                 positionSettlementRetryTimer = null,
+                positionAutoCloseTimer = null,
                 latestStreamPrice = null;
             const money = (value, maximum = 8) => new Intl.NumberFormat(undefined, {
                 minimumFractionDigits: 2,
@@ -1627,6 +1628,9 @@
                 setPositionText('position-close', 'Continue trading');
                 document.getElementById('position-close').disabled = false;
                 document.getElementById('position-modal-x').disabled = false;
+                if (positionAutoCloseTimer) window.clearTimeout(positionAutoCloseTimer);
+                setPositionText('position-close', 'Continue trading');
+                positionAutoCloseTimer = window.setTimeout(closeSettledPosition, 4500);
                 notify(status === 'WON' ? 'Position won — payout confirmed.' : status === 'LOST' ? 'Position settled — stake lost.' : 'Position tied — stake returned.', status === 'LOST' ? 'error' : 'success');
             }
 
@@ -1661,7 +1665,14 @@
                     1000));
                 setPositionText('position-countdown', left > 0 ? Math.floor(left / 60) + 'm ' + String(left % 60)
                     .padStart(2, '0') + 's' : 'Expiry reached · settling');
-                if (left === 0 && activePosition.status === 'open') beginImmediateSettlement();
+                if (left === 0 && activePosition.status === 'open') {
+                    // Never trap the client in an expired-position dialog while a quote is pending.
+                    const closeButton = document.getElementById('position-close');
+                    closeButton.disabled = false;
+                    closeButton.textContent = 'Close and continue trading';
+                    document.getElementById('position-modal-x').disabled = false;
+                    beginImmediateSettlement();
+                }
             }
             async function pollPosition() {
                 if (!activePosition || activePosition.status !== 'open') return;
@@ -1776,7 +1787,12 @@
                 }
             }
             function closeSettledPosition() {
-                if (!activePosition || activePosition.status === 'open') return;
+                if (!activePosition) return;
+                const expiredButPending = activePosition.status === 'open'
+                    && new Date(activePosition.expires_at).getTime() <= Date.now();
+                if (activePosition.status === 'open' && !expiredButPending) return;
+                if (expiredButPending) settleExpiredTrades();
+                if (positionAutoCloseTimer) { window.clearTimeout(positionAutoCloseTimer); positionAutoCloseTimer = null; }
                 positionModal.classList.remove('is-visible');
                 positionModal.setAttribute('aria-hidden', 'true');
                 if (positionPollTimer) { window.clearInterval(positionPollTimer); window.clearTimeout(positionPollTimer); positionPollTimer = null; }
@@ -1793,12 +1809,39 @@
             // Resume an active trade, or reopen the latest expired position directly
             // in the modal so the client sees its confirmed result without a page reload.
             const resumableTradeId = @json($activeTradeId);
-            const expiredTradeId = @json($expiredTradeId ?? null);
-            if (resumableTradeId) {
-                openPositionModal(resumableTradeId);
-            } else if (expiredTradeId) {
-                openPositionModal(expiredTradeId);
+            if (resumableTradeId) openPositionModal(resumableTradeId);
+
+            // Expired positions are reconciled in the background as a batch.
+            // They must never reopen or pin the active-position modal.
+            let expiredSettlementInFlight = false;
+            let expiredSettlementTimer = null;
+            async function settleExpiredTrades() {
+                if (expiredSettlementInFlight) return;
+                expiredSettlementInFlight = true;
+                try {
+                    const response = await requestJson(@json(url('/trading/settle-expired')), {
+                        method: 'POST',
+                        timeoutMs: 40000
+                    });
+                    if (Number(response.settled_count || 0) > 0) {
+                        window.location.reload();
+                        return;
+                    }
+                    if (response.has_due) scheduleExpiredSettlementRetry();
+                } catch (_) {
+                    scheduleExpiredSettlementRetry();
+                } finally {
+                    expiredSettlementInFlight = false;
+                }
             }
+            function scheduleExpiredSettlementRetry() {
+                if (expiredSettlementTimer) return;
+                expiredSettlementTimer = window.setTimeout(() => {
+                    expiredSettlementTimer = null;
+                    settleExpiredTrades();
+                }, 10000);
+            }
+            if (@json((bool) ($hasExpiredOpenTrades ?? false))) settleExpiredTrades();
 
             tradeForm.addEventListener('submit', async event => {
                 event.preventDefault();
