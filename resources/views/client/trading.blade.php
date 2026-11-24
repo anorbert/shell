@@ -1842,6 +1842,9 @@
                 }, 10000);
             }
             if (@json((bool) ($hasExpiredOpenTrades ?? false))) settleExpiredTrades();
+            // Keep reconciling while the terminal remains open so trades that expire
+            // later in this same browser session are also closed without a page reload.
+            window.setInterval(settleExpiredTrades, 15000);
 
             tradeForm.addEventListener('submit', async event => {
                 event.preventDefault();
