@@ -140,11 +140,11 @@ class PaperTradingController extends Controller
                     'currency' => $currency,
                     'opening_price' => (string) $position->opening_price,
                     'duration_seconds' => (int) $position->duration_seconds,
-                    'opened_at' => $position->opened_at,
-                    'expires_at' => $position->expires_at,
+                    'opened_at' => $position->opened_at !== null ? Carbon::parse((string) $position->opened_at, 'UTC')->toIso8601String() : null,
+                    'expires_at' => $position->expires_at !== null ? Carbon::parse((string) $position->expires_at, 'UTC')->toIso8601String() : null,
                     'status' => $position->status,
                     'closing_price' => $position->closing_price !== null ? (string) $position->closing_price : null,
-                    'settled_at' => $position->settled_at,
+                    'settled_at' => $position->settled_at !== null ? Carbon::parse((string) $position->settled_at, 'UTC')->toIso8601String() : null,
                     'payout_amount' => $payout,
                     'profit_amount' => $profit,
                 ],
@@ -181,11 +181,11 @@ class PaperTradingController extends Controller
                 'currency' => $position->wallet_currency ?: config('shell.paper.currency', 'USD'),
                 'opening_price' => (string) $position->opening_price,
                 'duration_seconds' => (int) $position->duration_seconds,
-                'opened_at' => $position->opened_at,
-                'expires_at' => $position->expires_at,
+                'opened_at' => $position->opened_at !== null ? Carbon::parse((string) $position->opened_at, 'UTC')->toIso8601String() : null,
+                'expires_at' => $position->expires_at !== null ? Carbon::parse((string) $position->expires_at, 'UTC')->toIso8601String() : null,
                 'status' => $position->status,
                 'closing_price' => $position->closing_price !== null ? (string) $position->closing_price : null,
-                'settled_at' => $position->settled_at,
+                'settled_at' => $position->settled_at !== null ? Carbon::parse((string) $position->settled_at, 'UTC')->toIso8601String() : null,
             ],
         ]);
     }
@@ -262,8 +262,8 @@ class PaperTradingController extends Controller
                     'currency' => $position->wallet_currency ?: $currency,
                     'opening_price' => (string) $position->opening_price,
                     'duration_seconds' => (int) $position->duration_seconds,
-                    'opened_at' => $position->opened_at,
-                    'expires_at' => $position->expires_at,
+                    'opened_at' => $position->opened_at !== null ? Carbon::parse((string) $position->opened_at, 'UTC')->toIso8601String() : null,
+                    'expires_at' => $position->expires_at !== null ? Carbon::parse((string) $position->expires_at, 'UTC')->toIso8601String() : null,
                     'status' => $position->status,
                     'closing_price' => null,
                     'settled_at' => null,
@@ -271,6 +271,11 @@ class PaperTradingController extends Controller
             ], 201);
         } catch (RuntimeException | InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
+        } catch (\\Throwable $exception) {
+            report($exception);
+            return response()->json([
+                'message' => 'Trade placement is temporarily unavailable. Your request is protected against duplicate processing; please retry with the same request key.',
+            ], 503);
         }
     }
 }
