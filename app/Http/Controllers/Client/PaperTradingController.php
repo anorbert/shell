@@ -100,7 +100,7 @@ class PaperTradingController extends Controller
             $position = DB::table('paper_trades')->where('id', $trade)->first();
 
             if (!$position) {
-                abort(404);
+                return response()->json(['message' => 'Position not found.'], 404);
             }
 
             $currency = $position->wallet_currency ?: config('shell.paper.currency', 'USD');
