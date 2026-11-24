@@ -3,7 +3,7 @@
 @section('eyebrow', 'ADMINISTRATION')
 @section('heading', 'Platform overview')
 @section('content')
-<div class="notice-banner"><span class="notice-icon">!</span><div><strong>Simulation environment only</strong><p>Real crypto deposits and withdrawals use manual admin review. Do not credit deposits before on-chain verification or mark withdrawals paid before sending funds. Real-money trading and automated custody remain disabled.</p></div><span class="mode-tag">MANUAL FUNDING · PAPER TRADING</span></div>
+<div class="notice-banner"><span class="notice-icon">!</span><div><strong>Operations control center</strong><p>Monitor demo trading, client accounts, identity reviews and real-wallet requests from one workspace. Verify incoming transfers before crediting deposits and record payout details after funds are sent. Demo trading and real-wallet operations remain separately accounted for.</p></div><span class="mode-tag">MANUAL FUNDING · PAPER TRADING</span></div>
 <div class="metric-grid">
     <article class="metric-card"><span class="metric-label">CLIENT ACCOUNTS</span><strong>{{ number_format($clientCount) }}</strong><small>Registered clients</small></article>
     <article class="metric-card"><span class="metric-label">ADMIN ACCOUNTS</span><strong>{{ number_format($adminCount) }}</strong><small>Privileged operators</small></article>
