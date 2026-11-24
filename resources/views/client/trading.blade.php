@@ -56,14 +56,15 @@
     <section class="position-modal-card">
         <div class="position-modal-head"><div><span class="eyebrow">LIVE DEMO POSITION</span><h2 id="position-modal-title">Trade opened</h2></div><span class="table-status pending" id="position-status">OPEN</span></div>
         <div class="position-market-line"><strong id="position-symbol">—</strong><span id="position-direction">—</span></div>
-        <div class="position-live-price"><span>CURRENT MARKET PRICE</span><strong id="position-current-price">Waiting for live price…</strong><small id="position-price-move">Waiting for market update</small></div>
+        <div class="position-live-price"><span>CURRENT MARKET PRICE</span><strong id="position-current-price">Connecting to live market…</strong><small id="position-price-move">Loading your position details</small></div>
         <div class="position-details-grid">
             <div><span>Stake</span><strong id="position-stake">—</strong></div>
             <div><span>Opening price</span><strong id="position-opening-price">—</strong></div>
             <div><span>Expiry</span><strong id="position-expiry">—</strong></div>
             <div><span>Time remaining</span><strong id="position-countdown">—</strong></div>
+            <div class="position-live-outcome"><span>LIVE INDICATIVE RESULT</span><strong id="position-live-outcome">Waiting for market price…</strong><small id="position-potential-payout">Potential payout: —</small></div>
         </div>
-        <div class="position-result" id="position-result" aria-live="polite">LIVE POSITION · Current price and movement update as the market changes.</div>
+        <div class="position-result" id="position-result" aria-live="polite">Your position is being loaded. The displayed live result is indicative until the server confirms settlement.</div>
         <button type="button" class="button button-primary position-close" id="position-close" disabled>Waiting for result…</button>
     </section>
 </div>
@@ -85,7 +86,7 @@
 @media(max-width:720px){.market-chart-wrap{height:330px}.chart-market-summary{align-items:flex-start;flex-direction:column}.chart-ohlc{justify-content:flex-start;gap:8px 12px}.chart-toolbar{align-items:flex-start;flex-direction:column}.chart-intervals{width:100%;justify-content:space-between}.chart-foot{font-size:9px}}
 @media(max-width:420px){.market-chart-wrap{height:290px}.chart-ohlc{font-size:9px;gap:7px}.chart-toolbar{padding-inline:12px}.chart-intervals button{min-width:32px;padding-inline:5px}}
 
-.position-modal{display:none;position:fixed;inset:0;z-index:10000;align-items:center;justify-content:center;padding:18px}.position-modal.is-visible{display:flex}.position-modal-backdrop{position:absolute;inset:0;background:rgba(2,7,15,.82);backdrop-filter:blur(7px)}.position-modal-card{position:relative;width:min(100%,490px);max-height:calc(100vh - 36px);overflow:auto;border:1px solid #35445a;border-radius:16px;background:#101b2b;box-shadow:0 24px 90px #0009;padding:22px;color:#e8eef7}.position-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.position-modal-head h2{margin:5px 0 0;font-size:21px}.position-market-line{display:flex;align-items:center;gap:10px;margin:20px 0 12px}.position-market-line strong{font-size:17px}.position-market-line span{font-size:11px;font-weight:800;border-radius:5px;padding:5px 9px;background:#173a36;color:#53d6aa}.position-market-line span.down{background:#44252d;color:#ff8996}.position-live-price{padding:16px;border-radius:10px;background:#0a1422;border:1px solid #29384d;display:grid;gap:6px}.position-live-price>span,.position-details-grid span{font-size:10px;color:#91a0b4;letter-spacing:.06em}.position-live-price strong{font-size:clamp(25px,6vw,34px);font-variant-numeric:tabular-nums}.position-live-price strong{transition:color .15s ease,text-shadow .15s ease}.position-live-price small{font-size:11px;color:#9aa9bc}.position-details-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:13px 0}.position-details-grid>div{display:grid;gap:6px;padding:12px;border:1px solid #29384d;border-radius:8px}.position-details-grid strong{font-size:13px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.position-result{padding:12px;border-radius:8px;background:#19283a;color:#c2cede;font-size:12px;line-height:1.5}.position-result.is-win{background:#12382f;color:#7de0bd}.position-result.is-loss{background:#42232c;color:#ff9aa5}.position-close{width:100%;margin-top:14px}.position-close:disabled{opacity:.55;cursor:not-allowed}@media(max-width:420px){.position-modal-card{padding:17px}.position-details-grid{gap:7px}.position-details-grid>div{padding:10px}}
+.position-modal{display:none;position:fixed;inset:0;z-index:10000;align-items:center;justify-content:center;padding:18px}.position-modal.is-visible{display:flex}.position-modal-backdrop{position:absolute;inset:0;background:rgba(2,7,15,.82);backdrop-filter:blur(7px)}.position-modal-card{position:relative;width:min(100%,490px);max-height:calc(100vh - 36px);overflow:auto;border:1px solid #35445a;border-radius:16px;background:#101b2b;box-shadow:0 24px 90px #0009;padding:22px;color:#e8eef7}.position-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.position-modal-head h2{margin:5px 0 0;font-size:21px}.position-market-line{display:flex;align-items:center;gap:10px;margin:20px 0 12px}.position-market-line strong{font-size:17px}.position-market-line span{font-size:11px;font-weight:800;border-radius:5px;padding:5px 9px;background:#173a36;color:#53d6aa}.position-market-line span.down{background:#44252d;color:#ff8996}.position-live-price{padding:16px;border-radius:10px;background:#0a1422;border:1px solid #29384d;display:grid;gap:6px}.position-live-price>span,.position-details-grid span{font-size:10px;color:#91a0b4;letter-spacing:.06em}.position-live-price strong{font-size:clamp(25px,6vw,34px);font-variant-numeric:tabular-nums}.position-live-price strong{transition:color .15s ease,text-shadow .15s ease}.position-live-price small{font-size:11px;color:#9aa9bc}.position-live-outcome{grid-column:1/-1;display:grid;gap:6px;padding:14px 16px;border:1px solid #34445a;border-radius:10px;background:#0b1625}.position-live-outcome>span{font-size:10px;letter-spacing:.09em;color:#91a0b4;font-weight:800}.position-live-outcome strong{font-size:25px;font-weight:850;font-variant-numeric:tabular-nums;color:#dce5f2;transition:color .15s ease}.position-live-outcome small{font-size:11px;color:#9aa9bc}.position-live-outcome.is-win{border-color:#238e7055;background:#0d241f}.position-live-outcome.is-win strong{color:#53d6aa}.position-live-outcome.is-loss{border-color:#b34f5b66;background:#28171d}.position-live-outcome.is-loss strong{color:#ff8996}.position-market-line{font-variant-numeric:tabular-nums}.position-modal-card{max-height:calc(100vh - 32px);overflow:auto}@media(max-width:520px){.position-modal-card{width:calc(100vw - 24px);padding:16px}.position-details-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.position-live-outcome{grid-column:1/-1}}.position-details-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:13px 0}.position-details-grid>div{display:grid;gap:6px;padding:12px;border:1px solid #29384d;border-radius:8px}.position-details-grid strong{font-size:13px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.position-result{padding:12px;border-radius:8px;background:#19283a;color:#c2cede;font-size:12px;line-height:1.5}.position-result.is-win{background:#12382f;color:#7de0bd}.position-result.is-loss{background:#42232c;color:#ff9aa5}.position-close{width:100%;margin-top:14px}.position-close:disabled{opacity:.55;cursor:not-allowed}@media(max-width:420px){.position-modal-card{padding:17px}.position-details-grid{gap:7px}.position-details-grid>div{padding:10px}}
 </style>
 @endpush
 
@@ -472,14 +473,23 @@
         latestStreamPrice=Number(marketPrice);
         const opening=Number(activePosition.opening_price),delta=latestStreamPrice-opening;
         const favorable=activePosition.direction==='UP'?delta>0:delta<0;
+        const stake=Number(activePosition.stake)||0;
+        const totalPayout=stake*payoutRate;
+        const indicative=favorable?totalPayout-stake:(delta===0?0:-stake);
         const priceElement=document.getElementById('position-current-price');
         priceElement.textContent=priceText(latestStreamPrice);
         priceElement.style.color=delta===0?'#dce5f2':favorable?'#53d6aa':'#ff8996';
         priceElement.style.textShadow=delta===0?'none':favorable?'0 0 22px #22b78b44':'0 0 22px #ed647444';
         const move=document.getElementById('position-price-move');
-        move.textContent=(delta>0?'+':'')+priceText(delta)+'  ('+(delta>0?'+':'')+(opening?(delta/opening*100).toFixed(4):'0.0000')+'%)  ·  '+(delta===0?'AT OPEN':favorable?'IN THE MONEY':'OUT OF THE MONEY');
+        move.textContent=(delta>0?'+':'')+priceText(delta)+'  ('+(delta>0?'+':'')+(opening?(delta/opening*100).toFixed(4):'0.0000')+'%)  ·  '+(delta===0?'AT OPEN':favorable?'PRICE FAVOURS YOUR '+activePosition.direction:'PRICE MOVING AGAINST '+activePosition.direction);
         move.style.color=delta===0?'#aab8c9':favorable?'#53d6aa':'#ff8996';
         move.style.fontWeight='800';
+        const outcome=document.getElementById('position-live-outcome');
+        const outcomeWrap=outcome.closest('.position-live-outcome');
+        outcome.textContent=(indicative>0?'+':'')+money(indicative)+' '+activePosition.currency+(delta===0?' · AT OPEN':favorable?' · INDICATIVE PROFIT':' · INDICATIVE LOSS');
+        outcomeWrap.classList.toggle('is-win',favorable);
+        outcomeWrap.classList.toggle('is-loss',delta!==0&&!favorable);
+        setPositionText('position-potential-payout','Potential total payout if settled as a win: '+money(totalPayout)+' '+activePosition.currency);
     }
     window.addEventListener('shell:market-price',event=>{if(activePosition&&event.detail?.symbol===activePosition.symbol)updatePositionPrice(event.detail.price);});
     function updatePositionClock(){
@@ -525,6 +535,12 @@
             const dir=document.getElementById('position-direction');dir.classList.toggle('down',activePosition.direction==='DOWN');
             setPositionText('position-stake',money(activePosition.stake)+' '+activePosition.currency);
             setPositionText('position-opening-price',priceText(activePosition.opening_price));
+            setPositionText('position-live-outcome','Waiting for live quote…');
+            setPositionText('position-potential-payout','Potential total payout if settled as a win: '+money(Number(activePosition.stake)*payoutRate)+' '+activePosition.currency);
+            // Reuse the latest chart candle immediately; do not wait for the next websocket tick.
+            if(marketSelect.value===activePosition.symbol&&candles.length){
+                updatePositionPrice(candles[candles.length-1].close);
+            }
             setPositionText('position-expiry',new Date(activePosition.expires_at).toLocaleTimeString());
             setPositionText('position-current-price','Waiting for live price…');
             updatePositionClock();
@@ -533,12 +549,20 @@
             positionPollTimer=window.setInterval(pollPosition,2000);
             positionClockTimer=window.setInterval(updatePositionClock,1000);
             await pollPosition();
-        }catch(error){setPositionText('position-result','Trade was accepted, but its details could not be loaded. Refresh the page and check Trade history.');}
+        }catch(error){
+            setPositionText('position-result','Could not load this position: '+(error.message||'connection error')+'. Your trade remains recorded. Retry by refreshing this page.');
+            setPositionText('position-current-price','Live price unavailable');
+            setPositionText('position-live-outcome','Awaiting a verified market quote…');
+        }
     }
     document.getElementById('position-close').addEventListener('click',()=>{
         if(!activePosition||activePosition.status==='open')return;
         positionModal.classList.remove('is-visible');positionModal.setAttribute('aria-hidden','true');window.location.reload();
     });
+
+    // Reopen the latest still-open position automatically after refresh/navigation.
+    const resumableTradeId=@json($activeTradeId);
+    if(resumableTradeId){openPositionModal(resumableTradeId);}
 
     tradeForm.addEventListener('submit',async event=>{
         event.preventDefault();
