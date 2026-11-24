@@ -15,18 +15,11 @@ use InvalidArgumentException;
 
 class PaperTradingController extends Controller
 {
-    public function index(Request $request, LedgerService $ledger, MarketQuoteService $markets, PaperTradingService $tradesService)
+    public function index(Request $request, LedgerService $ledger, MarketQuoteService $markets)
     {
-        // Opportunistic server-side settlement ensures expired positions are processed
-        // whenever the client returns, even if the scheduler was temporarily offline.
-        try {
-            $tradesService->settleDue();
-        } catch (\Throwable $exception) {
-            // A settlement-provider/ledger failure must not prevent the trading
-            // terminal from rendering. The scheduler and next request can retry.
-            report($exception);
-        }
-
+        // Keep page rendering independent of network-dependent settlement work.
+        // The scheduled settlement command owns settlement so a slow market API
+        // can never hold the trading terminal open.
         $currency = config('shell.paper.currency', 'USD');
         $wallet = $ledger->provisionClientWallets($request->user(), $currency)['demo'];
 
