@@ -117,7 +117,11 @@ test('paper trade opens and reserves the stake from the client wallet', function
         'stake' => '10',
         'duration' => 60,
         'request_key' => 'test-open-once',
-    ])->assertCreated();
+    ])->assertCreated()
+        ->assertJsonPath('trade.status', 'open')
+        ->assertJsonPath('trade.symbol', 'BTCUSDT')
+        ->assertJsonPath('trade.direction', 'UP')
+        ->assertJsonPath('wallet_balance', '90.00000000');
 
     expect(DB::table('paper_trades')->where('user_id', $user->id)->count())->toBe(1)
         ->and($ledger->balanceUnits($ledger->wallet($user)))->toBe(2009000000000);
@@ -155,6 +159,46 @@ test('a trade is not settled using a quote captured before expiry', function () 
 
     expect(app(PaperTradingService::class)->settleDue())->toBe(0)
         ->and(DB::table('paper_trades')->where('open_idempotency_key', 'old-trade-waits-for-post-expiry-price')->value('status'))->toBe('open');
+});
+
+test('expired trades settle when the first verified post-expiry quote arrives after the former grace period', function () {
+    $user = User::factory()->create();
+    $user->markEmailAsVerified();
+    $ledger = app(LedgerService::class);
+    $ledger->creditPaperWallet($user, '100.00000000');
+
+    $openingAt = now();
+    DB::table('market_quotes')->insert([
+        'symbol' => 'BTCUSDT',
+        'price' => '90000.000000000000',
+        'provider' => 'Test provider',
+        'captured_at' => $openingAt,
+        'created_at' => $openingAt,
+        'updated_at' => $openingAt,
+    ]);
+
+    $tradeId = app(PaperTradingService::class)->open($user, 'BTCUSDT', 'UP', '10.00000000', 60, 'test-delayed-expiry-quote');
+    $expiredAt = now()->subMinutes(7);
+    DB::table('paper_trades')->where('id', $tradeId)->update([
+        'opened_at' => $expiredAt->copy()->subMinute(),
+        'expires_at' => $expiredAt,
+    ]);
+
+    // The only available post-expiry snapshot is six minutes late. The former
+    // five-minute cutoff selected this earliest snapshot, rejected it forever,
+    // and left the position open even when newer quotes were available.
+    DB::table('market_quote_snapshots')->insert([
+        'symbol' => 'BTCUSDT',
+        'price' => '91000.000000000000',
+        'captured_at' => now(),
+    ]);
+
+    expect(app(PaperTradingService::class)->settleDue())->toBe(1)
+        ->and(DB::table('paper_trades')->where('id', $tradeId)->value('status'))->toBe('won')
+        ->and(DB::table('paper_trades')->where('id', $tradeId)->value('closing_price'))->toBe('91000.000000000000')
+        ->and($ledger->balanceUnits($ledger->wallet($user)))->toBe(2000800000000)
+        ->and(app(PaperTradingService::class)->settleDue())->toBe(0)
+        ->and(DB::table('ledger_transactions')->where('idempotency_key', 'paper-settle:' . $tradeId)->count())->toBe(1);
 });
 
 test('an expired winning paper trade settles once using a post-expiry quote', function () {
