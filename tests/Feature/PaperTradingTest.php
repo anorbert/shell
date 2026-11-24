@@ -184,7 +184,7 @@ test('expired trades settle when the first verified post-expiry quote arrives af
         'expires_at' => $expiredAt,
     ]);
 
-    // The only available post-expiry snapshot is six minutes late. The former
+    // The only available post-expiry snapshot is seven minutes late. The former
     // five-minute cutoff selected this earliest snapshot, rejected it forever,
     // and left the position open even when newer quotes were available.
     DB::table('market_quote_snapshots')->insert([
