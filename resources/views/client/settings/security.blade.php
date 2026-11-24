@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title','Security') @section('eyebrow','ACCOUNT PROTECTION') @section('heading','Security')
 @section('content')
-<div class="notice-banner"><span class="notice-icon">i</span><div><strong>Protect your account</strong><p>Password changes and session controls are available here. Two-factor authentication is not enabled in this release; do not assume your account has 2FA protection.</p></div><span class="mode-tag">SECURITY</span></div>
+<x-client-attention title="Protect your account" tag="SECURITY"><p>Password changes and session controls are available here. Two-factor authentication is not enabled in this release; do not assume your account has 2FA protection.</p></x-client-attention>
 <section class="panel"><div class="panel-head"><div><span class="eyebrow">ACTIVE SESSIONS</span><h2>Signed-in devices</h2></div></div>
 @if(!$databaseSessions)<div class="empty-state"><strong>Session management unavailable</strong><p>The configured session driver is not database-backed, so Shell cannot reliably list or revoke individual sessions.</p></div>
 @else
