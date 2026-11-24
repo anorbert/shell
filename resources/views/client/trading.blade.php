@@ -1833,9 +1833,12 @@
                 const modal = positionModal;
                 modal.classList.add('is-visible');
                 modal.setAttribute('aria-hidden', 'false');
-                document.getElementById('position-close').disabled = true;
+                // The modal is a monitor, not a lock screen. Hiding it never
+                // cancels or pauses the persisted position or server settlement.
+                document.getElementById('position-close').disabled = false;
+                document.getElementById('position-modal-x').disabled = false;
                 setPositionText('position-result', 'LIVE POSITION · Waiting for the first market update…');
-                setPositionText('position-close', 'Waiting for result…');
+                setPositionText('position-close', 'Hide modal · trade continues');
                 try {
                     const data = initialTrade ? { trade: initialTrade } : await requestJson(@json(url('/trading/paper')) + '/' + id, {
                         method: 'GET',
@@ -1912,21 +1915,25 @@
                 }
             }
             function closeSettledPosition() {
-                if (!activePosition) return;
-                const expiredButPending = activePosition.status === 'open'
-                    && new Date(activePosition.expires_at).getTime() <= Date.now();
-                if (activePosition.status === 'open' && !expiredButPending) return;
-                if (expiredButPending) settleExpiredTrades();
                 if (positionAutoCloseTimer) { window.clearTimeout(positionAutoCloseTimer); positionAutoCloseTimer = null; }
                 positionModal.classList.remove('is-visible');
                 positionModal.setAttribute('aria-hidden', 'true');
+
+                // An open trade is safely persisted. Hiding its monitor must not
+                // cancel the position or stop polling/automatic settlement.
+                if (activePosition && activePosition.status === 'open') {
+                    if (new Date(activePosition.expires_at).getTime() <= Date.now()) {
+                        settleExpiredTrades();
+                    }
+                    return;
+                }
+
                 if (positionPollTimer) { window.clearInterval(positionPollTimer); window.clearTimeout(positionPollTimer); positionPollTimer = null; }
-                if (positionClockTimer) { window.clearInterval(positionClockTimer); positionClockTimer = null; }
+                if (positionClockTimer) { window.clearInterval(positionClockTimer); window.clearTimeout(positionClockTimer); positionClockTimer = null; }
                 if (positionSettlementRetryTimer) { window.clearTimeout(positionSettlementRetryTimer); positionSettlementRetryTimer = null; }
                 activePosition = null;
                 positionSettlementInFlight = false;
-                // Keep the user on the terminal; the confirmed wallet and history
-                // values have already been updated in place.
+                // The settled trade and wallet are already reconciled in place.
             }
             document.getElementById('position-close').addEventListener('click', closeSettledPosition);
             document.getElementById('position-modal-x').addEventListener('click', closeSettledPosition);
