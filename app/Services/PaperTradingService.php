@@ -127,7 +127,7 @@ class PaperTradingService
         if ($dueTrades->isNotEmpty()) {
             try {
                 $this->markets->refresh();
-            } catch (\\Throwable $exception) {
+            } catch (\Throwable $exception) {
                 report($exception);
             }
         }
