@@ -14,7 +14,7 @@
 </section>
 <section class="panel trade-ticket">
 <div class="panel-head"><div><span class="eyebrow">NEW POSITION</span><h2>Trade ticket</h2></div><span class="table-status verified">DEMO</span></div>
-<div class="wallet-summary"><span>AVAILABLE DEMO BALANCE</span><strong>{{ $balance }} {{ $currency }}</strong></div>
+<div class="wallet-summary"><span>AVAILABLE DEMO BALANCE</span><strong>@money($balance) {{ $currency }}</strong></div>
 <form id="paper-trade-form" class="form-stack">
 <input type="hidden" name="request_key" value="{{ \Illuminate\Support\Str::uuid() }}">
 <label>Market pair<select name="symbol" id="trade-symbol" required>@foreach($symbols as $symbol)<option value="{{ $symbol }}">{{ $symbol }}</option>@endforeach</select></label>
@@ -31,7 +31,7 @@
 <section class="panel"><div class="panel-head"><div><span class="eyebrow">YOUR POSITIONS</span><h2>Trade history</h2></div><a class="button button-secondary" href="{{ route('activity.index') }}"><svg class="nav-icon"><use href="#i-clock"/></svg> View all trade history</a>
 <a class="button button-secondary" href="{{ route('portfolio.index') }}"><svg class="nav-icon"><use href="#i-briefcase"/></svg> View portfolio</a></div>
 <div class="table-wrap"><table class="data-table"><thead><tr><th>PAIR</th><th>DIRECTION</th><th>STAKE</th><th>OPEN PRICE</th><th>EXPIRY</th><th>TIME LEFT</th><th>STATUS</th></tr></thead><tbody>
-@forelse($trades as $trade)<tr><td><strong>{{ $trade->symbol }}</strong></td><td>{{ $trade->direction }}</td><td>{{ $trade->stake }} {{ $trade->wallet_currency ?? $currency }}</td><td>{{ $trade->opening_price }}</td><td>{{ $trade->expires_at }}</td><td>@if($trade->status==='open')<span class="trade-countdown" data-expiry="{{ strtotime($trade->expires_at) * 1000 }}">Calculating…</span>@else — @endif</td><td><span class="table-status {{ $trade->status==='open'?'pending':'verified' }}">{{ strtoupper($trade->status) }}</span></td></tr>@empty<tr><td colspan="7" class="table-empty">No paper trades yet. Your first position will appear here.</td></tr>@endforelse
+@forelse($trades as $trade)<tr><td><strong>{{ $trade->symbol }}</strong></td><td>{{ $trade->direction }}</td><td>@money($trade->stake) {{ $trade->wallet_currency ?? $currency }}</td><td>@decimal($trade->opening_price)</td><td>{{ $trade->expires_at }}</td><td>@if($trade->status==='open')<span class="trade-countdown" data-expiry="{{ strtotime($trade->expires_at) * 1000 }}">Calculating…</span>@else — @endif</td><td><span class="table-status {{ $trade->status==='open'?'pending':'verified' }}">{{ strtoupper($trade->status) }}</span></td></tr>@empty<tr><td colspan="7" class="table-empty">No paper trades yet. Your first position will appear here.</td></tr>@endforelse
 </tbody></table></div><div class="pagination-wrap">{{ $trades->links() }}</div></section>
 @endsection
 @push('scripts')
@@ -64,7 +64,7 @@ function drawCandles(){
         chartContext.fillRect(x-body/2,top,body,Math.max(1,bottom-top));
     });
     const last=chartCandles[chartCandles.length-1];
-    document.getElementById('chart-last-price').textContent='Last candle close: '+last.close+' USDT';
+    document.getElementById('chart-last-price').textContent='Last candle close: '+new Intl.NumberFormat(undefined,{maximumFractionDigits:8}).format(Number(last.close))+' USDT';
 }
 async function loadCandles(){
     if(chartLoading)return;
@@ -104,7 +104,7 @@ function updateTradeCountdowns(){
 updateTradeCountdowns();window.setInterval(updateTradeCountdowns,1000);
 const stakeInput=document.getElementById('trade-stake');
 const payoutRate={{ (int) config('shell.paper.payout_basis_points',18000) / 10000 }};
-function updatePayout(){const stake=Math.max(0,Number(stakeInput.value)||0);document.getElementById('potential-return').textContent=(stake*payoutRate).toFixed(2);}
+function updatePayout(){const stake=Math.max(0,Number(stakeInput.value)||0);document.getElementById('potential-return').textContent=new Intl.NumberFormat(undefined,{maximumFractionDigits:2}).format(stake*payoutRate);}
 stakeInput.addEventListener('input',updatePayout);updatePayout();
 document.querySelectorAll('[data-stake]').forEach(button=>button.addEventListener('click',()=>{stakeInput.value=button.dataset.stake;updatePayout();}));
 document.querySelectorAll('[data-direction]').forEach(button=>button.addEventListener('click',()=>{document.getElementById('trade-direction').value=button.dataset.direction;}));
