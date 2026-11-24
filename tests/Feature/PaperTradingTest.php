@@ -4,6 +4,7 @@ use App\Models\User;
 use App\Services\LedgerService;
 use App\Services\PaperTradingService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 test('paper wallet credits create balanced ledger entries', function () {
     $user = User::factory()->create();
@@ -50,7 +51,11 @@ test('client portfolio starts with a $20,000 demo balance and an empty real wall
     $this->actingAs($user)->get('/portfolio')->assertOk()->assertSee('20000.00000000')->assertSee('0.00000000')->assertSee('Add demo funds');
 });
 
-test('paper trade opening is blocked when quote is missing', function () {
+test('paper trade opening is blocked when quote is missing and provider refresh fails', function () {
+    Http::fake([
+        'api.binance.com/api/v3/ticker/price' => Http::response([], 200),
+    ]);
+
     $user = User::factory()->create();
     $user->markEmailAsVerified();
     app(LedgerService::class)->creditPaperWallet($user, '100.00000000');
@@ -64,6 +69,43 @@ test('paper trade opening is blocked when quote is missing', function () {
     ])->assertStatus(422)->assertJsonFragment([
         'message' => 'No fresh market quote is available for this pair. Trading is blocked.',
     ]);
+});
+
+test('stale market quotes are refreshed from the provider before a trade is opened', function () {
+    Http::fake([
+        'api.binance.com/api/v3/ticker/price' => Http::response([
+            ['symbol' => 'BTCUSDT', 'price' => '92500.50000000'],
+            ['symbol' => 'ETHUSDT', 'price' => '3100.25000000'],
+        ], 200),
+    ]);
+
+    $user = User::factory()->create();
+    $user->markEmailAsVerified();
+    $ledger = app(LedgerService::class);
+    $ledger->creditPaperWallet($user, '100.00000000');
+
+    $staleAt = now()->subMinutes(5);
+    DB::table('market_quotes')->insert([
+        'symbol' => 'BTCUSDT',
+        'price' => '90000.000000000000',
+        'provider' => 'Binance Spot',
+        'captured_at' => $staleAt,
+        'created_at' => $staleAt,
+        'updated_at' => $staleAt,
+    ]);
+
+    $this->actingAs($user)->postJson('/trading/paper', [
+        'symbol' => 'BTCUSDT',
+        'direction' => 'UP',
+        'stake' => '10',
+        'duration' => 60,
+        'request_key' => 'test-open-after-stale-quote-refresh',
+    ])->assertCreated()
+        ->assertJsonPath('trade.status', 'open')
+        ->assertJsonPath('trade.opening_price', '92500.50000000');
+
+    Http::assertSent(fn ($request) => str_contains($request->url(), '/api/v3/ticker/price'));
+    expect(DB::table('paper_trades')->where('user_id', $user->id)->count())->toBe(1);
 });
 
 test('paper trade cannot be opened without sufficient simulation funds', function () {
