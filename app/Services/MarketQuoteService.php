@@ -42,6 +42,14 @@ class MarketQuoteService
                 ]
             );
 
+            // Preserve a time-series snapshot so settlement uses the first
+            // server-captured market price at or immediately after expiry.
+            DB::table('market_quote_snapshots')->insert([
+                'symbol' => $symbol,
+                'price' => $price,
+                'captured_at' => $capturedAt,
+            ]);
+
             $count++;
         }
 
