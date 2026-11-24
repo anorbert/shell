@@ -202,26 +202,30 @@ class MarketQuoteService
         }
 
         $maxAge = max(5, (int) config('shell.market.max_age_seconds', 90));
-        $minimumCapturedAt = now()->subSeconds($maxAge);
-        $quote = DB::table('market_quotes')->where('symbol', $symbol)->first();
+        $refreshFailure = null;
 
-        // Do not make clients depend on cron being perfectly punctual. If this
-        // pair is missing or stale, synchronously refresh provider quotes once
-        // before rejecting the trade. The price used below is always read back
-        // from the database after the provider response has been persisted.
-        if (!$quote || $quote->captured_at < $minimumCapturedAt) {
-            try {
-                $this->refreshSymbol($symbol);
-            } catch (\Throwable $exception) {
-                report($exception);
-            }
-
-            $quote = DB::table('market_quotes')->where('symbol', $symbol)->first();
-            $minimumCapturedAt = now()->subSeconds($maxAge);
+        // Opening a position must use a quote refreshed for this request. A
+        // quote inside the general display freshness window may still be too
+        // old to use as the entry price for a new position.
+        try {
+            $this->refreshSymbol($symbol);
+        } catch (\Throwable $exception) {
+            $refreshFailure = $exception;
+            report($exception);
         }
 
+        // Always read the server-persisted quote, never a browser/chart price.
+        // If the provider is temporarily unavailable, only a recent verified
+        // snapshot may be used as a short fallback.
+        $quote = DB::table('market_quotes')->where('symbol', $symbol)->first();
+        $minimumCapturedAt = now()->subSeconds($maxAge);
+
         if (!$quote || $quote->captured_at < $minimumCapturedAt || $quote->captured_at > now()) {
-            throw new RuntimeException('Live market data is temporarily unavailable for this pair. Please retry in a moment. Your stake has not been deducted.');
+            $message = 'A fresh verified market quote is unavailable for ' . $symbol . '. Your demo stake has not been deducted. Please retry when the market feed is restored.';
+            if ($refreshFailure && config('app.debug')) {
+                report(new RuntimeException($message, 0, $refreshFailure));
+            }
+            throw new RuntimeException($message);
         }
 
         return $quote;
