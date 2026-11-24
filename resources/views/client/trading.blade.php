@@ -34,10 +34,11 @@
     <form id="paper-trade-form" class="form-stack">
         <input type="hidden" name="request_key" value="{{ \Illuminate\Support\Str::uuid() }}">
         <label>Market pair<select name="symbol" id="trade-symbol" required>@foreach($symbols as $symbol)<option value="{{ $symbol }}">{{ $symbol }}</option>@endforeach</select></label>
-        <label>Stake ({{ $currency }})<input id="trade-stake" name="stake" type="number" min="0.00000001" max="{{ config('shell.paper.max_stake') }}" step="0.01" value="10" required></label>
+        <label>Stake ({{ $currency }})<input id="trade-stake" name="stake" type="number" inputmode="decimal" min="0.00000001" max="{{ config('shell.paper.max_stake') }}" step="0.00000001" value="10" required aria-describedby="stake-help"><small id="stake-help" class="muted">Enter an amount above zero. Maximum stake: {{ config('shell.paper.max_stake') }} {{ $currency }}. The stake is reserved from your demo balance when the trade opens.</small></label>
         <div class="stake-presets"><button type="button" data-stake="10">$10</button><button type="button" data-stake="25">$25</button><button type="button" data-stake="50">$50</button><button type="button" data-stake="100">$100</button></div>
         <label>Expiry duration<select name="duration">@foreach($durations as $duration)<option value="{{ $duration }}">{{ $duration>=3600?($duration/3600).' hour':($duration/60).' minutes' }}</option>@endforeach</select></label>
-        <div class="payout-preview"><span>Configured payout rate</span><strong>{{ $payoutPercentage }}%</strong><small>Potential total return: <b id="potential-return">—</b> {{ $currency }} including stake, if the prediction wins.</small></div>
+        <div class="payout-preview"><span>Configured payout rate</span><strong>{{ $payoutPercentage }}%</strong><small>Potential total return: <b id="potential-return">—</b> {{ $currency }} including stake, if the prediction wins. A losing position loses the reserved stake; a tie returns the stake.</small></div>
+        <div class="trade-process-hint"><strong>How this trade works</strong><ol><li>Choose the market, stake and expiry.</li><li>Select UP if you expect the price to rise, or DOWN if you expect it to fall.</li><li>We validate the latest server quote and reserve the stake from your demo wallet.</li><li>At expiry, the position settles against the next eligible server-captured quote. Your result appears in Trade history.</li></ol></div>
         <div class="direction-buttons"><button class="direction-up" type="submit" data-direction="UP">↗ UP <small>Price rises</small></button><button class="direction-down" type="submit" data-direction="DOWN">↘ DOWN <small>Price falls</small></button></div>
         <input type="hidden" name="direction" id="trade-direction" value="UP">
         <p class="muted" id="trade-feedback" role="status">Select a direction to preview and open a simulated position.</p>
@@ -61,6 +62,7 @@
 .chart-intervals{display:flex;align-items:center;gap:4px;flex-wrap:wrap}.chart-intervals button{min-width:37px;padding:7px 8px;border:1px solid transparent;border-radius:5px;background:transparent;color:#8f9db0;font-size:10px;font-weight:700;cursor:pointer}.chart-intervals button:hover,.chart-intervals button.active{border-color:#c8a96a55;background:#c8a96a18;color:#f0d99f}
 .market-chart-wrap{height:390px;position:relative;min-width:0;background:#0b1421;border-top:1px solid #202d40;border-bottom:1px solid #202d40}.market-chart-wrap canvas{display:block;width:100%;height:100%;touch-action:pan-y}.chart-loading{position:absolute;inset:0;display:none;align-items:center;justify-content:center;color:#8c9bb0;font-size:12px;pointer-events:none;background:#0b1421aa}.chart-loading.visible{display:flex}
 .chart-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 17px;color:#7e8da2;font-size:10px;font-variant-numeric:tabular-nums}
+.trade-process-hint{padding:12px 14px;border:1px solid #29384d;border-radius:8px;background:#0b1421;color:#9aa8ba;font-size:11px;line-height:1.55}.trade-process-hint strong{display:block;color:#e5ebf3;margin-bottom:5px}.trade-process-hint ol{margin:0;padding-left:18px}.trade-process-hint li+li{margin-top:3px}#stake-help{display:block;line-height:1.45;margin-top:5px}
 #chart-health{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}#chart-health .live-dot{width:6px;height:6px;margin:0}
 @media(max-width:720px){.market-chart-wrap{height:330px}.chart-market-summary{align-items:flex-start;flex-direction:column}.chart-ohlc{justify-content:flex-start;gap:8px 12px}.chart-toolbar{align-items:flex-start;flex-direction:column}.chart-intervals{width:100%;justify-content:space-between}.chart-foot{font-size:9px}}
 @media(max-width:420px){.market-chart-wrap{height:290px}.chart-ohlc{font-size:9px;gap:7px}.chart-toolbar{padding-inline:12px}.chart-intervals button{min-width:32px;padding-inline:5px}}
@@ -317,15 +319,21 @@
     }
     updateTradeCountdowns();window.setInterval(updateTradeCountdowns,1000);
     const stakeInput=document.getElementById('trade-stake');
+    const tradeForm=document.getElementById('paper-trade-form');
     const payoutRate={{ (int) config('shell.paper.payout_basis_points',18000) / 10000 }};
     function updatePayout(){const stake=Math.max(0,Number(stakeInput.value)||0);document.getElementById('potential-return').textContent=new Intl.NumberFormat(undefined,{maximumFractionDigits:2}).format(stake*payoutRate);}
     stakeInput.addEventListener('input',updatePayout);updatePayout();
     document.querySelectorAll('[data-stake]').forEach(button=>button.addEventListener('click',()=>{stakeInput.value=button.dataset.stake;updatePayout();}));
     document.querySelectorAll('[data-direction]').forEach(button=>button.addEventListener('click',()=>{document.getElementById('trade-direction').value=button.dataset.direction;}));
-    document.getElementById('paper-trade-form').addEventListener('submit',async event=>{
+    tradeForm.addEventListener('submit',async event=>{
         event.preventDefault();
         const form=event.currentTarget,submitter=event.submitter;
+        if(form.dataset.submitting==='true')return;
+        const stake=Number(stakeInput.value),maxStake=Number(stakeInput.max);
+        if(!Number.isFinite(stake)||stake<=0){document.getElementById('trade-feedback').textContent='Enter a valid stake greater than zero.';stakeInput.focus();return;}
+        if(stake>maxStake){document.getElementById('trade-feedback').textContent='Your stake is above the maximum allowed amount of '+stakeInput.max+' {{ $currency }}.';stakeInput.focus();return;}
         if(submitter?.dataset.direction)document.getElementById('trade-direction').value=submitter.dataset.direction;
+        form.dataset.submitting='true';
         const buttons=form.querySelectorAll('button[type=submit]');buttons.forEach(button=>button.disabled=true);
         const feedback=document.getElementById('trade-feedback');feedback.textContent='Validating fresh market price and reserving demo stake…';
         try{
@@ -333,7 +341,7 @@
             const result=await window.shellAjax(@json(route('trading.store')),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
             feedback.textContent=result.message;window.shellToast(result.message);window.location.reload();
         }catch(error){feedback.textContent=error.message;window.shellToast(error.message,'error');}
-        finally{buttons.forEach(button=>button.disabled=false);}
+        finally{form.dataset.submitting='false';buttons.forEach(button=>button.disabled=false);}
     });
 })();
 </script>
