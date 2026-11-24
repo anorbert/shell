@@ -1979,15 +1979,12 @@
                     if (response.wallet_balance !== undefined && response.wallet_balance !== null) {
                         setText('demo-wallet-balance', money(response.wallet_balance) + ' {{ $currency }}');
                     }
-                    if (Number(response.settled_count || 0) > 0) {
-                        // If the visible position was settled by the scheduler or
-                        // this recovery request, hydrate its result in-place.
-                        if (activePosition && activePosition.status === 'open') {
-                            await pollPosition();
-                        } else {
-                            await reconcileOpenTrades();
-                        }
-                        return;
+                    // Reconcile even when this request settled zero rows: the
+                    // scheduler may already have committed the result just before us.
+                    if (activePosition && activePosition.status === 'open') {
+                        await pollPosition();
+                    } else {
+                        await reconcileOpenTrades();
                     }
                     if (response.has_due) scheduleExpiredSettlementRetry();
                 } catch (_) {
