@@ -63,8 +63,14 @@
         </section>
         <section class="panel">
             <div class="panel-head"><div><span class="eyebrow">PAYOUT</span><h2>Withdraw real funds</h2></div></div>
-            @if(!$kycVerified)
-                <p class="muted">Complete identity verification to activate withdrawals. Once your documents are approved, you can request a payout from your available real-wallet balance.</p>
+            @if(!$hasSuccessfulDeposit)
+                <p class="muted">Withdrawals and identity verification become available after your first real-money deposit has been confirmed by our operations team. Demo funds do not qualify.</p>
+                <a class="button button-secondary" href="#deposit-form">Make your first real deposit</a>
+                @if($requests->where('type', 'deposit')->where('status', 'pending')->isNotEmpty())
+                    <p class="muted">Your deposit is awaiting verification. KYC and withdrawals will unlock after it is confirmed.</p>
+                @endif
+            @elseif(!$kycVerified)
+                <p class="muted">Your first real-money deposit is confirmed. Submit your identity documents below. Withdrawals unlock only after an administrator approves your KYC.</p>
                 @if($kyc?->review_note)<p class="muted">Admin review note: {{ $kyc->review_note }}</p>@endif
                 <form method="POST" action="{{ route('wallet-requests.kyc') }}" enctype="multipart/form-data" class="form-stack">@csrf
                     <label>Document type<select name="document_type" required><option value="national_id">National ID</option><option value="passport">Passport</option><option value="driving_licence">Driving licence</option></select></label>
