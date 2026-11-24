@@ -75,13 +75,13 @@ routes/
 4. Run `composer install`, `php artisan migrate`, `npm install` and `npm run build`.
 5. Refresh market quotes with `php artisan shell:markets:refresh`.
 6. New clients automatically receive $20,000 in non-withdrawable USD demo credits. Additional demo credits may be added from the client wallet center; administrators can also issue non-withdrawable simulation credits from the server CLI: `php artisan shell:paper-credit client@example.com 1000`.
-7. Keep Laravel's scheduler running every minute. A typical server cron entry is:
+7. Keep Laravel's scheduler running every minute. Paper-trade expiry checks are scheduled every ten seconds inside each scheduler minute; market quote refresh remains scheduled every minute. A typical server cron entry is:
 
 ```cron
 * * * * * cd /path/to/shell && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-The admin Operations page shows the last recorded execution status. A successful heartbeat does not prove that the server cron will continue running; monitor it externally as well.
+For local development, use `php artisan schedule:work` in a dedicated terminal. On a server, keep the cron entry active and verify `php artisan schedule:list` after deployment. Settlement uses the earliest server-captured quote at or after expiry and is idempotent. If the quote provider is unavailable, the trade remains queued until a verifiable post-expiry quote is available; it is never assigned a fabricated price. The admin Operations page shows the last recorded execution status. A successful heartbeat does not prove that the server cron will continue running; monitor it externally as well.
 
 ## Financial and security boundaries
 
