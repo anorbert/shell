@@ -41,7 +41,7 @@
                 <a href="{{ route('admin.wallet-operations.index') }}" class="{{ request()->routeIs('admin.wallet-operations.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-wallet"/></svg><span>Wallet operations</span></a>
             @else
                 <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard')?'active':'' }}"><svg class="nav-icon"><use href="#i-grid"/></svg><span>Home</span></a>
-                <a href="{{ route('trading.index','') }}" class="{{ request()->routeIs('trading.*','activity.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-clock"/></svg><span>Trade</span></a>
+                <a href="{{ route('trading.index') }}" class="{{ request()->routeIs('trading.*','activity.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-clock"/></svg><span>Trade</span></a>
                 <a href="{{ route('wallet-requests.index') }}" class="{{ request()->routeIs('wallet-requests.*','statement.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-wallet"/></svg><span>Wallet</span></a>
                 <a href="{{ route('markets.index') }}" class="{{ request()->routeIs('markets.*','convert.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-chart"/></svg><span>Markets</span></a>
             @endif
