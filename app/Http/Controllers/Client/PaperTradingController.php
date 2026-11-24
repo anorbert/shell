@@ -31,7 +31,7 @@ class PaperTradingController extends Controller
         ]);
     }
 
-    public function store(Request $request, PaperTradingService $service)
+    public function store(Request $request, PaperTradingService $service, LedgerService $ledger)
     {
         $values = $request->validate([
             'symbol' => ['required', 'string', 'max:24'],
@@ -42,6 +42,13 @@ class PaperTradingController extends Controller
         ]);
 
         try {
+            $currency = config('shell.paper.currency', 'USD');
+            $demoWallet = $ledger->provisionClientWallets($request->user(), $currency)['demo'];
+            $available = Decimal::fromUnits($ledger->balanceUnits($demoWallet));
+            if (Decimal::compare($stake, $available) > 0) {
+                return response()->json(['message' => 'Insufficient demo balance. Your available balance is ' . $available . ' ' . $currency . '. Reduce your stake or add demo funds.'], 422);
+            }
+
             $id = $service->open(
                 $request->user(),
                 strtoupper($values['symbol']),
