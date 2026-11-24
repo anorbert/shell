@@ -77,7 +77,7 @@ class PaperTradingController extends Controller
         }
     }
 
-    public function settlePosition(Request $request, int $trade, PaperTradingService $service)
+    public function settlePosition(Request $request, int $trade, PaperTradingService $service, LedgerService $ledger)
     {
         $owned = DB::table('paper_trades')
             ->where('id', $trade)
@@ -87,17 +87,46 @@ class PaperTradingController extends Controller
         abort_unless($owned, 404);
 
         try {
+            // The service refreshes a server-side quote when needed and settles
+            // eligible expired positions in this same request. It never trusts
+            // the browser's WebSocket price for a financial ledger decision.
             $settledCount = $service->settleDue();
-
             $position = DB::table('paper_trades')->where('id', $trade)->first();
 
+            if (!$position) {
+                abort(404);
+            }
+
+            $currency = $position->wallet_currency ?: config('shell.paper.currency', 'USD');
+            $payout = '0.00000000';
+            $profit = '0.00000000';
+            $walletBalance = null;
+
+            if ($position->status === 'won') {
+                $payout = Decimal::multiplyRatio(
+                    (string) $position->stake,
+                    (int) config('shell.paper.payout_basis_points', 18000),
+                    10000
+                );
+                $profit = Decimal::fromUnits(
+                    Decimal::units($payout) - Decimal::units((string) $position->stake)
+                );
+            } elseif ($position->status === 'void') {
+                $payout = (string) $position->stake;
+            }
+
+            if ($position->status !== 'open') {
+                $wallet = $ledger->demoWallet($request->user(), $currency);
+                $walletBalance = Decimal::fromUnits($ledger->balanceUnits($wallet));
+            }
+
             return response()->json([
-                'trade' => $position ? [
+                'trade' => [
                     'id' => (int) $position->id,
                     'symbol' => $position->symbol,
                     'direction' => $position->direction,
                     'stake' => (string) $position->stake,
-                    'currency' => $position->wallet_currency ?: config('shell.paper.currency', 'USD'),
+                    'currency' => $currency,
                     'opening_price' => (string) $position->opening_price,
                     'duration_seconds' => (int) $position->duration_seconds,
                     'opened_at' => $position->opened_at,
@@ -105,14 +134,18 @@ class PaperTradingController extends Controller
                     'status' => $position->status,
                     'closing_price' => $position->closing_price !== null ? (string) $position->closing_price : null,
                     'settled_at' => $position->settled_at,
-                ] : null,
+                    'payout_amount' => $payout,
+                    'profit_amount' => $profit,
+                ],
+                'wallet_balance' => $walletBalance,
                 'settled_count' => $settledCount,
+                'settled' => $position->status !== 'open',
             ]);
-        } catch (\Throwable $exception) {
+        } catch (\\Throwable $exception) {
             report($exception);
 
             return response()->json([
-                'message' => 'Settlement is temporarily unavailable. The position remains open and will retry automatically.',
+                'message' => 'Settlement is temporarily unavailable. The position remains recorded and will retry automatically.',
             ], 503);
         }
     }
