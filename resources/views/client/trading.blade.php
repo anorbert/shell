@@ -879,10 +879,12 @@
             const requestJson = async (url, options = {}) => {
                 const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
                 const controller = new AbortController();
-                const timeout = window.setTimeout(() => controller.abort(), 8000);
+                const timeoutMs = options.timeoutMs || 8000;
+                const { timeoutMs: ignoredTimeout, ...fetchOptions } = options;
+                const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
                 try {
                     const response = await fetch(url, {
-                        ...options,
+                        ...fetchOptions,
                         signal: controller.signal,
                         headers: {
                             Accept: 'application/json',
@@ -1572,7 +1574,9 @@
                 setPositionText('position-countdown', 'Settled');
                 setPositionText('position-closing-price', priceText(trade.closing_price));
                 setPositionText('position-final-payout', money(trade.payout_amount ?? (status === 'WON' ? Number(trade.stake) * payoutRate : status === 'TIE' ? Number(trade.stake) : 0)) + ' ' + trade.currency);
-                setPositionText('position-final-profit', (status === 'WON' ? '+' : status === 'LOST' ? '−' : '') + money(trade.profit_amount ?? (status === 'WON' ? Number(trade.stake) * (payoutRate - 1) : status === 'LOST' ? Number(trade.stake) : 0)) + ' ' + trade.currency);
+                setPositionText('position-final-profit', money(trade.profit_amount ?? (status === 'WON' ? Number(trade.stake) * (payoutRate - 1) : status === 'LOST' ? -Number(trade.stake) : 0)) + ' ' + trade.currency);
+                setPositionText('position-live-outcome', (status === 'WON' ? 'NET PROFIT · +' : status === 'LOST' ? 'NET LOSS · ' : 'NO PROFIT OR LOSS · ') + money(trade.profit_amount ?? 0) + ' ' + trade.currency);
+                setPositionText('position-potential-payout', 'Confirmed total payout: ' + money(trade.payout_amount ?? 0) + ' ' + trade.currency);
                 if (trade.wallet_balance !== undefined && trade.wallet_balance !== null) {
                     setText('demo-wallet-balance', money(trade.wallet_balance) + ' ' + trade.currency);
                 }
@@ -1619,7 +1623,7 @@
                 setPositionText('position-result', 'Trade expired. Settlement is being confirmed securely with the latest server-captured market quote…');
                 setPositionText('position-close', 'Settling securely…');
                 try {
-                    const data = await requestJson(@json(url('/trading/paper')) + '/' + activePosition.id + '/settle', { method: 'POST' });
+                    const data = await requestJson(@json(url('/trading/paper')) + '/' + activePosition.id + '/settle', { method: 'POST', timeoutMs: 40000 });
                     if (data.trade?.status && data.trade.status !== 'open') {
                         data.trade.wallet_balance = data.wallet_balance;
                         showSettledResult(data.trade);
@@ -1661,7 +1665,8 @@
                     // A scheduler or another request may have settled it first.
                     // Ask the same idempotent endpoint for the final payout and balance.
                     const settlement = await requestJson(@json(url('/trading/paper')) + '/' + trade.id + '/settle', {
-                        method: 'POST'
+                        method: 'POST',
+                        timeoutMs: 40000
                     });
                     const settledTrade = settlement.trade || trade;
                     settledTrade.wallet_balance = settlement.wallet_balance;
@@ -1755,32 +1760,14 @@
             document.getElementById('position-close').addEventListener('click', closeSettledPosition);
             document.getElementById('position-modal-x').addEventListener('click', closeSettledPosition);
 
-            // Reopen the latest still-open position automatically after refresh/navigation.
+            // Resume an active trade, or reopen the latest expired position directly
+            // in the modal so the client sees its confirmed result without a page reload.
             const resumableTradeId = @json($activeTradeId);
+            const expiredTradeId = @json($expiredTradeId ?? null);
             if (resumableTradeId) {
                 openPositionModal(resumableTradeId);
-            }
-
-            // Expired positions are not resumed as live trades. Ask the server to settle
-            // them in the background, then refresh the authoritative history/wallet.
-            const hasExpiredOpenTrades = @json((bool) ($hasExpiredOpenTrades ?? false));
-            if (hasExpiredOpenTrades) {
-                requestJson(@json(route('trading.settle-expired')), {
-                        method: 'POST'
-                    })
-                    .then(result => {
-                        if (Number(result.settled_count) > 0) window.location.reload();
-                        else {
-                            const feedback = document.getElementById('trade-feedback');
-                            if (feedback) feedback.textContent =
-                                'An expired position is awaiting a verified post-expiry market price. It will be retried automatically; no result has been guessed.';
-                        }
-                    })
-                    .catch(() => {
-                        const feedback = document.getElementById('trade-feedback');
-                        if (feedback) feedback.textContent =
-                            'An expired position is awaiting settlement. The page is available; settlement will retry automatically.';
-                    });
+            } else if (expiredTradeId) {
+                openPositionModal(expiredTradeId);
             }
 
             tradeForm.addEventListener('submit', async event => {
