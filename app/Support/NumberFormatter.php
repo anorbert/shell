@@ -11,6 +11,10 @@ final class NumberFormatter
 
     public static function decimal(mixed $value, int $maxDecimals = 8): string
     {
+        if ($value === null || $value === '' || ! is_numeric($value)) {
+            return '—';
+        }
+
         return self::format($value, max(0, min(12, $maxDecimals)));
     }
 
