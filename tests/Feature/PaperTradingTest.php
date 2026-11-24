@@ -40,6 +40,26 @@ test('ledger idempotency key returns the original transaction without reposting'
         ->and($ledger->balanceUnits($wallet))->toBe(2500000000);
 });
 
+test('ledger idempotency key rejects a different posting payload', function () {
+    $user = User::factory()->create();
+    $ledger = app(LedgerService::class);
+    $wallet = $ledger->wallet($user);
+    $capital = $ledger->system('TEST_IDEMPOTENCY_CONFLICT_CAPITAL', 'USD', 'debit');
+
+    $ledger->post('test-idempotency-payload-conflict', 'Original credit', [
+        ['account_id' => $capital, 'side' => 'debit', 'amount' => '25.00000000'],
+        ['account_id' => $wallet, 'side' => 'credit', 'amount' => '25.00000000'],
+    ]);
+
+    expect(fn () => $ledger->post('test-idempotency-payload-conflict', 'Different credit', [
+        ['account_id' => $capital, 'side' => 'debit', 'amount' => '50.00000000'],
+        ['account_id' => $wallet, 'side' => 'credit', 'amount' => '50.00000000'],
+    ]))->toThrow(RuntimeException::class, 'different posting');
+
+    expect($ledger->balanceUnits($wallet))->toBe(2500000000)
+        ->and(DB::table('ledger_transactions')->where('idempotency_key', 'test-idempotency-payload-conflict')->count())->toBe(1);
+});
+
 test('market and trading screens require authentication', function () {
     $this->get('/markets')->assertRedirect('/login');
     $this->get('/trading')->assertRedirect('/login');
