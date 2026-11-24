@@ -77,8 +77,8 @@
     const tradeSymbol = document.getElementById('trade-symbol');
     const loading = document.getElementById('chart-loading');
     const palette = { text:'#8b9ab0', muted:'#65758b', grid:'rgba(139,154,176,.13)', border:'#26364b', up:'#22b78b', down:'#ed6474', crosshair:'rgba(190,204,222,.55)', panel:'#0b1421' };
-    let interval = '1m', candles = [], loadingRequest = false, failed = false, crosshair = null, previousClose = null;
-    let plot = null;
+    let interval = '1m', candles = [], loadingRequest = false, failed = false, crosshair = null;
+    let plot = null, liveSocket = null, reconnectTimer = null, reconnectAttempts = 0, streamGeneration = 0, activeStreamKey = '';
 
     const number = value => Number(value);
     const formatPrice = value => {
@@ -191,27 +191,104 @@
         setText('chart-last-price','Last price '+formatPrice(last.close)+' USDT');
     }
 
+    function closeLiveStream() {
+        streamGeneration++;
+        if (reconnectTimer) { window.clearTimeout(reconnectTimer); reconnectTimer = null; }
+        if (liveSocket) {
+            liveSocket.onopen = liveSocket.onmessage = liveSocket.onerror = liveSocket.onclose = null;
+            try { liveSocket.close(); } catch (_) {}
+            liveSocket = null;
+        }
+    }
+
+    function applyLiveCandle(kline) {
+        const candle = {
+            time: number(kline.t), open: String(kline.o), high: String(kline.h),
+            low: String(kline.l), close: String(kline.c), volume: String(kline.v)
+        };
+        if (![candle.time,candle.open,candle.high,candle.low,candle.close].every(v => Number.isFinite(number(v)))) return;
+        const last = candles[candles.length - 1];
+        if (last && candle.time < last.time) return;
+        if (last && candle.time === last.time) candles[candles.length - 1] = candle;
+        else {
+            candles.push(candle);
+            if (candles.length > 120) candles.shift();
+        }
+        failed = false;
+        updateSummary();
+        draw();
+        setText('chart-health', 'LIVE');
+        setText('chart-updated', 'Live · ' + new Date().toLocaleTimeString());
+    }
+
+    function connectLiveStream(symbol, selectedInterval, generation) {
+        if (generation !== streamGeneration) return;
+        const streamKey = symbol.toLowerCase() + '@kline_' + selectedInterval;
+        activeStreamKey = streamKey;
+        setText('chart-health', 'CONNECTING');
+        const socket = new WebSocket('wss://stream.binance.com:9443/ws/' + streamKey);
+        liveSocket = socket;
+
+        socket.onopen = () => {
+            if (generation !== streamGeneration) { socket.close(); return; }
+            reconnectAttempts = 0;
+            setText('chart-health', 'LIVE');
+            setText('chart-updated', 'Live stream connected');
+        };
+        socket.onmessage = event => {
+            if (generation !== streamGeneration) return;
+            try {
+                const message = JSON.parse(event.data);
+                if (message.k) applyLiveCandle(message.k);
+            } catch (_) {
+                // Ignore malformed stream messages; the next valid candle update will recover.
+            }
+        };
+        socket.onerror = () => {
+            if (generation === streamGeneration) setText('chart-health', 'RECONNECTING');
+        };
+        socket.onclose = () => {
+            if (generation !== streamGeneration) return;
+            setText('chart-health', 'RECONNECTING');
+            const delay = Math.min(30000, 1000 * Math.pow(2, Math.min(reconnectAttempts, 5)));
+            reconnectAttempts++;
+            reconnectTimer = window.setTimeout(() => connectLiveStream(symbol, selectedInterval, generation), delay);
+        };
+    }
+
     async function loadCandles() {
-        if(loadingRequest) return;
-        loadingRequest=true;failed=false;loading.classList.add('visible');
-        setText('chart-health','UPDATING');
-        const symbol=marketSelect.value;
-        setText('chart-symbol',symbol);
+        closeLiveStream();
+        const generation = streamGeneration;
+        const symbol = marketSelect.value;
+        const selectedInterval = interval;
+        loadingRequest = true;
+        failed = false;
+        loading.classList.add('visible');
+        setText('chart-health', 'LOADING');
+        setText('chart-symbol', symbol);
         try {
-            const result=await window.shellAjax(@json(route('markets.candles'))+'?'+new URLSearchParams({symbol,interval,limit:'120'}));
-            if(!Array.isArray(result.candles) || !result.candles.length) throw new Error('No candle data is available for this market.');
-            candles=result.candles.map(c=>({...c,time:number(c.time)})).filter(c=>[c.time,c.open,c.high,c.low,c.close].every(v=>Number.isFinite(number(v))));
-            if(!candles.length) throw new Error('The market returned invalid candle data.');
-            updateSummary();draw();
-            setText('chart-health','LIVE');
-            setText('chart-updated','Updated '+new Date().toLocaleTimeString());
+            const result = await window.shellAjax(@json(route('markets.candles')) + '?' + new URLSearchParams({symbol,interval:selectedInterval,limit:'120'}));
+            if (generation !== streamGeneration) return;
+            if (!Array.isArray(result.candles) || !result.candles.length) throw new Error('No candle data is available for this market.');
+            candles = result.candles.map(c => ({...c,time:number(c.time)}))
+                .filter(c => [c.time,c.open,c.high,c.low,c.close].every(v => Number.isFinite(number(v))));
+            if (!candles.length) throw new Error('The market returned invalid candle data.');
+            updateSummary();
+            draw();
+            setText('chart-health', 'CONNECTING');
+            setText('chart-updated', 'Opening live market stream…');
+            connectLiveStream(symbol, selectedInterval, generation);
         } catch(error) {
-            failed=true;
-            if(!candles.length) draw();
-            setText('chart-health','RECONNECTING');
-            setText('chart-updated',error.message || 'Market data unavailable');
+            if (generation !== streamGeneration) return;
+            failed = true;
+            if (!candles.length) draw();
+            setText('chart-health', 'UNAVAILABLE');
+            setText('chart-updated', error.message || 'Market data unavailable');
         } finally {
-            loadingRequest=false;loading.classList.remove('visible');
+            if (generation === streamGeneration) {
+                loadingRequest = false;
+                loading.classList.remove('visible');
+            }
         }
     }
 
@@ -229,7 +306,7 @@
     canvas.addEventListener('pointerleave',()=>{crosshair=null;draw();});
     if('ResizeObserver' in window){new ResizeObserver(draw).observe(canvas.parentElement);}else{window.addEventListener('resize',draw);}
     loadCandles();
-    window.setInterval(loadCandles,30000);
+    window.addEventListener('beforeunload', closeLiveStream);
 
     function updateTradeCountdowns(){
         const now=Date.now();
