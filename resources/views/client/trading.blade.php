@@ -1332,7 +1332,7 @@
             function scheduleStreamReconnect(symbol, selectedInterval, generation) {
                 if (generation !== streamGeneration) return;
                 setText('chart-health', 'RECONNECTING');
-                const delay = Math.min(30000, 1000 * Math.pow(2, Math.min(reconnectAttempts, 5)));
+                const delay = Math.min(30000, 1000 * Math.pow(2, Math.min(reconnectAttempts, 5))) + Math.random() * 750;
                 reconnectAttempts++;
                 reconnectTimer = window.setTimeout(() => connectLiveStream(symbol, selectedInterval, generation, 0),
                     delay);
