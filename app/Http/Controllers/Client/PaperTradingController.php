@@ -1,15 +1,15 @@
 <?php
 
-namespace App\\Http\\Controllers\\Client;
+namespace App\Http\Controllers\Client;
 
-use App\\Http\\Controllers\\Controller;
-use App\\Services\\LedgerService;
-use App\\Services\\MarketQuoteService;
-use App\\Services\\PaperTradingService;
-use App\\Support\\Decimal;
-use Illuminate\\Http\\Request;
-use Illuminate\\Support\\Facades\\DB;
-use Illuminate\\Support\\Str;
+use App\Http\Controllers\Controller;
+use App\Services\LedgerService;
+use App\Services\MarketQuoteService;
+use App\Services\PaperTradingService;
+use App\Support\Decimal;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use RuntimeException;
 use InvalidArgumentException;
 
@@ -36,7 +36,7 @@ class PaperTradingController extends Controller
         $values = $request->validate([
             'symbol' => ['required', 'string', 'max:24'],
             'direction' => ['required', 'in:UP,DOWN'],
-            'stake' => ['required', 'string', 'max:24', 'regex:/^[0-9]+(?:\\.[0-9]{1,8})?$/'],
+            'stake' => ['required', 'string', 'max:24'],
             'duration' => ['required', 'integer'],
             'request_key' => ['nullable', 'string', 'max:100'],
         ]);
@@ -44,7 +44,10 @@ class PaperTradingController extends Controller
         try {
             // Canonicalize decimal input before fixed-point ledger arithmetic.
             // This accepts 10, 10.0, 10.00 and leading-zero input safely.
-            $rawStake = trim($values['stake']);
+            $rawStake = trim((string) $values['stake']);
+            if (!preg_match('/\\A[0-9]+(?:\\.[0-9]{1,8})?\\z/D', $rawStake)) {
+                return response()->json(['message' => 'Enter a valid stake using digits and up to 8 decimal places (for example, 10 or 10.50).'], 422);
+            }
             [$whole, $fraction] = array_pad(explode('.', $rawStake, 2), 2, '');
             $whole = ltrim($whole, '0');
             $whole = $whole === '' ? '0' : $whole;
