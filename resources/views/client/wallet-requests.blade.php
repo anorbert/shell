@@ -3,6 +3,9 @@
 @section('eyebrow','REAL WALLET')
 @section('heading','Funding requests')
 @section('content')
+<div class="page-action-row">
+    <a href="{{ route('statement.index') }}" class="button button-secondary"><svg class="nav-icon"><use href="#i-receipt"/></svg> View wallet statement</a>
+</div>
 <div class="notice-banner"><span class="notice-icon">!</span><div><strong>Manual crypto settlement</strong><p>Only send crypto to the exact asset and network shown. Deposits remain pending until an administrator verifies the transaction. Withdrawals require approved KYC and are paid manually.</p></div><span class="mode-tag">MANUAL REVIEW</span></div>
 @if(session('status'))<div class="notice-banner"><div><strong>{{ session('status') }}</strong></div></div>@endif
 @if($errors->any())<div class="notice-banner"><div><strong>Check the submitted details</strong><p>{{ $errors->first() }}</p></div></div>@endif
