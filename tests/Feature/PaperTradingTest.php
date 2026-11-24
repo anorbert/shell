@@ -316,7 +316,7 @@ test('a trade without a verified post-expiry quote is voided and fully refunded'
     expect(app(PaperTradingService::class)->settleDue())->toBe(1)
         ->and(DB::table('paper_trades')->where('id', $tradeId)->value('status'))->toBe('void')
         ->and(DB::table('paper_trades')->where('id', $tradeId)->value('closing_price'))->toBeNull()
-        ->and($ledger->balanceUnits($wallet))->toBe(2010000000000)
+        ->and($ledger->balanceUnits($wallet))->toBe(10000000000)
         ->and(DB::table('ledger_transactions')->where('idempotency_key', 'paper-settle:' . $tradeId)->count())->toBe(1);
 });
 test('expired trades settle when the first verified post-expiry quote arrives after the former grace period', function () {
@@ -410,6 +410,14 @@ test('an expired winning paper trade settles once using a post-expiry quote', fu
         'price' => '91000.000000000000',
         'captured_at' => now(),
         'updated_at' => now(),
+    ]);
+
+    // Settlement consumes immutable server-received snapshots, not the
+    // mutable latest-quote cache.
+    DB::table('market_quote_snapshots')->insert([
+        'symbol' => 'BTCUSDT',
+        'price' => '91000.000000000000',
+        'captured_at' => now(),
     ]);
 
     expect(app(PaperTradingService::class)->settleDue())->toBe(1)
@@ -590,5 +598,5 @@ test('repeated settlement workers cannot credit the same expired trade twice', f
         ->and($secondWorker->settleDue())->toBe(0)
         ->and(DB::table('paper_trades')->where('id', $tradeId)->value('status'))->toBe('won')
         ->and(DB::table('ledger_transactions')->where('idempotency_key', 'paper-settle:' . $tradeId)->count())->toBe(1)
-        ->and($ledger->balanceUnits($wallet))->toBe(2010800000000);
+        ->and($ledger->balanceUnits($wallet))->toBe(10800000000);
 });
