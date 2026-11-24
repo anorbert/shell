@@ -102,7 +102,7 @@ test('stale market quotes are refreshed from the provider before a trade is open
         'request_key' => 'test-open-after-stale-quote-refresh',
     ])->assertCreated()
         ->assertJsonPath('trade.status', 'open')
-        ->assertJsonPath('trade.opening_price', '92500.500000000000');
+        ->assertJsonPath('trade.opening_price', '92500.5');
 
     Http::assertSent(fn ($request) => str_contains($request->url(), '/api/v3/ticker/price'));
     expect(DB::table('paper_trades')->where('user_id', $user->id)->count())->toBe(1);
