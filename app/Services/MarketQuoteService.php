@@ -137,11 +137,27 @@ class MarketQuoteService
             throw new RuntimeException('Unsupported market pair.');
         }
 
+        $maxAge = max(5, (int) config('shell.market.max_age_seconds', 90));
+        $minimumCapturedAt = now()->subSeconds($maxAge);
         $quote = DB::table('market_quotes')->where('symbol', $symbol)->first();
-        $minimumCapturedAt = now()->subSeconds((int) config('shell.market.max_age_seconds', 90));
 
+        // Do not make clients depend on cron being perfectly punctual. If this
+        // pair is missing or stale, synchronously refresh provider quotes once
+        // before rejecting the trade. The price used below is always read back
+        // from the database after the provider response has been persisted.
         if (!$quote || $quote->captured_at < $minimumCapturedAt) {
-            throw new RuntimeException('No fresh market quote is available for this pair. Trading is blocked.');
+            try {
+                $this->refresh();
+            } catch (\\Throwable $exception) {
+                report($exception);
+            }
+
+            $quote = DB::table('market_quotes')->where('symbol', $symbol)->first();
+            $minimumCapturedAt = now()->subSeconds($maxAge);
+        }
+
+        if (!$quote || $quote->captured_at < $minimumCapturedAt || $quote->captured_at > now()) {
+            throw new RuntimeException('Live market data is temporarily unavailable for this pair. Please retry in a moment. Your stake has not been deducted.');
         }
 
         return $quote;
