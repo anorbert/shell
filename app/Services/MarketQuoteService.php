@@ -123,10 +123,29 @@ class MarketQuoteService
 
     public function freshQuote(string $symbol): object
     {
+        if (!in_array($symbol, config('shell.market.symbols', []), true)) {
+            throw new RuntimeException('Unsupported market pair.');
+        }
+
+        $isFresh = fn ($quote) => $quote
+            && !now()->subSeconds((int) config('shell.market.max_age_seconds', 90))->gt($quote->captured_at);
+
         $quote = DB::table('market_quotes')->where('symbol', $symbol)->first();
 
-        if (!$quote || now()->subSeconds((int) config('shell.market.max_age_seconds', 90))->gt($quote->captured_at)) {
-            throw new RuntimeException('No fresh market quote is available for this pair. Trading is blocked.');
+        // The scheduled refresh is a cache warmer, not a hard dependency for trading.
+        // Refresh synchronously once when the cached quote is missing or stale.
+        if (!$isFresh($quote)) {
+            try {
+                $this->refresh();
+            } catch (\\Throwable $exception) {
+                report($exception);
+            }
+
+            $quote = DB::table('market_quotes')->where('symbol', $symbol)->first();
+        }
+
+        if (!$isFresh($quote)) {
+            throw new RuntimeException('A live market price could not be verified right now. Please wait a moment and try again.');
         }
 
         return $quote;
