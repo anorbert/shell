@@ -3,7 +3,7 @@
 @section('eyebrow','ADMINISTRATION')
 @section('heading','Wallet operations')
 @section('content')
-<div class="notice-banner"><span class="notice-icon">!</span><div><strong>Manual financial control</strong><p>Verify deposits independently on the correct blockchain/network before crediting. For withdrawals, send funds first, then record the transaction hash and mark the request paid. Never approve based only on a screenshot.</p></div><span class="mode-tag">ADMIN REVIEW</span></div>
+<div class="notice-banner"><span class="notice-icon">!</span><div><strong>Real-wallet operations</strong><p>Review incoming deposits and outgoing withdrawal requests. Confirm each transfer on the correct blockchain and network, then record its transaction reference to maintain a complete financial audit trail.</p></div><span class="mode-tag">ADMIN REVIEW</span></div>
 @if(session('status'))<div class="notice-banner"><div><strong>{{ session('status') }}</strong></div></div>@endif
 @if($errors->any())<div class="notice-banner"><div><strong>Action not completed</strong><p>{{ $errors->first() }}</p></div></div>@endif
 <section class="panel"><div class="panel-head"><div><span class="eyebrow">INBOUND AND OUTBOUND</span><h2>Deposit and withdrawal queue</h2></div><span class="count-chip">{{ $requests->total() }} requests</span></div>
