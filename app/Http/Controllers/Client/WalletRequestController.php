@@ -21,7 +21,7 @@ class WalletRequestController extends Controller
         $requests = DB::table('wallet_requests')->where('user_id', $user->id)->latest()->paginate(15);
         $kyc = DB::table('kyc_submissions')->where('user_id', $user->id)->latest()->first();
         $kycVerified = app(ManualWalletService::class)->hasApprovedKyc($user);
-        return view('client.wallet-requests', compact('methods', 'requests', 'kyc', 'kycVerified'));
+        return view('client.wallet-requests', compact('methods', 'requests', 'kyc', 'kycVerified', 'selectedAccount', 'selectedBalance', 'demoBalance', 'realBalance', 'currency'));
     }
 
     public function submitKyc(Request $request)
