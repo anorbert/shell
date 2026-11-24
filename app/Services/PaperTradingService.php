@@ -156,10 +156,22 @@ class PaperTradingService
 
     private function postExpiryQuote(object $trade): ?object
     {
+        $expiresAt = \Illuminate\Support\Carbon::parse((string) $trade->expires_at, 'UTC');
+        $deadline = $expiresAt->copy()->addSeconds(max(0, (int) config('shell.paper.settlement_quote_grace_seconds', 15)));
+        $now = now('UTC');
+
+        // A late price is not a valid expiry price. Once the bounded capture
+        // window has elapsed, do not fetch a newer market value and pretend it
+        // represents the earlier expiry.
+        if ($now->greaterThan($deadline)) {
+            return null;
+        }
+
         $quote = DB::table('market_quote_snapshots')
             ->where('symbol', $trade->symbol)
-            ->where('captured_at', '>=', $trade->expires_at)
-            ->where('captured_at', '<=', now('UTC'))
+            ->where('captured_at', '>=', $expiresAt)
+            ->where('captured_at', '<=', $deadline)
+            ->where('captured_at', '<=', $now)
             ->orderBy('captured_at')
             ->first();
 
@@ -177,7 +189,8 @@ class PaperTradingService
 
         return DB::table('market_quote_snapshots')
             ->where('symbol', $trade->symbol)
-            ->where('captured_at', '>=', $trade->expires_at)
+            ->where('captured_at', '>=', $expiresAt)
+            ->where('captured_at', '<=', $deadline)
             ->where('captured_at', '<=', now('UTC'))
             ->orderBy('captured_at')
             ->first();
@@ -192,11 +205,16 @@ class PaperTradingService
                 return false;
             }
 
+            $expiry = \Illuminate\Support\Carbon::parse((string) $trade->expires_at, 'UTC');
+            $quoteCapturedAt = $quote
+                ? \Illuminate\Support\Carbon::parse((string) $quote->captured_at, 'UTC')
+                : null;
+            $quoteDeadline = $expiry->copy()->addSeconds(max(0, (int) config('shell.paper.settlement_quote_grace_seconds', 15)));
             $validQuote = $quote
                 && $quote->symbol === $trade->symbol
-                && \Illuminate\Support\Carbon::parse((string) $quote->captured_at, 'UTC')
-                    ->greaterThanOrEqualTo(\Illuminate\Support\Carbon::parse((string) $trade->expires_at, 'UTC'))
-                && \Illuminate\Support\Carbon::parse((string) $quote->captured_at, 'UTC')->lessThanOrEqualTo(now('UTC'));
+                && $quoteCapturedAt->greaterThanOrEqualTo($expiry)
+                && $quoteCapturedAt->lessThanOrEqualTo($quoteDeadline)
+                && $quoteCapturedAt->lessThanOrEqualTo(now('UTC'));
 
             $currency = $trade->wallet_currency ?: config('shell.paper.currency', 'USD');
             $user = User::query()->findOrFail($trade->user_id);
