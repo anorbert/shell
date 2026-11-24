@@ -201,31 +201,26 @@ class MarketQuoteService
             throw new RuntimeException('Unsupported market pair.');
         }
 
-        $maxAge = max(5, (int) config('shell.market.max_age_seconds', 90));
-        $refreshFailure = null;
-
-        // Opening a position must use a quote refreshed for this request. A
-        // quote inside the general display freshness window may still be too
-        // old to use as the entry price for a new position.
+        // A new position must never be opened against a cached quote. A quote
+        // that is 30–90 seconds old may be acceptable for display, but it is
+        // not an execution price. Require a successful provider response for
+        // this request and persist that response before returning it.
         try {
-            $this->refreshSymbol($symbol);
+            $quote = $this->refreshSymbolQuote($symbol);
         } catch (\Throwable $exception) {
-            $refreshFailure = $exception;
             report($exception);
+            throw new RuntimeException(
+                'A fresh verified market quote is unavailable for ' . $symbol . '. Your demo stake has not been deducted. Please retry when the market feed is restored.',
+                0,
+                $exception
+            );
         }
 
-        // Always read the server-persisted quote, never a browser/chart price.
-        // If the provider is temporarily unavailable, only a recent verified
-        // snapshot may be used as a short fallback.
-        $quote = DB::table('market_quotes')->where('symbol', $symbol)->first();
-        $minimumCapturedAt = now()->subSeconds($maxAge);
-
-        if (!$quote || $quote->captured_at < $minimumCapturedAt || $quote->captured_at > now()) {
-            $message = 'A fresh verified market quote is unavailable for ' . $symbol . '. Your demo stake has not been deducted. Please retry when the market feed is restored.';
-            if ($refreshFailure && config('app.debug')) {
-                report(new RuntimeException($message, 0, $refreshFailure));
-            }
-            throw new RuntimeException($message);
+        $capturedAt = strtotime((string) $quote->captured_at);
+        if ($capturedAt === false || $capturedAt > time() || $capturedAt < now()->subSeconds(10)->timestamp) {
+            throw new RuntimeException(
+                'The market quote for ' . $symbol . ' is stale or has an invalid timestamp. Your demo stake has not been deducted.'
+            );
         }
 
         return $quote;
