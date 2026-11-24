@@ -61,7 +61,7 @@
                     <h2>Trade ticket</h2>
                 </div><span class="table-status verified">DEMO</span>
             </div>
-            <div class="wallet-summary"><span>AVAILABLE DEMO BALANCE</span><strong>@decimal($balance)
+            <div class="wallet-summary"><span>AVAILABLE DEMO BALANCE</span><strong id="demo-wallet-balance" aria-live="polite">@decimal($balance)
                     {{ $currency }}</strong></div>
             <form id="paper-trade-form" class="form-stack">
                 <input type="hidden" name="request_key" value="{{ \Illuminate\Support\Str::uuid() }}">
@@ -177,7 +177,7 @@
             <div class="position-market-line"><strong id="position-symbol">—</strong><span
                     id="position-direction">—</span></div>
             <div class="position-result-hero" id="position-result-hero" hidden><div class="position-result-icon" id="position-result-icon" aria-hidden="true">✓</div><div><span id="position-result-kicker">POSITION SETTLED</span><strong id="position-result-title">Result confirmed</strong></div></div>
-            <div class="position-live-price"><span>CURRENT MARKET PRICE</span><strong
+            <div class="position-live-price"><span id="position-price-label">LIVE MARKET PRICE</span><strong
                     id="position-current-price">Connecting to live market…</strong><small id="position-price-move">Loading
                     your position details</small></div>
             <div class="position-details-grid">
@@ -185,6 +185,9 @@
                 <div><span>Opening price</span><strong id="position-opening-price">—</strong></div>
                 <div><span>Expiry</span><strong id="position-expiry">—</strong></div>
                 <div><span>Time remaining</span><strong id="position-countdown">—</strong></div>
+                <div><span>Confirmed closing price</span><strong id="position-closing-price">—</strong></div>
+                <div><span>Total payout</span><strong id="position-final-payout">—</strong></div>
+                <div><span>Net result</span><strong id="position-final-profit">—</strong></div>
                 <div class="position-live-outcome"><span>LIVE INDICATIVE RESULT</span><strong
                         id="position-live-outcome">Waiting for market price…</strong><small
                         id="position-potential-payout">Potential payout: —</small></div>
@@ -1491,6 +1494,7 @@
                 positionPollTimer = null,
                 positionClockTimer = null,
                 positionRetryTimer = null,
+                positionSettlementRetryTimer = null,
                 latestStreamPrice = null;
             const money = (value, maximum = 8) => new Intl.NumberFormat(undefined, {
                 minimumFractionDigits: 2,
@@ -1547,8 +1551,9 @@
             let positionSettlementInFlight = false;
 
             function showSettledResult(trade) {
-                if (positionPollTimer) { window.clearInterval(positionPollTimer); positionPollTimer = null; }
+                if (positionPollTimer) { window.clearInterval(positionPollTimer); window.clearTimeout(positionPollTimer); positionPollTimer = null; }
                 if (positionClockTimer) { window.clearInterval(positionClockTimer); positionClockTimer = null; }
+                if (positionSettlementRetryTimer) { window.clearTimeout(positionSettlementRetryTimer); positionSettlementRetryTimer = null; }
                 activePosition = trade;
                 const status = trade.status.toUpperCase();
                 const card = document.getElementById('position-modal-card');
@@ -1560,14 +1565,31 @@
                 hero.hidden = false;
                 setPositionText('position-status', status === 'WON' ? 'YOU WON' : status === 'LOST' ? 'YOU LOST' : 'TIE');
                 setPositionText('position-modal-title', status === 'WON' ? 'Position won' : status === 'LOST' ? 'Position lost' : 'Position tied');
+                setPositionText('position-price-label', 'CONFIRMED CLOSING PRICE');
                 setPositionText('position-current-price', priceText(trade.closing_price));
-                setPositionText('position-price-move', 'Confirmed closing market price');
+                setPositionText('position-price-move', 'Server-verified expiry quote · ' + (trade.settled_at ? new Date(trade.settled_at).toLocaleTimeString() : 'settled'));
                 setPositionText('position-countdown', 'Settled');
+                setPositionText('position-closing-price', priceText(trade.closing_price));
+                setPositionText('position-final-payout', money(trade.payout_amount ?? (status === 'WON' ? Number(trade.stake) * payoutRate : status === 'TIE' ? Number(trade.stake) : 0)) + ' ' + trade.currency);
+                setPositionText('position-final-profit', (status === 'WON' ? '+' : status === 'LOST' ? '−' : '') + money(trade.profit_amount ?? (status === 'WON' ? Number(trade.stake) * (payoutRate - 1) : status === 'LOST' ? Number(trade.stake) : 0)) + ' ' + trade.currency);
+                if (trade.wallet_balance !== undefined && trade.wallet_balance !== null) {
+                    setText('demo-wallet-balance', money(trade.wallet_balance) + ' ' + trade.currency);
+                }
+                const historyRow = document.querySelector('[data-open-trade="' + trade.id + '"]');
+                if (historyRow) {
+                    if (historyRow.cells[4]) historyRow.cells[4].textContent = priceText(trade.closing_price);
+                    if (historyRow.cells[6]) historyRow.cells[6].textContent = 'Settled';
+                    if (historyRow.cells[7]) {
+                        historyRow.cells[7].textContent = status === 'WON' ? 'WIN' : status === 'LOST' ? 'LOSS' : 'TIE';
+                        historyRow.cells[7].className = 'table-status ' + (status === 'WON' ? 'verified' : status === 'LOST' ? 'rejected' : 'pending');
+                    }
+                    historyRow.removeAttribute('data-open-trade');
+                }
                 if (status === 'WON') {
                     const payout = (Number(trade.stake) || 0) * payoutRate;
                     icon.textContent = '↗';
                     setPositionText('position-result-kicker', 'SUCCESSFUL PREDICTION');
-                    setPositionText('position-result-title', 'You won ' + money(payout - Number(trade.stake)) + ' ' + trade.currency);
+                    setPositionText('position-result-title', 'You won ' + money(trade.profit_amount ?? (payout - Number(trade.stake))) + ' ' + trade.currency);
                     result.textContent = 'WIN — The closing price confirmed your ' + trade.direction + ' prediction. The payout of ' + money(payout) + ' ' + trade.currency + ' has been credited to your demo wallet.';
                 } else if (status === 'LOST') {
                     icon.textContent = '↘';
@@ -1597,13 +1619,18 @@
                 setPositionText('position-close', 'Settling securely…');
                 try {
                     const data = await requestJson(@json(url('/trading/paper')) + '/' + activePosition.id + '/settle', { method: 'POST' });
-                    if (data.trade?.status && data.trade.status !== 'open') { showSettledResult(data.trade); return; }
+                    if (data.trade?.status && data.trade.status !== 'open') {
+                        data.trade.wallet_balance = data.wallet_balance;
+                        showSettledResult(data.trade);
+                        return;
+                    }
                     positionSettlementInFlight = false;
-                    positionPollTimer = window.setTimeout(beginImmediateSettlement, 500);
+                    setPositionText('position-result', 'Expiry reached. Waiting for the first verified server quote at or after the expiry time. We are retrying automatically.');
+                    positionSettlementRetryTimer = window.setTimeout(beginImmediateSettlement, 1200);
                 } catch (error) {
                     positionSettlementInFlight = false;
                     setPositionText('position-result', 'Settlement is retrying automatically. ' + (error.message || 'The verified quote is not ready yet.'));
-                    positionPollTimer = window.setTimeout(beginImmediateSettlement, 700);
+                    positionSettlementRetryTimer = window.setTimeout(beginImmediateSettlement, 1500);
                 }
             }
 
@@ -1613,6 +1640,7 @@
                     1000));
                 setPositionText('position-countdown', left > 0 ? Math.floor(left / 60) + 'm ' + String(left % 60)
                     .padStart(2, '0') + 's' : 'Expiry reached · settling');
+                if (left === 0 && activePosition.status === 'open') beginImmediateSettlement();
             }
             async function pollPosition() {
                 if (!activePosition) return;
@@ -1627,8 +1655,14 @@
                     activePosition = trade;
                     setPositionText('position-status', trade.status.toUpperCase());
                     if (trade.status === 'open') {
+                        if (new Date(trade.expires_at).getTime() <= Date.now()) beginImmediateSettlement();
                         return;
                     }
+                    const settlement = await requestJson(@json(url('/trading/paper')) + '/' + activePosition.id + '/settle', { method: 'POST' });
+                    const settledTrade = settlement.trade || trade;
+                    settledTrade.wallet_balance = settlement.wallet_balance;
+                    showSettledResult(settledTrade);
+                    return;
                     if (positionPollTimer) {
                         window.clearInterval(positionPollTimer);
                         positionPollTimer = null;
@@ -1637,6 +1671,7 @@
                         window.clearInterval(positionClockTimer);
                         positionClockTimer = null;
                     }
+                    setPositionText('position-price-label', 'CONFIRMED CLOSING PRICE');
                     setPositionText('position-current-price', priceText(trade.closing_price));
                     setPositionText('position-price-move', 'Confirmed settlement price');
                     const result = document.getElementById('position-result');
@@ -1694,11 +1729,16 @@
                     }
                     setPositionText('position-expiry', new Date(activePosition.expires_at).toLocaleTimeString());
                     setPositionText('position-current-price', 'Waiting for live price…');
+                    setPositionText('position-price-label', 'LIVE MARKET PRICE');
+                    setPositionText('position-closing-price', '—');
+                    setPositionText('position-final-payout', 'Pending');
+                    setPositionText('position-final-profit', 'Pending');
                     updatePositionClock();
                     if (positionPollTimer) window.clearInterval(positionPollTimer);
                     if (positionClockTimer) window.clearInterval(positionClockTimer);
                     positionPollTimer = window.setInterval(pollPosition, 2000);
-                    positionClockTimer = window.setInterval(updatePositionClock, 1000);
+                    // Check expiry more frequently than the displayed one-second countdown.
+                    positionClockTimer = window.setInterval(updatePositionClock, 100);
                     await pollPosition();
                 } catch (error) {
                     setPositionText('position-result', (error.message || 'Connection error') +
@@ -1713,12 +1753,19 @@
                     }, 5000);
                 }
             }
-            document.getElementById('position-close').addEventListener('click', () => {
+            function closeSettledPosition() {
                 if (!activePosition || activePosition.status === 'open') return;
                 positionModal.classList.remove('is-visible');
                 positionModal.setAttribute('aria-hidden', 'true');
-                window.location.reload();
-            });
+                if (positionPollTimer) { window.clearInterval(positionPollTimer); window.clearTimeout(positionPollTimer); positionPollTimer = null; }
+                if (positionClockTimer) { window.clearInterval(positionClockTimer); positionClockTimer = null; }
+                if (positionSettlementRetryTimer) { window.clearTimeout(positionSettlementRetryTimer); positionSettlementRetryTimer = null; }
+                activePosition = null;
+                // Keep the user on the terminal; the confirmed wallet and history
+                // values have already been updated in place.
+            }
+            document.getElementById('position-close').addEventListener('click', closeSettledPosition);
+            document.getElementById('position-modal-x').addEventListener('click', closeSettledPosition);
 
             // Reopen the latest still-open position automatically after refresh/navigation.
             const resumableTradeId = @json($activeTradeId);
