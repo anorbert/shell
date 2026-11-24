@@ -133,18 +133,8 @@ class PaperTradingService
         }
 
         foreach ($dueTrades as $candidate) {
-            // Only use the first server-captured snapshot at/after expiry.
-            // If snapshot tracking began after an old trade had already expired,
-            // its true expiry price is unknowable and must not be fabricated.
-            $firstSnapshot = DB::table('market_quote_snapshots')
-                ->where('symbol', $candidate->symbol)
-                ->orderBy('captured_at')
-                ->value('captured_at');
-
-            if (!$firstSnapshot || $candidate->expires_at < $firstSnapshot) {
-                continue;
-            }
-
+            // Use the first server-received snapshot after expiry, but only within
+            // the configured grace window. Never substitute a much later price.
             $quote = DB::table('market_quote_snapshots')
                 ->where('symbol', $candidate->symbol)
                 ->where('captured_at', '>=', $candidate->expires_at)
