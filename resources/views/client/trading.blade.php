@@ -1520,8 +1520,9 @@
             }
 
             function updatePositionPrice(marketPrice) {
-                if (!activePosition || activePosition.status !== 'open' || !Number.isFinite(Number(marketPrice)))
-                    return;
+                if (!activePosition || activePosition.status !== 'open' || positionSettlementInFlight
+                    || new Date(activePosition.expires_at).getTime() <= Date.now()
+                    || !Number.isFinite(Number(marketPrice))) return;
                 latestStreamPrice = Number(marketPrice);
                 const opening = Number(activePosition.opening_price),
                     delta = latestStreamPrice - opening;
