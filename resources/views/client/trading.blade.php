@@ -444,16 +444,15 @@
     const money=(value,maximum=8)=>new Intl.NumberFormat(undefined,{minimumFractionDigits:2,maximumFractionDigits:maximum}).format(Number(value)||0);
     const priceText=value=>{const n=Number(value);return Number.isFinite(n)?new Intl.NumberFormat(undefined,{maximumFractionDigits:n>=1000?2:n>=1?4:8}).format(n):'—';};
     function setPositionText(id,value){const el=document.getElementById(id);if(el)el.textContent=value;}
-    function updatePositionPrice(price){
-        if(!activePosition||activePosition.status!=='open'||!Number.isFinite(Number(price)))return;
-        latestStreamPrice=Number(price);
+    function updatePositionPrice(marketPrice){
+        if(!activePosition||activePosition.status!=='open'||!Number.isFinite(Number(marketPrice)))return;
+        latestStreamPrice=Number(marketPrice);
         const opening=Number(activePosition.opening_price),delta=latestStreamPrice-opening;
         const favorable=activePosition.direction==='UP'?delta>0:delta<0;
-        const pct=opening?Math.abs(delta/opening*100):0;
-        const price=document.getElementById('position-current-price');
-        price.textContent=priceText(latestStreamPrice);
-        price.style.color=delta===0?'#dce5f2':favorable?'#53d6aa':'#ff8996';
-        price.style.textShadow=delta===0?'none':favorable?'0 0 22px #22b78b44':'0 0 22px #ed647444';
+        const priceElement=document.getElementById('position-current-price');
+        priceElement.textContent=priceText(latestStreamPrice);
+        priceElement.style.color=delta===0?'#dce5f2':favorable?'#53d6aa':'#ff8996';
+        priceElement.style.textShadow=delta===0?'none':favorable?'0 0 22px #22b78b44':'0 0 22px #ed647444';
         const move=document.getElementById('position-price-move');
         move.textContent=(delta>0?'+':'')+priceText(delta)+'  ('+(delta>0?'+':'')+(opening?(delta/opening*100).toFixed(4):'0.0000')+'%)  ·  '+(delta===0?'AT OPEN':favorable?'IN THE MONEY':'OUT OF THE MONEY');
         move.style.color=delta===0?'#aab8c9':favorable?'#53d6aa':'#ff8996';
