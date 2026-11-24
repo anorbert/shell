@@ -67,8 +67,41 @@ test('paper trade opening is blocked when quote is missing and provider refresh 
         'duration' => 60,
         'request_key' => 'test-open-no-quote',
     ])->assertStatus(422)->assertJsonFragment([
-        'message' => 'Live market data is temporarily unavailable for this pair. Please retry in a moment. Your stake has not been deducted.',
+        'message' => 'A fresh verified market quote is unavailable for BTCUSDT. Your demo stake has not been deducted. Please retry when the market feed is restored.',
     ]);
+});
+
+test('a recent cached quote cannot authorize a new trade when the provider is unavailable', function () {
+    Http::fake([
+        'api.binance.com/api/v3/ticker/price*' => Http::response([], 503),
+    ]);
+
+    $user = User::factory()->create();
+    $user->markEmailAsVerified();
+    $ledger = app(LedgerService::class);
+    $ledger->creditPaperWallet($user, '100.00000000');
+
+    DB::table('market_quotes')->insert([
+        'symbol' => 'BTCUSDT',
+        'price' => '90000.000000000000',
+        'provider' => 'Binance Spot',
+        'captured_at' => now(),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $balanceBefore = $ledger->balanceUnits($ledger->wallet($user));
+
+    $this->actingAs($user)->postJson('/trading/paper', [
+        'symbol' => 'BTCUSDT',
+        'direction' => 'UP',
+        'stake' => '10',
+        'duration' => 60,
+        'request_key' => 'reject-cached-quote-when-provider-down',
+    ])->assertStatus(422);
+
+    expect(DB::table('paper_trades')->where('user_id', $user->id)->count())->toBe(0)
+        ->and($ledger->balanceUnits($ledger->wallet($user)))->toBe($balanceBefore);
 });
 
 test('stale market quotes are refreshed from the provider before a trade is opened', function () {
