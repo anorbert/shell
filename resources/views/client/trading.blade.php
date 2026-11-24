@@ -1557,6 +1557,14 @@
 
             let positionSettlementInFlight = false;
 
+            function scheduleSettlementRetry(delay) {
+                if (positionSettlementRetryTimer) return;
+                positionSettlementRetryTimer = window.setTimeout(() => {
+                    positionSettlementRetryTimer = null;
+                    beginImmediateSettlement();
+                }, delay);
+            }
+
             function showSettledResult(trade) {
                 if (positionPollTimer) { window.clearInterval(positionPollTimer); window.clearTimeout(positionPollTimer); positionPollTimer = null; }
                 if (positionClockTimer) { window.clearInterval(positionClockTimer); positionClockTimer = null; }
@@ -1571,7 +1579,9 @@
                 card.classList.remove('is-win', 'is-loss', 'is-tie');
                 card.classList.add(status === 'WON' ? 'is-win' : status === 'LOST' ? 'is-loss' : 'is-tie');
                 hero.hidden = false;
-                setPositionText('position-status', status === 'WON' ? 'YOU WON' : status === 'LOST' ? 'YOU LOST' : 'TIE');
+                const statusBadge = document.getElementById('position-status');
+                statusBadge.textContent = status === 'WON' ? 'YOU WON' : status === 'LOST' ? 'YOU LOST' : 'TIE';
+                statusBadge.className = 'table-status ' + (status === 'WON' ? 'verified' : status === 'LOST' ? 'rejected' : 'pending');
                 setPositionText('position-modal-title', status === 'WON' ? 'Position won' : status === 'LOST' ? 'Position lost' : 'Position tied');
                 setPositionText('position-price-label', 'CONFIRMED CLOSING PRICE');
                 setPositionText('position-current-price', priceText(trade.closing_price));
@@ -1620,7 +1630,7 @@
             }
 
             async function beginImmediateSettlement() {
-                if (!activePosition || activePosition.status !== 'open' || positionSettlementInFlight) return;
+                if (!activePosition || activePosition.status !== 'open' || positionSettlementInFlight || positionSettlementRetryTimer) return;
                 positionSettlementInFlight = true;
                 setPositionText('position-modal-title', 'Settling position');
                 setPositionText('position-status', 'SETTLING');
@@ -1636,11 +1646,11 @@
                     }
                     positionSettlementInFlight = false;
                     setPositionText('position-result', 'Expiry reached. Waiting for the first verified server quote at or after the expiry time. We are retrying automatically.');
-                    positionSettlementRetryTimer = window.setTimeout(beginImmediateSettlement, 1200);
+                    scheduleSettlementRetry(1200);
                 } catch (error) {
                     positionSettlementInFlight = false;
                     setPositionText('position-result', 'Settlement is retrying automatically. ' + (error.message || 'The verified quote is not ready yet.'));
-                    positionSettlementRetryTimer = window.setTimeout(beginImmediateSettlement, 1500);
+                    scheduleSettlementRetry(1500);
                 }
             }
 
