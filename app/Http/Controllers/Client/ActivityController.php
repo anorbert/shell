@@ -13,6 +13,7 @@ class ActivityController extends Controller
     {
         $values = $request->validate([
             'status' => ['nullable', 'in:open,won,lost,void'],
+            'account' => ['nullable', 'in:demo,real'],
             'symbol' => ['nullable', 'string', 'max:24'],
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
@@ -20,6 +21,7 @@ class ActivityController extends Controller
 
         return DB::table('paper_trades')
             ->where('user_id', $request->user()->id)
+            ->where('account_type', $values['account'] ?? 'demo')
             ->when($values['status'] ?? null, fn ($query, $value) => $query->where('status', $value))
             ->when($values['symbol'] ?? null, fn ($query, $value) => $query->where('symbol', strtoupper($value)))
             ->when($values['from'] ?? null, fn ($query, $value) => $query->whereDate('opened_at', '>=', $value))
@@ -43,10 +45,11 @@ class ActivityController extends Controller
 
         return response()->streamDownload(function () use ($trades) {
             $output = fopen('php://output', 'w');
-            fputcsv($output, ['Opened at', 'Pair', 'Direction', 'Stake', 'Wallet currency', 'Opening price', 'Closing price', 'Status', 'Expires at', 'Settled at']);
+            fputcsv($output, ['Account', 'Opened at', 'Pair', 'Direction', 'Stake', 'Wallet currency', 'Opening price', 'Closing price', 'Status', 'Expires at', 'Settled at']);
 
             foreach ($trades as $trade) {
                 fputcsv($output, [
+                    $trade->account_type ?? 'demo',
                     $trade->opened_at,
                     $trade->symbol,
                     $trade->direction,
