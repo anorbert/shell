@@ -4,7 +4,7 @@
 <div class="marketing-shell shell-home" id="top">
     <header class="marketing-nav">
         <a class="brand" href="{{ route('home') }}" aria-label="SHELL home"><span class="brand-mark">S</span><span>SHELL<span class="brand-sub">MARKET & TRADING PLATFORM</span></span></a>
-        <nav aria-label="Main navigation"><a href="#how-it-works">How it works</a><a href="#platform">Platform</a><a href="#faq">FAQs</a></nav>
+        <nav aria-label="Main navigation"><a href="#how-it-works">How it works</a><a href="#faq">FAQs</a></nav>
         <div class="nav-actions"><a class="button button-quiet" href="{{ route('login') }}">Sign in</a><a class="button button-primary" href="{{ route('register') }}">Get started <span>↗</span></a></div>
     </header>
 
@@ -53,17 +53,6 @@
             </div>
         </section>
 
-        <section class="shell-platform-section" id="platform">
-            <div class="shell-platform-intro"><span class="eyebrow">MADE FOR INFORMED DECISIONS</span><h2>Your trading tools,<br><em>in one workspace.</em></h2><p>SHELL brings market discovery, fixed-time trading and account records together without dressing up simulated data as real performance.</p><a class="shell-text-link" href="{{ route('register') }}">Explore SHELL <span>→</span></a></div>
-            <div class="shell-feature-list">
-                <article><span class="shell-feature-icon">⌁</span><div><h3>Charts and market watchlists</h3><p>Explore supported crypto markets, view candlestick data and save instruments to your personal watchlist.</p></div><b>01</b></article>
-                <article><span class="shell-feature-icon">◷</span><div><h3>Flexible chart and expiry intervals</h3><p>Choose from the chart intervals and fixed-time expiry options available on the platform.</p></div><b>02</b></article>
-                <article><span class="shell-feature-icon">⇄</span><div><h3>Separate demo and real accounts</h3><p>Demo credits are for practice and cannot be withdrawn. Real-wallet funds are maintained separately from demo balances.</p></div><b>03</b></article>
-                <article><span class="shell-feature-icon">▤</span><div><h3>Portfolio and transaction records</h3><p>Review positions, account activity and wallet statements to understand what happened to your funds and trades.</p></div><b>04</b></article>
-                <article><span class="shell-feature-icon">◎</span><div><h3>Account controls and support</h3><p>Manage account security, identity verification and support requests from your authenticated workspace.</p></div><b>05</b></article>
-            </div>
-        </section>
-
         <section class="shell-account-section">
             <div><span class="eyebrow">TWO DISTINCT ACCOUNT ENVIRONMENTS</span><h2>Practise first.<br><em>Know the difference.</em></h2><p>Demo trading and real-money trading are not interchangeable. Understand what each account does before making a funding decision.</p></div>
             <div class="shell-account-cards">
@@ -107,7 +96,6 @@
 
             <nav class="shell-footer-column" aria-label="Explore SHELL">
                 <h3>Explore</h3>
-                <a href="#platform">Platform features</a>
                 <a href="#how-it-works">How it works</a>
                 <a href="#faq">Frequently asked questions</a>
                 <a href="#risk">Risk information</a>
