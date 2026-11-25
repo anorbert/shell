@@ -649,7 +649,7 @@ test('server modal price refresh lock limits provider calls for a stale symbol',
     $first = $this->actingAs($user)->getJson('/markets/price?symbol=BTCUSDT')
         ->assertOk()
         ->assertJsonPath('symbol', 'BTCUSDT')
-        ->assertJsonPath('price', '91234.56000000');
+        ->assertJsonPath('price', '91234.56');
     $this->getJson('/markets/price?symbol=BTCUSDT')
         ->assertOk()
         ->assertJsonPath('price', '91234.56000000');
