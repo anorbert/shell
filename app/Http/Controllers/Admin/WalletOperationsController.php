@@ -42,11 +42,11 @@ class WalletOperationsController extends Controller
         $key = 'real-reserve-fund:' . hash('sha256', trim($data['external_reference']));
         try {
             DB::transaction(function () use ($ledger, $request, $amount, $key, $data) {
-                $reserve = $ledger->system('REAL_PAYOUT_RESERVE', 'USD', 'debit');
-                $capital = $ledger->system('REAL_PAYOUT_CAPITAL', 'USD', 'credit');
+                $reserve = $ledger->system('REAL_PAYOUT_RESERVE', 'USD', 'credit');
+                $capital = $ledger->system('REAL_PAYOUT_CAPITAL', 'USD', 'debit');
                 $ledger->post($key, 'Verified external funding added to real payout reserve', [
-                    ['account_id' => $reserve, 'side' => 'debit', 'amount' => $amount],
-                    ['account_id' => $capital, 'side' => 'credit', 'amount' => $amount],
+                    ['account_id' => $capital, 'side' => 'debit', 'amount' => $amount],
+                    ['account_id' => $reserve, 'side' => 'credit', 'amount' => $amount],
                 ], [
                     'admin_id' => $request->user()->id,
                     'external_reference' => trim($data['external_reference']),
