@@ -117,10 +117,15 @@ test('confirmed deposit and funded reserve enable real trading without KYC', fun
         $user, 'BTCUSDT', 'UP', '10.00000000', 60, 'funded-real-trade', 'real'
     );
 
+    $reserve = $ledger->system('REAL_PAYOUT_RESERVE', 'USD', 'credit');
+    $profitEscrow = $ledger->system('REAL_PAYOUT_ESCROW', 'USD', 'credit');
+
     expect(DB::table('paper_trades')->where('id', $tradeId)->value('account_type'))->toBe('real')
         ->and((int) DB::table('paper_trades')->where('id', $tradeId)->value('payout_basis_points'))->toBe(18000)
         ->and($ledger->balanceUnits($realWallet))->toBe(9000000000)
         ->and($ledger->balanceUnits($demoWallet))->toBe(2000000000000)
+        ->and($ledger->normalBalanceUnits($reserve))->toBe(99200000000)
+        ->and($ledger->normalBalanceUnits($profitEscrow))->toBe(800000000)
         ->and(DB::table('kyc_submissions')->where('user_id', $user->id)->count())->toBe(0);
 });
 
