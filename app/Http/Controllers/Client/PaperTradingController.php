@@ -21,8 +21,7 @@ class PaperTradingController extends Controller
         // The scheduled settlement command owns settlement so a slow market API
         // can never hold the trading terminal open.
         $currency = config('shell.paper.currency', 'USD');
-        $selectedAccount = $request->query('account') === 'real' ? 'real' : 'demo';
-        $request->session()->put('active_wallet', $selectedAccount);
+        $selectedAccount = $request->session()->get('active_wallet', 'demo');
         $wallet = $ledger->provisionClientWallets($request->user(), $currency)[$selectedAccount];
 
         return view('client.trading', [
@@ -83,7 +82,7 @@ class PaperTradingController extends Controller
             // This is a recovery trigger, not the authority for settlement. The
             // scheduler runs the same service even when no client is connected.
             $settledCount = $service->settleDue();
-            $environment = ($request->input('account', $request->query('account')) === 'real') ? 'real' : 'demo';
+            $environment = $request->session()->get('active_wallet', 'demo');
             $hasDue = DB::table('paper_trades')
                 ->where('user_id', $request->user()->id)
                 ->where('account_type', $environment)
@@ -226,7 +225,7 @@ class PaperTradingController extends Controller
             'stake' => ['required', 'string', 'max:24'],
             'duration' => ['required', 'integer'],
             'request_key' => ['required', 'string', 'max:100'],
-            'account_type' => ['required', 'in:demo,real'],
+            'account_type' => ['nullable', 'in:demo,real'],
         ]);
 
         try {
@@ -252,7 +251,8 @@ class PaperTradingController extends Controller
                 return response()->json(['message' => 'The maximum stake is ' . $maxStake . ' ' . $currency . '.'], 422);
             }
 
-            $environment = $values['account_type'];
+            // The session is authoritative; never trust a stale hidden form field.
+            $environment = $request->session()->get('active_wallet', 'demo');
             $selectedWallet = $ledger->provisionClientWallets($request->user(), $currency)[$environment];
 
             // PaperTradingService performs the authoritative balance check and
