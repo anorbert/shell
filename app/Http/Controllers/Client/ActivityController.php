@@ -31,7 +31,7 @@ class ActivityController extends Controller
 
     public function __invoke(Request $request, \App\Services\PaperTradingService $settlement)
     {
-        // Catch up expired demo positions when the user opens trade activity.
+        // Catch up expired positions in both account environments when the user opens trade activity.
         $settlement->settleDue();
 
         $trades = $this->query($request)->paginate(20)->withQueryString();
@@ -64,6 +64,6 @@ class ActivityController extends Controller
             }
 
             fclose($output);
-        }, 'shell-paper-trading-activity.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+        }, 'shell-trading-activity.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 }
