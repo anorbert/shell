@@ -124,7 +124,7 @@
         <div class="panel-head">
             <div><span class="eyebrow">YOUR POSITIONS</span>
                 <h2>Trade history</h2>
-            </div><a class="button button-secondary" href="{{ route('activity.index') }}"><svg class="nav-icon">
+            </div><a class="button button-secondary" href="{{ route('activity.index', ['account' => $selectedAccount]) }}"><svg class="nav-icon">
                     <use href="#i-clock" />
                 </svg> View all trade history</a><a class="button button-secondary"
                 href="{{ route('portfolio.index') }}"><svg class="nav-icon">
