@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'client', 'verified'])->group(function () {
     Route::get('/markets', [MarketController::class, 'index'])->name('markets.index');
     Route::get('/markets/data', [MarketController::class, 'data'])->name('markets.data');
+    Route::get('/markets/price', [MarketController::class, 'price'])->middleware('throttle:120,1')->name('markets.price');
     Route::get('/markets/candles', [MarketController::class, 'candles'])->middleware('throttle:60,1')->name('markets.candles');
     Route::post('/markets/{symbol}/favorite', [MarketController::class, 'toggleFavorite'])->middleware('throttle:60,1')->name('markets.favorite');
 
