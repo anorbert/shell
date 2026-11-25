@@ -21,7 +21,7 @@ class WalletOperationsController extends Controller
             ->select('wallet_requests.*', 'users.name as client_name', 'users.email as client_email')
             ->latest('wallet_requests.created_at')->paginate(30);
         $methods = DB::table('crypto_payment_methods')->orderBy('asset')->orderBy('network')->get();
-        $reserveAccount = $ledger->system('REAL_PAYOUT_RESERVE', 'USD', 'debit');
+        $reserveAccount = $ledger->system('REAL_PAYOUT_RESERVE', 'USD', 'credit');
         $realPayoutReserve = Decimal::fromUnits($ledger->normalBalanceUnits($reserveAccount));
         return view('admin.wallet-operations', compact('requests', 'methods', 'realPayoutReserve'));
     }
