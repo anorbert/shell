@@ -16,7 +16,7 @@ class StatementController extends Controller
             'wallet' => ['nullable', 'in:PAPER_WALLET,REAL_WALLET'],
         ]);
         $accounts = DB::table('ledger_accounts')->where('owner_key', 'USER:'.$request->user()->id)
-            ->when($values['wallet'] ?? null, fn ($q, $code) => $q->where('code', $code))
+            ->where('code', $values['wallet'] ?? ($request->session()->get('active_wallet', 'demo') === 'real' ? 'REAL_WALLET' : 'PAPER_WALLET'))
             ->pluck('id');
         $entries = DB::table('ledger_entries')
             ->join('ledger_transactions', 'ledger_transactions.id', '=', 'ledger_entries.ledger_transaction_id')
