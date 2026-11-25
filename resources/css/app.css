@@ -732,3 +732,13 @@ input,select,textarea{accent-color:var(--gold)}
 @media(max-width:1050px){.shell-asset-grid{grid-template-columns:repeat(5,1fr)}.shell-platform-section{gap:40px}.shell-account-section{gap:35px}}
 @media(max-width:760px){.shell-home .marketing-nav{height:auto;padding:17px 0}.shell-home .marketing-nav nav{display:none}.shell-home .nav-actions{gap:7px}.shell-home .nav-actions .button{padding:9px 12px;font-size:10px}.shell-home .shell-hero{grid-template-columns:1fr;gap:35px;padding:60px 0}.shell-hero-copy h1{font-size:clamp(43px,11vw,58px)}.shell-hero-lead{font-size:14px}.shell-hero-art{margin:0 8px 15px}.shell-terminal{padding:15px}.shell-chart{height:180px}.shell-float-note{right:-9px}.shell-section-kicker{flex-direction:column;gap:7px}.shell-asset-grid{grid-template-columns:repeat(4,1fr)}.shell-how-section{padding:70px 0}.shell-steps-grid{grid-template-columns:1fr}.shell-steps-grid article{min-height:0}.shell-platform-section{grid-template-columns:1fr;gap:25px;padding:65px 0}.shell-platform-intro{position:static}.shell-account-section{grid-template-columns:1fr;padding:70px 0;gap:25px}.shell-account-cards{grid-template-columns:1fr}.shell-faq-section{padding:65px 0}.shell-faq-grid{grid-template-columns:1fr}.shell-final-cta{padding:27px;display:block;margin-bottom:45px}.shell-final-cta h2{font-size:29px}.shell-final-cta>.button{margin-top:22px;width:100%}.shell-risk-section{grid-template-columns:1fr;padding:20px;margin-bottom:40px}.shell-home-footer{flex-wrap:wrap}.shell-home-footer>p{order:3;width:100%}}
 @media(max-width:420px){.shell-asset-grid{grid-template-columns:repeat(2,1fr)}.shell-proof-points{gap:13px}.shell-proof-points span{font-size:9px}.shell-terminal-top{align-items:flex-start}.terminal-live-label{font-size:7px}.shell-terminal-bottom{font-size:8px}.shell-home .brand{gap:7px}.shell-home .brand-sub{font-size:7px}}
+
+
+/* Public landing footer: keep the risk disclosure full-width above the footer links. */
+.shell-home-footer{display:block}
+.shell-home-footer .shell-risk-section{margin:0 0 28px}
+.shell-home-footer-bottom{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.shell-home-footer-bottom>p{font-size:9px;color:#7e8da1}
+.shell-home-footer-bottom>div{display:flex;gap:20px}
+.shell-home-footer-bottom>div a{font-size:10px;color:#aab6c6}
+@media(max-width:760px){.shell-home-footer-bottom{flex-wrap:wrap}.shell-home-footer-bottom>p{order:3;width:100%;margin:0}}
