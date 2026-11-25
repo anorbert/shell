@@ -7,6 +7,8 @@
         <span class="eyebrow">GLOBAL CLIENT REGISTRATION</span>
         <h1>Create your account</h1>
         <p class="muted">Register from your country and use your international phone number.</p>
+        @if(session('referral_error'))<div class="alert alert-error">{{ session('referral_error') }}</div>@endif
+        @if(session('referral_code'))<div class="notice-banner"><div><strong>You were invited to SHELL</strong><p>Your registration will be linked to the person who shared this referral invitation.</p></div></div>@endif
         @if($errors->any())<div class="alert alert-error">{{ $errors->first() }}</div>@endif
         <form method="POST" action="{{ route('register') }}" class="form-stack" id="international-registration">
             @csrf
