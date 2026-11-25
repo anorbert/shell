@@ -294,9 +294,10 @@
                             <form method="POST" action="{{ route('wallet-requests.deposit') }}" class="form-stack crypto-deposit-form">
                                 @csrf
                                 <input type="hidden" name="method_id" id="crypto-modal-method-id">
-                                <div class="crypto-form-title"><strong>Amount sent</strong><small>Enter the stablecoin amount you sent. USDT and USDC are estimated at 1 USD per token.</small></div>
+                                <div class="crypto-form-title"><strong>Confirm your transfer</strong><small>Enter the exact amount sent and the transaction hash from your wallet. Your deposit remains pending until our operations team verifies it.</small></div>
                                 <label>Stablecoin amount sent<input name="asset_amount" type="number" min="0.00000001" step="0.00000001" placeholder="0.00" required></label>
-                                <button class="button button-primary" type="submit">Submit deposit</button>
+                                <label>Blockchain transaction hash (TxID)<input name="transaction_hash" type="text" minlength="64" maxlength="66" pattern="(0x)?[A-Fa-f0-9]{64}" autocomplete="off" spellcheck="false" placeholder="Paste the transaction hash" required></label>
+                                <button class="button button-primary" type="submit">Submit deposit for review</button>
                             </form>
                         </div>
                     </section>
@@ -324,8 +325,8 @@
             @endif
         </section>
     </div>
-    <section class="panel"><div class="panel-head"><div><span class="wallet-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-receipt"/></svg></span><span class="eyebrow">REAL WALLET</span><h2>Deposit and withdrawal history</h2></div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>REQUEST</th><th>TYPE</th><th>AMOUNT</th><th>ASSET / NETWORK</th><th>STATUS</th><th>CREATED</th><th>ADMIN NOTE</th></tr></thead><tbody>
-    @forelse($requests as $item)<tr><td>#{{ $item->id }}</td><td>{{ strtoupper($item->type) }}</td><td>@money($item->amount_usd) USD</td><td>{{ $item->asset }} · {{ $item->network }}</td><td><span class="table-status {{ in_array($item->status,['confirmed','paid']) ? 'verified' : 'pending' }}">{{ strtoupper($item->status) }}</span></td><td>{{ $item->created_at }}</td><td>{{ $item->admin_note ?: '—' }}</td></tr>@empty<tr><td colspan="7" class="table-empty">No requests submitted.</td></tr>@endforelse
+    <section class="panel"><div class="panel-head"><div><span class="wallet-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-receipt"/></svg></span><span class="eyebrow">REAL WALLET</span><h2>Deposit and withdrawal history</h2></div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>REQUEST</th><th>TYPE</th><th>AMOUNT</th><th>ASSET / NETWORK</th><th>TRANSACTION HASH</th><th>STATUS</th><th>CREATED</th><th>ADMIN NOTE</th></tr></thead><tbody>
+    @forelse($requests as $item)<tr><td>#{{ $item->id }}</td><td>{{ strtoupper($item->type) }}</td><td>@money($item->amount_usd) USD</td><td>{{ $item->asset }} · {{ $item->network }}</td><td style="max-width:190px;overflow-wrap:anywhere;font-family:monospace">{{ $item->transaction_hash ?: '—' }}</td><td><span class="table-status {{ in_array($item->status,['confirmed','paid']) ? 'verified' : 'pending' }}">{{ strtoupper($item->status) }}</span></td><td>{{ $item->created_at }}</td><td>{{ $item->admin_note ?: '—' }}</td></tr>@empty<tr><td colspan="8" class="table-empty">No requests submitted.</td></tr>@endforelse
     </tbody></table></div><div class="pagination-wrap">{{ $requests->links() }}</div></section>
 @endif
 </div>
