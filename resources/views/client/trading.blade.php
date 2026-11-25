@@ -6,9 +6,9 @@
     <x-client-attention :title="$selectedAccount === 'real' ? 'Real-money trading' : 'Demo trading account'" :tag="$selectedAccount === 'real' ? 'REAL ACCOUNT' : 'PRACTICE ACCOUNT'">
         @if ($selectedAccount === 'real')
             @if ($hasConfirmedDeposit)
-            <p>Your deposit has been verified and credited. You can use your available real-wallet balance for real positions when real trading is available.</p>
+            <p>Your deposit has been verified and credited. You can use your available real-wallet balance to place real positions.</p>
         @else
-            <p>Your real account is ready for funding. Make your first deposit to qualify for real-money trading. Once your payment is verified and credited, you can use your available balance when real trading is enabled.</p>
+            <p>Your real account is ready for funding. Make your first deposit to qualify for real-money trading. Once your payment is verified and credited, you can use your available balance to place positions.</p>
         @endif
         @else
             <p>Practise fixed-time UP and DOWN positions with demo credits. Demo trading is independent of deposits and KYC; positions settle against server-captured market quotes.</p>
@@ -16,7 +16,7 @@
     </x-client-attention>
 
 
-    @if ($selectedAccount === 'real' && ! $hasConfirmedDeposit && (float) $realPayoutReserve <= 0)
+    @if ($selectedAccount === 'real' && ! $hasConfirmedDeposit)
         <details class="real-activation real-activation-collapsible">
             <summary class="real-activation-summary">
                 <div class="real-activation-top">
@@ -29,11 +29,11 @@
                 <span class="real-activation-hint">View funding steps and details</span>
             </summary>
             <div class="real-activation-details">
-                <p class="real-activation-copy">Your real account is ready for funding. Make your first deposit to begin setting up your real-money trading account. Once your payment has been verified, credited and real trading is enabled, you can use your available balance to open positions.</p>
+                <p class="real-activation-copy">Your real account is ready for funding. Make your first deposit to begin setting up your real-money trading account. Once your payment has been verified and credited, you can use your available balance to open positions.</p>
                 <div class="real-activation-steps">
                     <div><span>01</span><strong>Fund your account</strong><small>Choose an available payment method and deposit into your real wallet.</small></div>
                     <div><span>02</span><strong>Get your payment confirmed</strong><small>Our operations team reviews your transaction and credits your wallet after verification.</small></div>
-                    <div><span>03</span><strong>Begin trading</strong><small>When real trading is enabled, use your available real balance to place your first position.</small></div>
+                    <div><span>03</span><strong>Begin trading</strong><small>After your deposit is confirmed, use your available real balance to place your first position.</small></div>
                 </div>
                 <div class="real-activation-footer">
                     <a class="button button-primary" href="{{ route('wallet-requests.index', ['account' => 'real']) }}">Make your first deposit <span aria-hidden="true">→</span></a>
