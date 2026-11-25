@@ -39,9 +39,6 @@ class ManualWalletService
 
     public function requestWithdrawal(User $user, array $data): int
     {
-        if (!$this->hasSuccessfulDeposit($user)) {
-            throw new RuntimeException('At least one real-money deposit must be successfully confirmed before withdrawals are available.');
-        }
         if (!$this->hasApprovedKyc($user)) {
             throw new RuntimeException('An approved KYC profile is required before requesting a withdrawal.');
         }
