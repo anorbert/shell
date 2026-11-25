@@ -119,7 +119,7 @@
                 </details>
                 <div class="direction-buttons"><button class="direction-up" type="submit" data-direction="UP" {{ $selectedAccount === 'real' && (! $hasConfirmedDeposit || (float) $realPayoutReserve <= 0) ? 'disabled' : '' }}>↗ UP
                         <small>Price rises</small></button><button class="direction-down" type="submit"
-                        data-direction="DOWN" {{ $selectedAccount === 'real' && ! $hasConfirmedDeposit ? 'disabled' : '' }}>↘ DOWN <small>Price falls</small></button></div>
+                        data-direction="DOWN" {{ $selectedAccount === 'real' && (! $hasConfirmedDeposit || (float) $realPayoutReserve <= 0) ? 'disabled' : '' }}>↘ DOWN <small>Price falls</small></button></div>
                 <input type="hidden" name="direction" id="trade-direction" value="UP">
                 <p class="muted" id="trade-feedback" role="status" aria-live="polite"></p>
             </form>
