@@ -80,7 +80,7 @@ class PaperTradingController extends Controller
             // This is a recovery trigger, not the authority for settlement. The
             // scheduler runs the same service even when no client is connected.
             $settledCount = $service->settleDue();
-            $environment = $request->input('account') === 'real' ? 'real' : 'demo';
+            $environment = ($request->input('account', $request->query('account')) === 'real') ? 'real' : 'demo';
             $hasDue = DB::table('paper_trades')
                 ->where('user_id', $request->user()->id)
                 ->where('account_type', $environment)
