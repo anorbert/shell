@@ -1,16 +1,16 @@
 <?php
 
-namespace App\\Http\\Controllers\\Auth;
+namespace App\Http\Controllers\Auth;
 
-use App\\Http\\Controllers\\Controller;
-use App\\Models\\User;
-use App\\Services\\LedgerService;
-use Illuminate\\Http\\RedirectResponse;
-use Illuminate\\Http\\Request;
-use Illuminate\\Support\\Facades\\Auth;
-use Illuminate\\Support\\Facades\\DB;
-use Illuminate\\Support\\Facades\\Http;
-use Illuminate\\Support\\Str;
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Services\LedgerService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Throwable;
 
 class GoogleAuthController extends Controller
@@ -66,7 +66,7 @@ class GoogleAuthController extends Controller
 
             $accessToken = $tokenResponse['access_token'] ?? null;
             if (!$accessToken) {
-                throw new \\RuntimeException('Google did not return an access token.');
+                throw new \RuntimeException('Google did not return an access token.');
             }
 
             $google = Http::withToken($accessToken)->acceptJson()->timeout(15)
@@ -92,7 +92,7 @@ class GoogleAuthController extends Controller
 
                 if ($user) {
                     if ($user->google_id && !hash_equals((string) $user->google_id, $googleId)) {
-                        throw new \\RuntimeException('This Shell account is already connected to another Google account.');
+                        throw new \RuntimeException('This Shell account is already connected to another Google account.');
                     }
 
                     $user->google_id = $googleId;
@@ -106,10 +106,10 @@ class GoogleAuthController extends Controller
                     'name' => trim((string) ($google['name'] ?? '')) ?: Str::before($email, '@'),
                     'email' => $email,
                     'password' => Str::random(64),
-                    'email_verified_at' => now(),
                 ]);
 
                 $user->google_id = $googleId;
+                $user->email_verified_at = now();
                 $user->save();
 
                 do {
