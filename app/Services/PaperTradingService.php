@@ -25,6 +25,10 @@ class PaperTradingService
             throw new RuntimeException('Invalid trading account.');
         }
 
+        if ($environment === 'real' && !config('shell.paper.real_enabled', false)) {
+            throw new RuntimeException('Real-money trading is not enabled. Demo trading remains available.');
+        }
+
         if ($environment === 'real' && !app(ManualWalletService::class)->hasSuccessfulDeposit($user)) {
             throw new RuntimeException('Real trading unlocks after your first deposit has been verified and credited to your real wallet.');
         }
