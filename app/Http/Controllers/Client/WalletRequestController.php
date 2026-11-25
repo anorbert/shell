@@ -65,7 +65,7 @@ class WalletRequestController extends Controller
                 'wallet_address' => $method->wallet_address, 'transaction_hash' => $transactionHash,
                 'client_note' => null, 'created_at' => now(), 'updated_at' => now(),
             ]);
-        } catch (\\Illuminate\\Database\\QueryException $exception) {
+        } catch (QueryException $exception) {
             if (str_contains(strtolower($exception->getMessage()), 'wallet_req_tx_network_unique')) {
                 return back()->withErrors(['transaction_hash' => 'This transaction hash has already been submitted.'])->withInput();
             }
