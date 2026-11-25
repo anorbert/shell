@@ -3,15 +3,11 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Services\ManualWalletService;
 use App\Services\LedgerService;
 use App\Support\Decimal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Str;
 use RuntimeException;
 
 class WalletRequestController extends Controller
@@ -32,38 +28,6 @@ class WalletRequestController extends Controller
         $kycVerified = $walletService->hasApprovedKyc($user);
         $hasSuccessfulDeposit = $walletService->hasSuccessfulDeposit($user);
         return view('client.wallet-requests', compact('methods', 'requests', 'kyc', 'kycVerified', 'hasSuccessfulDeposit', 'selectedAccount', 'selectedBalance', 'demoBalance', 'realBalance', 'currency'));
-    }
-
-    public function submitKyc(Request $request)
-    {
-        $user = $request->user();
-        $data = $request->validate([
-            'document_type' => ['required', 'in:national_id,passport,driving_licence'],
-            'document_number' => ['required', 'string', 'min:4', 'max:120'],
-            'document' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'],
-            'selfie' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
-        ]);
-        $existing = DB::table('kyc_submissions')->where('user_id', $user->id)->whereIn('status', ['pending', 'verified'])->exists();
-        if ($existing) return back()->withErrors(['kyc' => 'Your KYC is already pending or verified.']);
-        $document = $request->file('document');
-        $documentPath = 'kyc/'.$user->id.'/'.Str::uuid().'.'.$document->getClientOriginalExtension().'.enc';
-        Storage::disk('local')->put($documentPath, Crypt::encryptString(file_get_contents($document->getRealPath())));
-        $selfie = $request->file('selfie');
-        $selfiePath = null;
-        if ($selfie) {
-            $selfiePath = 'kyc/'.$user->id.'/'.Str::uuid().'.'.$selfie->getClientOriginalExtension().'.enc';
-            Storage::disk('local')->put($selfiePath, Crypt::encryptString(file_get_contents($selfie->getRealPath())));
-        }
-        DB::table('kyc_submissions')->insert([
-            'user_id' => $user->id, 'document_type' => $data['document_type'],
-            'document_number' => $data['document_number'] ?? null, 'document_path' => $documentPath,
-            'document_mime' => $document->getMimeType(), 'selfie_path' => $selfiePath,
-            'selfie_mime' => $selfie?->getMimeType(), 'status' => 'pending', 'created_at' => now(), 'updated_at' => now(),
-        ]);
-        app(ManualWalletService::class)->notifyAdmins('kyc-submission:'.$user->id.':'.now()->timestamp,
-            'KYC submission requires review', $user->name.' ('.$user->email.') submitted KYC documents.',
-            ['user_id' => $user->id]);
-        return back()->with('status', 'KYC submitted. Withdrawals remain locked until an administrator verifies your documents.');
     }
 
     public function deposit(Request $request, ManualWalletService $wallets)
