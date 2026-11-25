@@ -15,6 +15,7 @@
 <body class="shell-body">
 <svg aria-hidden="true" class="icon-library" xmlns="http://www.w3.org/2000/svg">
     <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+    <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="12" rx="2"/><path d="M12 9v12M3 13h18M12 9H7.5a2.5 2.5 0 1 1 2.5-2.5V9Zm0 0h4.5A2.5 2.5 0 1 0 14 6.5V9Z"/></symbol>
     <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
     <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 14 4-4 4 3 6-7"/></symbol>
     <symbol id="i-wallet" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 8h18M16 14h2"/><path d="M6 5V3h12"/></symbol>
@@ -39,11 +40,13 @@
                 <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard')?'active':'' }}"><svg class="nav-icon"><use href="#i-grid"/></svg><span>Overview</span></a>
                 <a href="{{ route('admin.clients') }}" class="{{ request()->routeIs('admin.clients*')?'active':'' }}"><svg class="nav-icon"><use href="#i-users"/></svg><span>Client accounts</span></a>
                 <a href="{{ route('admin.operations') }}" class="{{ request()->routeIs('admin.operations')?'active':'' }}"><svg class="nav-icon"><use href="#i-chart"/></svg><span>Trading operations</span></a>
+                <a href="{{ route('admin.referrals.index') }}" class="{{ request()->routeIs('admin.referrals.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-gift"/></svg><span>Referral program</span></a>
                 <a href="{{ route('admin.wallet-operations.index') }}" class="{{ request()->routeIs('admin.wallet-operations.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-wallet"/></svg><span>Wallet operations</span></a>
             @else
                 <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard')?'active':'' }}"><svg class="nav-icon"><use href="#i-grid"/></svg><span>Home</span></a>
                 <a href="{{ route('trading.index') }}" class="{{ request()->routeIs('trading.*','activity.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-clock"/></svg><span>Trade</span></a>
                 <a href="{{ route('wallet-requests.index') }}" class="{{ request()->routeIs('wallet-requests.*','statement.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-wallet"/></svg><span>Wallet</span></a>
+                <a href="{{ route('referrals.index') }}" class="{{ request()->routeIs('referrals.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-gift"/></svg><span>Referral</span></a>
                 <a href="{{ route('markets.index') }}" class="{{ request()->routeIs('markets.*','convert.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-chart"/></svg><span>Markets</span></a>
             @endif
         </nav>
