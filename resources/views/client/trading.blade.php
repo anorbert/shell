@@ -174,7 +174,7 @@
             <div class="position-market-line"><strong id="position-symbol">—</strong><span
                     id="position-direction">—</span></div>
             <div class="position-result-hero" id="position-result-hero" hidden><div class="position-result-icon" id="position-result-icon" aria-hidden="true">✓</div><div><span id="position-result-kicker">POSITION SETTLED</span><strong id="position-result-title">Result confirmed</strong></div></div>
-            <div class="position-live-price"><span id="position-price-label">LIVE MARKET PRICE</span><strong
+            <div class="position-live-price"><span id="position-price-label">LIVE MARKET PRICE</span><span class="position-feed-badge" id="position-feed-badge">Reconnecting…</span><strong
                     id="position-current-price">Connecting to live market…</strong><small id="position-price-move">Loading
                     your position details</small></div>
             <div class="position-details-grid">
@@ -204,6 +204,23 @@
             min-width: 0;
             overflow: hidden
         }
+
+        .position-feed-badge {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 8px;
+            padding: 3px 8px;
+            border: 1px solid rgba(150, 170, 195, .28);
+            border-radius: 999px;
+            color: #b9c8d9;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .04em;
+            vertical-align: middle;
+        }
+        .position-feed-badge.is-live { color: #53d6aa; border-color: rgba(83,214,170,.4); }
+        .position-feed-badge.is-server { color: #e6bd70; border-color: rgba(230,189,112,.4); }
+        .position-feed-badge.is-reconnecting { color: #ffadad; border-color: rgba(255,137,150,.4); }
 
         .data-table tbody tr[data-open-trade] {
             cursor: pointer
@@ -1189,6 +1206,7 @@
 
             function closeLiveStream() {
                 streamGeneration++;
+                reconnectAttempts = 0;
                 if (reconnectTimer) {
                     window.clearTimeout(reconnectTimer);
                     reconnectTimer = null;
@@ -1269,7 +1287,7 @@
                 updateSummary();
                 draw();
                 window.dispatchEvent(new CustomEvent('shell:market-price', {
-                    detail: { symbol: marketSelect.value, price: value }
+                    detail: { symbol: marketSelect.value, price: value, source: 'websocket' }
                 }));
                 setText('chart-health', 'LIVE');
                 setText('chart-updated', 'Live tick · ' + new Date(timestamp).toLocaleTimeString());
@@ -1286,9 +1304,18 @@
                 ];
                 setText('chart-health', 'CONNECTING');
                 let socket;
+                let connectTimeout = null;
                 try {
                     socket = new WebSocket(hosts[hostIndex] + streamKey);
                     liveSocket = socket;
+                    connectTimeout = window.setTimeout(() => {
+                        if (generation !== streamGeneration || socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CLOSED) return;
+                        socket.onopen = socket.onmessage = socket.onerror = socket.onclose = null;
+                        try { socket.close(); } catch (_) {}
+                        if (liveSocket === socket) liveSocket = null;
+                        if (hostIndex + 1 < hosts.length) connectLiveStream(symbol, selectedInterval, generation, hostIndex + 1);
+                        else scheduleStreamReconnect(symbol, selectedInterval, generation);
+                    }, 4000);
                 } catch (_) {
                     if (hostIndex + 1 < hosts.length) {
                         connectLiveStream(symbol, selectedInterval, generation, hostIndex + 1);
@@ -1303,6 +1330,7 @@
                         socket.close();
                         return;
                     }
+                    if (connectTimeout) { window.clearTimeout(connectTimeout); connectTimeout = null; }
                     reconnectAttempts = 0;
                     setText('chart-health', 'LIVE');
                     setText('chart-updated', 'Live stream connected');
@@ -1320,6 +1348,7 @@
                     if (generation === streamGeneration) setText('chart-health', 'RECONNECTING');
                 };
                 socket.onclose = () => {
+                    if (connectTimeout) { window.clearTimeout(connectTimeout); connectTimeout = null; }
                     if (generation !== streamGeneration) return;
                     if (hostIndex + 1 < hosts.length) {
                         connectLiveStream(symbol, selectedInterval, generation, hostIndex + 1);
@@ -1680,7 +1709,12 @@
                 positionRetryTimer = null,
                 positionSettlementRetryTimer = null,
                 positionAutoCloseTimer = null,
-                latestStreamPrice = null;
+                latestStreamPrice = null,
+                positionPricePollTimer = null,
+                positionPricePollFailures = 0,
+                lastPositionWebSocketTickAt = 0,
+                hasPositionPrice = false,
+                positionPricePollBusy = false;
             const money = (value, maximum = 8) => new Intl.NumberFormat(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: maximum
@@ -1739,11 +1773,18 @@
                 if (el) el.textContent = value;
             }
 
-            function updatePositionPrice(marketPrice) {
+            function updatePositionPrice(marketPrice, source = 'websocket') {
                 if (!activePosition || activePosition.status !== 'open' || positionSettlementInFlight
                     || new Date(activePosition.expires_at).getTime() <= Date.now()
                     || !Number.isFinite(Number(marketPrice))) return;
                 latestStreamPrice = Number(marketPrice);
+                hasPositionPrice = true;
+                const feedBadge = document.getElementById('position-feed-badge');
+                if (feedBadge) {
+                    feedBadge.textContent = source === 'websocket' ? 'Live feed' : 'Server price (1s)';
+                    feedBadge.className = 'position-feed-badge ' + (source === 'websocket' ? 'is-live' : 'is-server');
+                }
+                if (source === 'websocket') lastPositionWebSocketTickAt = Date.now();
                 const opening = Number(activePosition.opening_price),
                     delta = latestStreamPrice - opening;
                 const favorable = activePosition.direction === 'UP' ? delta > 0 : delta < 0;
@@ -1772,9 +1813,64 @@
                     totalPayout) + ' ' + activePosition.currency);
             }
             window.addEventListener('shell:market-price', event => {
-                if (activePosition && event.detail?.symbol === activePosition.symbol) updatePositionPrice(event
-                    .detail.price);
+                if (activePosition && event.detail?.symbol === activePosition.symbol && event.detail?.source === 'websocket') updatePositionPrice(event.detail.price, 'websocket');
             });
+
+            function stopPositionPricePolling() {
+                if (positionPricePollTimer) {
+                    window.clearTimeout(positionPricePollTimer);
+                    positionPricePollTimer = null;
+                }
+                positionPricePollBusy = false;
+            }
+
+            function schedulePositionPricePoll(delay = 1000) {
+                if (positionPricePollTimer || !positionModal.classList.contains('is-visible')
+                    || !activePosition || activePosition.status !== 'open') return;
+                positionPricePollTimer = window.setTimeout(async () => {
+                    positionPricePollTimer = null;
+                    if (!positionModal.classList.contains('is-visible') || !activePosition
+                        || activePosition.status !== 'open') return;
+
+                    // Prefer a recent browser tick. Once it is older than three
+                    // seconds, use the authenticated server-captured quote.
+                    if (Date.now() - lastPositionWebSocketTickAt <= 3000) {
+                        setPositionText('position-feed-badge', 'Live feed');
+                        const badge = document.getElementById('position-feed-badge');
+                        if (badge) badge.className = 'position-feed-badge is-live';
+                        schedulePositionPricePoll(1000);
+                        return;
+                    }
+
+                    if (positionPricePollBusy) {
+                        schedulePositionPricePoll(500);
+                        return;
+                    }
+                    positionPricePollBusy = true;
+                    try {
+                        const response = await requestJson(@json(route('markets.price')) + '?' + new URLSearchParams({
+                            symbol: activePosition.symbol
+                        }), { method: 'GET', retries: 0, timeoutMs: 5000 });
+                        if (response.symbol === activePosition.symbol && response.price !== undefined) {
+                            updatePositionPrice(response.price, 'server');
+                            positionPricePollFailures = 0;
+                        } else {
+                            throw new Error('Server returned a mismatched market symbol.');
+                        }
+                    } catch (_) {
+                        positionPricePollFailures = Math.min(positionPricePollFailures + 1, 5);
+                        const badge = document.getElementById('position-feed-badge');
+                        if (badge) {
+                            badge.textContent = 'Reconnecting…';
+                            badge.className = 'position-feed-badge is-reconnecting';
+                        }
+                    } finally {
+                        positionPricePollBusy = false;
+                        const backoff = Math.min(8000, 1000 * Math.pow(2, positionPricePollFailures));
+                        schedulePositionPricePoll(backoff);
+                    }
+                }, delay);
+            }
 
             let positionSettlementInFlight = false;
 
