@@ -920,3 +920,46 @@ input,select,textarea{accent-color:var(--gold)}
  .topbar-wallet-menu>.topbar-wallet-balance{min-width:100px;padding:5px 6px}
  .wallet-switch-dropdown{top:62px}
 }
+
+
+/* Wallet switcher: match the established profile dropdown and stay anchored to its trigger. */
+.topbar-right{align-items:center}
+.topbar-wallet-menu{display:flex;align-items:center;position:relative;z-index:210;flex:0 0 auto}
+.topbar-wallet-menu>.topbar-wallet-balance{
+  min-width:164px;min-height:44px;padding:6px 11px;
+  border:1px solid #34445a;border-radius:9px;
+  background:#111c2b;box-shadow:none;gap:3px;
+}
+.topbar-wallet-menu>.topbar-wallet-balance:hover,
+.topbar-wallet-menu[open]>.topbar-wallet-balance{
+  background:#172337;border-color:#806b43;
+}
+.topbar-wallet-meta{font-size:9px;letter-spacing:.09em}
+.topbar-wallet-balance>strong{font-size:13px;line-height:1.2}
+.wallet-switch-dropdown{
+  position:absolute;top:calc(100% + 12px);right:0;
+  width:min(300px,calc(100vw - 24px));padding:9px;
+  background:#111c2b;border:1px solid #35445a;border-radius:10px;
+  box-shadow:0 18px 55px #000b;z-index:220;
+}
+.wallet-switch-heading{padding:11px 11px 13px;margin-bottom:5px;border-bottom:1px solid #29384d}
+.wallet-switch-heading>span{font-size:9px;letter-spacing:.13em}
+.wallet-switch-heading>small{font-size:10px;line-height:1.5}
+.wallet-switch-option{gap:9px;padding:10px 8px;border-radius:7px}
+.wallet-switch-option:hover{background:#1a2638;border-color:#34445a}
+.wallet-switch-option.is-active{background:#1a2638;border-color:#665638}
+.wallet-switch-icon{width:31px;height:31px;border-radius:8px}
+.wallet-switch-copy strong,.wallet-switch-amount strong{font-size:11px}
+.wallet-switch-copy small{font-size:9px}
+.wallet-switch-amount{min-width:82px}
+.wallet-switch-check{width:12px;text-align:center}
+.wallet-switch-manage{margin-top:6px;padding:11px 9px 4px;border-top:1px solid #29384d;font-size:10px}
+@media(max-width:720px){
+  .topbar-wallet-menu{min-width:0}
+  .topbar-wallet-menu>.topbar-wallet-balance{min-width:112px;min-height:40px;padding:5px 8px}
+  .wallet-switch-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:min(290px,calc(100vw - 20px))}
+}
+@media(max-width:380px){
+  .topbar-wallet-menu>.topbar-wallet-balance{min-width:102px;padding:5px 6px}
+  .wallet-switch-dropdown{top:calc(100% + 7px);right:-4px;width:min(280px,calc(100vw - 16px))}
+}
