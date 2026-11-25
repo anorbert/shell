@@ -96,11 +96,19 @@
                         <div class="wo-actions">
                         @if($item->type==='deposit' && !filled($item->transaction_hash))
                             <div class="wo-footnote" style="border-color:rgba(239,68,68,.22);background:rgba(239,68,68,.07);color:var(--wo-ink)">
-                                <strong style="display:block;color:#f28b8b;margin-bottom:5px">Missing transaction hash</strong>
-                                This request has no blockchain transaction reference. Wallet credit is disabled. Reject this incomplete request and ask the client to submit a new deposit with the correct hash.
+                                <strong style="display:block;color:#f28b8b;margin-bottom:5px">No blockchain transaction hash submitted</strong>
+                                Manual approval will credit the wallet based on admin authorization. The system will generate an internal reference; it will not create or imply an on-chain transaction.
                             </div>
+                            <form method="POST" action="{{ route('admin.wallet-operations.deposit.confirm',$item->id) }}" class="wo-form">@csrf
+                                <input type="hidden" name="approval_mode" value="manual">
+                                <label>Amount to credit (USD)<input name="amount_usd" type="number" min="0.01" max="99999999" step="0.01" value="{{ number_format((float) $item->amount_usd, 2, '.', '') }}" required></label>
+                                <label>Manual approval reason<textarea name="admin_note" minlength="10" maxlength="2000" placeholder="Explain why you are authorizing this credit without blockchain evidence." required></textarea></label>
+                                <label class="wo-check"><input type="checkbox" name="manual_approval_confirmed" value="1" required><span>I authorize this manual credit and understand no blockchain transaction hash was submitted or verified.</span></label>
+                                <button class="wo-btn wo-btn-primary" type="submit">✓ Manually approve &amp; credit wallet</button>
+                            </form>
                         @elseif($item->type==='deposit')
                             <form method="POST" action="{{ route('admin.wallet-operations.deposit.confirm',$item->id) }}" class="wo-form">@csrf
+                                <input type="hidden" name="approval_mode" value="blockchain">
                                 <label>Verified amount (USD)<input name="amount_usd" type="number" min="0.01" max="99999999" step="0.01" value="{{ number_format((float) $item->amount_usd, 2, '.', '') }}" required></label>
                                 <label>Verification audit note<textarea name="admin_note" minlength="10" maxlength="2000" placeholder="Explorer reference, token contract, received amount and confirmation count." required></textarea></label>
                                 <label class="wo-check"><input type="checkbox" name="chain_verified" value="1" required><span>I independently verified the correct network, token contract, destination, amount and confirmations.</span></label>
