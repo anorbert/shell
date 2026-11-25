@@ -120,7 +120,7 @@
 
                 <div class="conversion-field">
                     <label for="conversion-amount">AMOUNT TO CONVERT</label>
-                    <input id="conversion-amount" name="amount" type="number" min="0.00000001" step="0.00000001" max="{{ $balances[$currency] ?? '0' }}" value="10.00000000" inputmode="decimal" autocomplete="off" required>
+                    <input id="conversion-amount" name="amount" type="number" min="0.00000001" step="0.00000001" max="{{ $balances[$currency] ?? '0' }}" value="10.00" inputmode="decimal" autocomplete="off" required>
                     <div class="conversion-balance"><span>Maximum per conversion</span><span>Maximum 8 decimal places accepted · display uses 2</span></div>
                 </div>
 
