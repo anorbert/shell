@@ -178,7 +178,7 @@
 </div>
 <div class="page-action-row">
     @if($selectedAccount === 'real')
-        <a href="#deposit-form" class="button button-primary" id="wallet-deposit-shortcut"><svg class="nav-icon"><use href="#i-plus"/></svg> Deposit funds</a>
+        <a href="#deposit-form" class="button button-primary" id="wallet-deposit-shortcut"><svg class="nav-icon"><use href="#i-plus"/></svg> Deposit crypto</a>
     @else
         <a href="#demo-topup-form" class="button button-primary"><svg class="nav-icon"><use href="#i-plus"/></svg> Add demo funds</a>
     @endif
@@ -213,7 +213,7 @@
             <div class="panel-head"><div><span class="wallet-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrow"/></svg></span><span class="eyebrow">ADD REAL FUNDS</span><h2>Deposit crypto</h2></div></div>
             <p class="muted">Choose the correct asset and network, send funds to the displayed address, then submit the transaction hash. Your real wallet is credited after operations verifies the transaction.</p>
             @if($methods->where('deposits_enabled', true)->isEmpty())
-                <p class="muted">Available deposit networks will appear here. Always use the asset, network and wallet address displayed in your account before sending funds.</p>
+                <div class="wallet-empty"><strong>Crypto deposits are not available yet</strong><p class="muted">The operations team has not enabled a receiving network. Once an asset, network and wallet address are configured and enabled in Admin Panel → Wallet operations, the deposit form will appear here.</p><p class="muted">Do not send funds to an address from an old request or from an external message. Only use the receiving address displayed here for the selected network.</p></div>
             @else
                 <form method="POST" action="{{ route('wallet-requests.deposit') }}" class="form-stack">@csrf
                     <label>Asset / network<select name="method_id" id="deposit-method" required><option value="">Choose network</option>@foreach($methods->where('deposits_enabled', true) as $method)<option value="{{ $method->id }}" data-address="{{ $method->wallet_address }}" data-memo-label="{{ $method->memo_label }}" data-memo="{{ $method->memo_value }}" data-instructions="{{ $method->instructions }}">{{ $method->asset }} · {{ $method->network }}</option>@endforeach</select></label>
