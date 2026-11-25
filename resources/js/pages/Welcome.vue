@@ -24,7 +24,7 @@ const features = [
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     </Head>
 
-    <div class="shell-landing min-h-screen overflow-hidden bg-[#07111f] text-slate-100">
+    <div id="top" class="shell-landing min-h-screen overflow-hidden bg-[#07111f] text-slate-100">
         <div class="pointer-events-none fixed inset-0 -z-0 overflow-hidden" aria-hidden="true">
             <div class="absolute -left-40 top-20 h-96 w-96 rounded-full bg-cyan-500/10 blur-[120px]"></div>
             <div class="absolute -right-40 top-72 h-96 w-96 rounded-full bg-emerald-400/10 blur-[130px]"></div>
