@@ -24,7 +24,7 @@ function configureTradingQuoteForEnvironmentTests(): void
         'price' => '65000.000000000000',
         'captured_at' => now('UTC')->toDateTimeString(),
     ]);
-    $markets->shouldReceive('refreshSymbolQuote')->andReturn(true);
+    $markets->shouldReceive('refreshSymbolQuote')->zeroOrMoreTimes()->andReturn(true);
     app()->instance(MarketQuoteService::class, $markets);
 }
 
