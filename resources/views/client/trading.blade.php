@@ -60,7 +60,7 @@
                 <span class="real-activation-status">DEPOSIT VERIFIED</span>
             </div>
             <h2 id="real-activation-title">Your real account is funded</h2>
-            <p class="real-activation-copy">Your deposit has been verified and credited. You can place real-money positions using your available real-wallet balance. Approved KYC is required only when you request a withdrawal.</p>
+            <p class="real-activation-copy">Your deposit has been verified and credited. You can use your available real-wallet balance for real positions when the platform has sufficient payout liquidity for the selected stake. Approved KYC is required only when you request a withdrawal.</p>
         </section>
     @endif
 
