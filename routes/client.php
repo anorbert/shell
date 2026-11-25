@@ -9,11 +9,15 @@ use App\Http\Controllers\Client\PaperTradingController;
 use App\Http\Controllers\Client\Settings\SecurityController;
 use App\Http\Controllers\Client\SupportController;
 use App\Http\Controllers\Client\PortfolioController;
+use App\Http\Controllers\Client\ReferralController;
 use App\Http\Controllers\Client\StatementController;
 use App\Http\Controllers\Client\WalletRequestController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/r/{code}', [ReferralController::class, 'capture'])->whereAlphaNumeric('code')->name('referral.capture');
+
 Route::middleware(['auth', 'client', 'verified'])->group(function () {
+    Route::get('/referrals', [ReferralController::class, 'index'])->name('referrals.index');
     Route::get('/markets', [MarketController::class, 'index'])->name('markets.index');
     Route::get('/markets/data', [MarketController::class, 'data'])->name('markets.data');
     Route::get('/markets/price', [MarketController::class, 'price'])->middleware('throttle:120,1')->name('markets.price');
