@@ -11,26 +11,7 @@
         @endif
     </x-client-attention>
 
-    <nav class="account-switch" aria-label="Choose trading account">
-        <a class="account-switch-option {{ $selectedAccount === 'demo' ? 'is-active' : '' }}"
-            href="{{ route('trading.index', ['account' => 'demo']) }}"
-            {{ $selectedAccount === 'demo' ? 'aria-current=page' : '' }}>
-            <span class="account-switch-icon account-switch-demo" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 13.5v-7Z" stroke="currentColor" stroke-width="1.7"/><path d="M8 20h8m-4-4v4m-3-9 2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </span>
-            <span class="account-switch-copy"><strong>Demo</strong><small>Practise with virtual funds</small></span>
-            <span class="account-switch-check" aria-hidden="true">✓</span>
-        </a>
-        <a class="account-switch-option account-switch-real {{ $selectedAccount === 'real' ? 'is-active' : '' }}"
-            href="{{ route('trading.index', ['account' => 'real']) }}"
-            {{ $selectedAccount === 'real' ? 'aria-current=page' : '' }}>
-            <span class="account-switch-icon account-switch-real-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M3.5 9.5 12 4l8.5 5.5M5.5 10v8.5m4.3-8.5v8.5m4.4-8.5v8.5m4.3-8.5v8.5M3.5 20h17M2.5 22h19" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </span>
-            <span class="account-switch-copy"><strong>Real account</strong><small>Trade with your funds</small></span>
-            <span class="account-switch-check" aria-hidden="true">✓</span>
-        </a>
-    </nav>
+
     @if ($selectedAccount === 'real' && (float) $realPayoutReserve <= 0)
         <section class="real-activation real-activation-paused" role="status" aria-labelledby="real-activation-title">
             <div class="real-activation-top">
@@ -124,10 +105,26 @@
         </section>
 
         <section class="panel trade-ticket">
-            <div class="panel-head">
+            <div class="panel-head trade-ticket-head">
                 <div><span class="eyebrow">NEW POSITION</span>
                     <h2>Trade ticket</h2>
-                </div><span class="table-status verified">{{ strtoupper($selectedAccount) }}</span>
+                </div>
+                <nav class="account-switch" aria-label="Choose trading account">
+                    <a class="account-switch-option {{ $selectedAccount === 'demo' ? 'is-active' : '' }}"
+                        href="{{ route('trading.index', ['account' => 'demo']) }}"
+                        {{ $selectedAccount === 'demo' ? 'aria-current=page' : '' }}>
+                        <span class="account-switch-dot account-switch-demo-dot" aria-hidden="true"></span>
+                        <span>Demo</span>
+                        <span class="account-switch-check" aria-hidden="true">✓</span>
+                    </a>
+                    <a class="account-switch-option account-switch-real {{ $selectedAccount === 'real' ? 'is-active' : '' }}"
+                        href="{{ route('trading.index', ['account' => 'real']) }}"
+                        {{ $selectedAccount === 'real' ? 'aria-current=page' : '' }}>
+                        <span class="account-switch-dot account-switch-real-dot" aria-hidden="true"></span>
+                        <span>Real</span>
+                        <span class="account-switch-check" aria-hidden="true">✓</span>
+                    </a>
+                </nav>
             </div>
             <div class="wallet-summary"><span>AVAILABLE {{ strtoupper($selectedAccount) }} BALANCE</span><strong id="wallet-balance" aria-live="polite">@decimal($balance)
                     {{ $currency }}</strong></div>
@@ -421,100 +418,70 @@
             .real-activation-status { margin-left: 0 }
         }
 
-        .account-switch {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 12px;
-            width: min(100%, 560px);
-            margin: 18px 0 22px;
-            padding: 6px;
-            border: 1px solid rgba(145, 164, 190, .16);
-            border-radius: 15px;
-            background: rgba(8, 17, 31, .72);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,.025)
-        }
-        .account-switch-option {
-            position: relative;
+        .trade-ticket-head {
             display: flex;
             align-items: center;
-            gap: 12px;
-            min-width: 0;
-            min-height: 70px;
-            padding: 12px 14px;
-            border: 1px solid transparent;
+            justify-content: space-between;
+            gap: 12px
+        }
+        .account-switch {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            flex: 0 0 auto;
+            margin: 0;
+            padding: 4px;
+            border: 1px solid rgba(145, 164, 190, .16);
             border-radius: 11px;
-            color: #aebbd0;
+            background: rgba(8, 17, 31, .72)
+        }
+        .account-switch-option {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            min-width: 76px;
+            min-height: 34px;
+            padding: 7px 10px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            color: #9eacc0;
             text-decoration: none;
-            background: transparent;
-            transition: border-color .18s ease, background .18s ease, transform .18s ease, color .18s ease
+            font-size: 11px;
+            font-weight: 800;
+            transition: background .18s ease, border-color .18s ease, color .18s ease
         }
         .account-switch-option:hover {
             color: #f4f7fb;
-            border-color: rgba(164, 184, 210, .22);
-            background: rgba(255,255,255,.035);
-            transform: translateY(-1px)
+            background: rgba(255,255,255,.045)
         }
         .account-switch-option.is-active {
             color: #f7f9fc;
-            border-color: rgba(201, 169, 106, .48);
-            background: linear-gradient(120deg, rgba(201,169,106,.14), rgba(201,169,106,.045));
-            box-shadow: 0 5px 18px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.045)
+            border-color: rgba(201, 169, 106, .42);
+            background: linear-gradient(120deg, rgba(201,169,106,.17), rgba(201,169,106,.07));
+            box-shadow: 0 2px 8px rgba(0,0,0,.14)
         }
-        .account-switch-icon {
-            display: grid;
-            place-items: center;
-            flex: 0 0 40px;
-            width: 40px;
-            height: 40px;
-            border: 1px solid rgba(132, 158, 190, .2);
-            border-radius: 11px;
-            color: #a9c7ee;
-            background: rgba(83, 125, 181, .11)
-        }
-        .account-switch-icon svg { width: 21px; height: 21px }
-        .account-switch-real-icon {
-            color: #dfc17f;
-            border-color: rgba(201,169,106,.2);
-            background: rgba(201,169,106,.09)
-        }
-        .account-switch-copy { display: grid; gap: 4px; min-width: 0 }
-        .account-switch-copy strong {
-            color: inherit;
-            font-size: 13px;
-            font-weight: 800;
-            letter-spacing: -.01em
-        }
-        .account-switch-copy small {
-            color: #8999af;
-            font-size: 10px;
-            line-height: 1.35
-        }
-        .account-switch-check {
-            display: none;
-            place-items: center;
-            flex: 0 0 19px;
-            width: 19px;
-            height: 19px;
-            margin-left: auto;
+        .account-switch-dot {
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
-            color: #101a28;
-            background: #d9bd7e;
-            font-size: 11px;
-            font-weight: 900
+            background: #7da9db;
+            box-shadow: 0 0 0 3px rgba(125,169,219,.11)
         }
-        .account-switch-option.is-active .account-switch-check { display: grid }
+        .account-switch-real-dot {
+            background: #d8b66f;
+            box-shadow: 0 0 0 3px rgba(216,182,111,.11)
+        }
+        .account-switch-check { display: none; font-size: 10px; color: #e4c783 }
+        .account-switch-option.is-active .account-switch-check { display: inline }
         .account-switch-option:focus-visible {
             outline: 2px solid #d9bd7e;
-            outline-offset: 3px
+            outline-offset: 2px
         }
         @media (max-width: 520px) {
-            .account-switch { gap: 6px; padding: 4px; margin: 14px 0 18px }
-            .account-switch-option { min-height: 64px; gap: 8px; padding: 9px 8px }
-            .account-switch-icon { flex-basis: 32px; width: 32px; height: 32px; border-radius: 9px }
-            .account-switch-icon svg { width: 18px; height: 18px }
-            .account-switch-copy strong { font-size: 11px }
-            .account-switch-copy small { font-size: 9px }
-            .account-switch-check { flex-basis: 16px; width: 16px; height: 16px; font-size: 9px }
+            .trade-ticket-head { align-items: flex-start; flex-wrap: wrap }
+            .account-switch { width: 100% }
+            .account-switch-option { flex: 1; min-width: 0 }
         }
 
         .trading-chart-panel {
