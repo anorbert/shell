@@ -15,10 +15,20 @@ class PaperTradingService
         private MarketQuoteService $markets
     ) {}
 
-    public function open(User $user, string $symbol, string $direction, string $stake, int $duration, string $key): int
+    public function open(User $user, string $symbol, string $direction, string $stake, int $duration, string $key, string $environment = 'demo'): int
     {
         if (!config('shell.paper.enabled')) {
-            throw new RuntimeException('Paper trading is disabled.');
+            throw new RuntimeException('Trading is temporarily disabled.');
+        }
+
+        if (!in_array($environment, ['demo', 'real'], true)) {
+            throw new RuntimeException('Invalid trading account.');
+        }
+
+        if ($environment === 'real' && !DB::table('wallet_requests')
+            ->where('user_id', $user->id)->where('type', 'deposit')->where('status', 'confirmed')
+            ->whereNotNull('ledger_key')->exists()) {
+            throw new RuntimeException('Real trading unlocks after your first deposit has been verified and credited to your real wallet.');
         }
 
         if (!in_array($symbol, config('shell.market.symbols', []), true)) {
@@ -39,22 +49,22 @@ class PaperTradingService
 
         $amount = Decimal::units($stake);
         if ($amount <= 0 || $amount > Decimal::units((string) config('shell.paper.max_stake'))) {
-            throw new RuntimeException('Stake is outside paper limits.');
+            throw new RuntimeException('Stake is outside the allowed trading limits.');
         }
 
         // A retry must resolve to the original trade before making provider calls.
         $existing = DB::table('paper_trades')->where('open_idempotency_key', $key)->first();
         if ($existing) {
-            return $this->assertSameOpenRequest($existing, $user, $symbol, $direction, $stake, $duration);
+            return $this->assertSameOpenRequest($existing, $user, $symbol, $direction, $stake, $duration, $environment);
         }
 
         $quote = $this->markets->freshExecutionQuote($symbol);
         $currency = config('shell.paper.currency', 'USD');
 
-        return DB::transaction(function () use ($user, $symbol, $direction, $stake, $duration, $key, $quote, $currency) {
+        return DB::transaction(function () use ($user, $symbol, $direction, $stake, $duration, $key, $quote, $currency, $environment) {
             $existing = DB::table('paper_trades')->where('open_idempotency_key', $key)->first();
             if ($existing) {
-                return $this->assertSameOpenRequest($existing, $user, $symbol, $direction, $stake, $duration);
+                return $this->assertSameOpenRequest($existing, $user, $symbol, $direction, $stake, $duration, $environment);
             }
 
             $now = now('UTC');
@@ -65,24 +75,36 @@ class PaperTradingService
                 );
             }
 
-            $wallet = $this->ledger->provisionClientWallets($user, $currency)['demo'];
-            $escrow = $this->ledger->system('PAPER_ESCROW', $currency);
+            $wallet = $this->ledger->provisionClientWallets($user, $currency)[$environment];
+            $isReal = $environment === 'real';
+            $escrow = $this->ledger->system($isReal ? 'REAL_TRADE_ESCROW' : 'PAPER_ESCROW', $currency);
+            $entries = [
+                ['account_id' => $wallet, 'side' => 'debit', 'amount' => $stake],
+                ['account_id' => $escrow, 'side' => 'credit', 'amount' => $stake],
+            ];
+            $payoutBasisPoints = (int) config('shell.paper.payout_basis_points', 18000);
+            $reservedProfit = '0.00000000';
+            if ($isReal && $payoutBasisPoints > 10000) {
+                $reservedProfit = Decimal::multiplyRatio($stake, $payoutBasisPoints - 10000, 10000);
+                $reserve = $this->ledger->system('REAL_PAYOUT_RESERVE', $currency, 'debit');
+                $profitEscrow = $this->ledger->system('REAL_PAYOUT_ESCROW', $currency, 'credit');
+                $entries[] = ['account_id' => $reserve, 'side' => 'credit', 'amount' => $reservedProfit];
+                $entries[] = ['account_id' => $profitEscrow, 'side' => 'debit', 'amount' => $reservedProfit];
+                // Reserve is a debit-normal asset account; debit-normal balance must never go below zero.
+            }
 
             $this->ledger->post(
-                'paper-open:' . $key,
-                'Paper trade stake reserved',
-                [
-                    ['account_id' => $wallet, 'side' => 'debit', 'amount' => $stake],
-                    ['account_id' => $escrow, 'side' => 'credit', 'amount' => $stake],
-                ],
-                ['user_id' => $user->id, 'symbol' => $symbol, 'environment' => 'paper']
+                ($isReal ? 'real-open:' : 'paper-open:') . $key,
+                $isReal ? 'Real trade stake and payout reserve locked' : 'Demo trade stake reserved',
+                $entries,
+                ['user_id' => $user->id, 'symbol' => $symbol, 'environment' => $environment, 'reserved_profit' => $reservedProfit]
             );
 
             // The account locks inside LedgerService serialize same-wallet opens.
             // The unique trade key is the final database-level idempotency guard.
             $existing = DB::table('paper_trades')->where('open_idempotency_key', $key)->first();
             if ($existing) {
-                return $this->assertSameOpenRequest($existing, $user, $symbol, $direction, $stake, $duration);
+                return $this->assertSameOpenRequest($existing, $user, $symbol, $direction, $stake, $duration, $environment);
             }
 
             return (int) DB::table('paper_trades')->insertGetId([
@@ -91,6 +113,8 @@ class PaperTradingService
                 'direction' => $direction,
                 'stake' => $stake,
                 'wallet_currency' => $currency,
+                'account_type' => $environment,
+                'payout_basis_points' => $payoutBasisPoints,
                 'opening_price' => (string) $quote->price,
                 'duration_seconds' => $duration,
                 'status' => 'open',
@@ -103,7 +127,7 @@ class PaperTradingService
         }, 3);
     }
 
-    private function assertSameOpenRequest(object $existing, User $user, string $symbol, string $direction, string $stake, int $duration): int
+    private function assertSameOpenRequest(object $existing, User $user, string $symbol, string $direction, string $stake, int $duration, string $environment): int
     {
         if ((int) $existing->user_id !== $user->id) {
             throw new RuntimeException('Request key already used.');
@@ -111,7 +135,8 @@ class PaperTradingService
 
         if ($existing->symbol !== $symbol || $existing->direction !== $direction
             || Decimal::compare((string) $existing->stake, $stake) !== 0
-            || (int) $existing->duration_seconds !== $duration) {
+            || (int) $existing->duration_seconds !== $duration
+            || (($existing->account_type ?? 'demo') !== $environment)) {
             throw new RuntimeException('Request key was already used for a different trade.');
         }
 
@@ -219,9 +244,16 @@ class PaperTradingService
                 && $quoteCapturedAt->lessThanOrEqualTo(now('UTC'));
 
             $currency = $trade->wallet_currency ?: config('shell.paper.currency', 'USD');
+            $environment = $trade->account_type ?? 'demo';
+            $isReal = $environment === 'real';
             $user = User::query()->findOrFail($trade->user_id);
-            $wallet = $this->ledger->demoWallet($user, $currency);
-            $escrow = $this->ledger->system('PAPER_ESCROW', $currency);
+            $wallet = $isReal ? $this->ledger->realWallet($user, $currency) : $this->ledger->demoWallet($user, $currency);
+            $escrow = $this->ledger->system($isReal ? 'REAL_TRADE_ESCROW' : 'PAPER_ESCROW', $currency);
+            $profitEscrow = $isReal ? $this->ledger->system('REAL_PAYOUT_ESCROW', $currency, 'debit') : null;
+            $reserve = $isReal ? $this->ledger->system('REAL_PAYOUT_RESERVE', $currency, 'debit') : null;
+            $reservedProfit = $isReal && (int) ($trade->payout_basis_points ?? 18000) > 10000
+                ? Decimal::multiplyRatio((string) $trade->stake, (int) $trade->payout_basis_points - 10000, 10000)
+                : '0.00000000';
             $entries = [];
             $status = 'void';
             $closingPrice = null;
@@ -230,6 +262,10 @@ class PaperTradingService
                 // No trustworthy expiry price: release the reserved stake in full.
                 $entries[] = ['account_id' => $escrow, 'side' => 'debit', 'amount' => (string) $trade->stake];
                 $entries[] = ['account_id' => $wallet, 'side' => 'credit', 'amount' => (string) $trade->stake];
+                if ($isReal && Decimal::units($reservedProfit) > 0) {
+                    $entries[] = ['account_id' => $profitEscrow, 'side' => 'credit', 'amount' => $reservedProfit];
+                    $entries[] = ['account_id' => $reserve, 'side' => 'debit', 'amount' => $reservedProfit];
+                }
             } else {
                 $closingPrice = (string) $quote->price;
                 $comparison = Decimal::compare($closingPrice, (string) $trade->opening_price);
@@ -239,22 +275,33 @@ class PaperTradingService
 
                 $entries[] = ['account_id' => $escrow, 'side' => 'debit', 'amount' => (string) $trade->stake];
 
+                if ($isReal && Decimal::units($reservedProfit) > 0) {
+                    $entries[] = ['account_id' => $profitEscrow, 'side' => 'credit', 'amount' => $reservedProfit];
+                    $entries[] = ['account_id' => $reserve, 'side' => 'debit', 'amount' => $reservedProfit];
+                }
+
                 if ($tie) {
                     $entries[] = ['account_id' => $wallet, 'side' => 'credit', 'amount' => (string) $trade->stake];
                     $status = 'void';
                 } elseif ($won) {
                     $payout = Decimal::multiplyRatio(
                         (string) $trade->stake,
-                        (int) config('shell.paper.payout_basis_points', 18000),
+                        (int) ($trade->payout_basis_points ?? config('shell.paper.payout_basis_points', 18000)),
                         10000
                     );
                     $profit = Decimal::fromUnits(Decimal::units($payout) - Decimal::units((string) $trade->stake));
-                    $rewards = $this->ledger->system('PAPER_REWARDS', $currency, 'debit');
-                    $entries[] = ['account_id' => $rewards, 'side' => 'debit', 'amount' => $profit];
+                    if ($isReal) {
+                        if (Decimal::units($profit) > 0) {
+                            $entries[] = ['account_id' => $profitEscrow, 'side' => 'debit', 'amount' => $profit];
+                        }
+                    } else {
+                        $rewards = $this->ledger->system('PAPER_REWARDS', $currency, 'debit');
+                        $entries[] = ['account_id' => $rewards, 'side' => 'debit', 'amount' => $profit];
+                    }
                     $entries[] = ['account_id' => $wallet, 'side' => 'credit', 'amount' => $payout];
                     $status = 'won';
                 } else {
-                    $revenue = $this->ledger->system('PAPER_REVENUE', $currency);
+                    $revenue = $this->ledger->system($isReal ? 'REAL_TRADE_REVENUE' : 'PAPER_REVENUE', $currency);
                     $entries[] = ['account_id' => $revenue, 'side' => 'credit', 'amount' => (string) $trade->stake];
                     $status = 'lost';
                 }
@@ -268,7 +315,7 @@ class PaperTradingService
                 [
                     'trade_id' => $trade->id,
                     'outcome' => $status,
-                    'environment' => 'paper',
+                    'environment' => $environment,
                     'void_reason' => $validQuote ? null : 'missing_post_expiry_quote',
                 ]
             );
@@ -288,8 +335,8 @@ class PaperTradingService
                 'type' => 'paper_trade_settled',
                 'title' => 'Paper trade settled: ' . $trade->symbol,
                 'body' => $status === 'void'
-                    ? 'Your trade was voided and the full demo stake was refunded because no verified expiry quote was available.'
-                    : 'Your ' . $trade->direction . ' paper trade settled as ' . strtoupper($status) . '. This is a simulation result, not a cash return.',
+                    ? 'Your ' . $environment . ' trade was voided and the full stake was refunded because no verified expiry quote was available.'
+                    : 'Your ' . $trade->direction . ' ' . $environment . ' trade settled as ' . strtoupper($status) . '.',
                 'data' => json_encode([
                     'trade_id' => $trade->id,
                     'status' => $status,
