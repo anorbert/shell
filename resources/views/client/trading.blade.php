@@ -64,10 +64,7 @@
                 <input type="hidden" name="request_key" value="{{ \Illuminate\Support\Str::uuid() }}">
                 <label>Market pair<select name="symbol" id="trade-symbol" required>
                         @foreach ($symbols as $symbol)
-                            @if ($symbol === $selectedSymbol) @continue @endif
-                        @endforeach
-                        @foreach ($symbols as $symbol)
-                            <option value="{{ $symbol }}">{{ $symbol }}</option>
+                            <option value="{{ $symbol }}" @selected($symbol === $selectedSymbol)>{{ $symbol }}</option>
                         @endforeach
                     </select>
                 </label>
