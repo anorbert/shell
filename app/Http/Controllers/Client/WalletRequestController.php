@@ -13,6 +13,17 @@ use RuntimeException;
 
 class WalletRequestController extends Controller
 {
+    public function switchAccount(Request $request)
+    {
+        $data = $request->validate([
+            'account' => ['required', 'in:demo,real'],
+        ]);
+
+        $request->session()->put('active_wallet', $data['account']);
+
+        return back()->withHeaders(['Cache-Control' => 'no-store, private']);
+    }
+
     public function index(Request $request, LedgerService $ledger)
     {
         $user = $request->user();
