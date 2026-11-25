@@ -136,8 +136,8 @@ class LedgerService
                 // The real payout reserve is a debit-normal asset account. Locking
                 // exposure must be atomic with the ledger posting so concurrent
                 // positions cannot promise more profit than the funded reserve.
-                if ($account->code === 'REAL_PAYOUT_RESERVE' && $account->normal_side === 'debit') {
-                    $current = -$this->balanceUnits((int) $account->id);
+                if ($account->code === 'REAL_PAYOUT_RESERVE' && $account->normal_side === 'credit') {
+                    $current = $this->balanceUnits((int) $account->id);
                     if ($current + $netChange < 0) {
                         throw new RuntimeException('Real trading is temporarily unavailable because the funded payout reserve is insufficient for this position.');
                     }
