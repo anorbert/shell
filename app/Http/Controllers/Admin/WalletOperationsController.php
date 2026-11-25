@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\ManualWalletService;
+use App\Services\LedgerService;
+use App\Support\Decimal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Crypt;
@@ -13,13 +15,51 @@ use RuntimeException;
 
 class WalletOperationsController extends Controller
 {
-    public function index()
+    public function index(LedgerService $ledger)
     {
         $requests = DB::table('wallet_requests')->join('users', 'users.id', '=', 'wallet_requests.user_id')
             ->select('wallet_requests.*', 'users.name as client_name', 'users.email as client_email')
             ->latest('wallet_requests.created_at')->paginate(30);
         $methods = DB::table('crypto_payment_methods')->orderBy('asset')->orderBy('network')->get();
-        return view('admin.wallet-operations', compact('requests', 'methods'));
+        $reserveAccount = $ledger->system('REAL_PAYOUT_RESERVE', 'USD', 'debit');
+        $realPayoutReserve = Decimal::fromUnits($ledger->normalBalanceUnits($reserveAccount));
+        return view('admin.wallet-operations', compact('requests', 'methods', 'realPayoutReserve'));
+    }
+
+    /**
+     * Record only real funds already verified and ring-fenced in the platform's
+     * external treasury. This ledger action does not move money or verify custody.
+     */
+    public function fundPayoutReserve(Request $request, LedgerService $ledger)
+    {
+        $data = $request->validate([
+            'amount_usd' => ['required', 'regex:/^(?:[1-9][0-9]{0,7})(?:\\.[0-9]{1,8})?$/'],
+            'external_reference' => ['required', 'string', 'min:12', 'max:255'],
+            'admin_note' => ['required', 'string', 'min:10', 'max:2000'],
+        ]);
+
+        $amount = $data['amount_usd'];
+        $key = 'real-reserve-fund:' . hash('sha256', trim($data['external_reference']));
+        try {
+            DB::transaction(function () use ($ledger, $request, $amount, $key, $data) {
+                $reserve = $ledger->system('REAL_PAYOUT_RESERVE', 'USD', 'debit');
+                $capital = $ledger->system('REAL_PAYOUT_CAPITAL', 'USD', 'credit');
+                $ledger->post($key, 'Verified external funding added to real payout reserve', [
+                    ['account_id' => $reserve, 'side' => 'debit', 'amount' => $amount],
+                    ['account_id' => $capital, 'side' => 'credit', 'amount' => $amount],
+                ], [
+                    'admin_id' => $request->user()->id,
+                    'external_reference' => trim($data['external_reference']),
+                    'admin_note' => $data['admin_note'],
+                    'type' => 'real_payout_reserve_funding',
+                    'custody_verified_off_platform' => true,
+                ]);
+            }, 3);
+
+            return back()->with('status', 'Payout reserve ledger updated. Reconcile this amount against segregated treasury funds.');
+        } catch (RuntimeException $exception) {
+            return back()->withErrors(['reserve' => $exception->getMessage()]);
+        }
     }
 
     public function kycIndex(Request $request)
