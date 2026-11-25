@@ -21,15 +21,20 @@ class PaperTradingController extends Controller
         // The scheduled settlement command owns settlement so a slow market API
         // can never hold the trading terminal open.
         $currency = config('shell.paper.currency', 'USD');
-        $wallet = $ledger->provisionClientWallets($request->user(), $currency)['demo'];
+        $selectedAccount = $request->query('account') === 'real' ? 'real' : 'demo';
+        $wallet = $ledger->provisionClientWallets($request->user(), $currency)[$selectedAccount];
 
         return view('client.trading', [
             'balance' => Decimal::fromUnits($ledger->balanceUnits($wallet)),
+            'selectedAccount' => $selectedAccount,
+            'demoBalance' => Decimal::fromUnits($ledger->balanceUnits($ledger->demoWallet($request->user(), $currency))),
+            'realBalance' => Decimal::fromUnits($ledger->balanceUnits($ledger->realWallet($request->user(), $currency))),
             'currency' => $currency,
             'payoutPercentage' => number_format((int) config('shell.paper.payout_basis_points', 18000) / 100, 2),
             'quotes' => $markets->freshQuotes(),
             'trades' => DB::table('paper_trades')
                 ->where('user_id', $request->user()->id)
+                ->where('account_type', $selectedAccount)
                 ->orderByDesc('created_at')
                 ->orderByDesc('id')
                 ->limit(10)
@@ -37,12 +42,14 @@ class PaperTradingController extends Controller
             // Resume the latest active position automatically when the trading page is reopened.
             'activeTradeId' => DB::table('paper_trades')
                 ->where('user_id', $request->user()->id)
+                ->where('account_type', $selectedAccount)
                 ->where('status', 'open')
                 ->where('expires_at', '>', now())
                 ->orderByDesc('opened_at')
                 ->value('id'),
             'expiredTradeId' => DB::table('paper_trades')
                 ->where('user_id', $request->user()->id)
+                ->where('account_type', $selectedAccount)
                 ->where('status', 'open')
                 ->where('expires_at', '<=', now())
                 ->orderByDesc('expires_at')
@@ -72,14 +79,18 @@ class PaperTradingController extends Controller
             // This is a recovery trigger, not the authority for settlement. The
             // scheduler runs the same service even when no client is connected.
             $settledCount = $service->settleDue();
+            $environment = $request->input('account') === 'real' ? 'real' : 'demo';
             $hasDue = DB::table('paper_trades')
                 ->where('user_id', $request->user()->id)
+                ->where('account_type', $environment)
                 ->where('status', 'open')
                 ->where('expires_at', '<=', now())
                 ->exists();
 
             $currency = config('shell.paper.currency', 'USD');
-            $wallet = $ledger->demoWallet($request->user(), $currency);
+            $wallet = $environment === 'real'
+                ? $ledger->realWallet($request->user(), $currency)
+                : $ledger->demoWallet($request->user(), $currency);
 
             return response()->json([
                 'settled_count' => $settledCount,
@@ -115,6 +126,7 @@ class PaperTradingController extends Controller
             }
 
             $currency = $position->wallet_currency ?: config('shell.paper.currency', 'USD');
+            $environment = $position->account_type ?? 'demo';
             $payout = '0.00000000';
             $profit = '0.00000000';
             $walletBalance = null;
@@ -122,7 +134,7 @@ class PaperTradingController extends Controller
             if ($position->status === 'won') {
                 $payout = Decimal::multiplyRatio(
                     (string) $position->stake,
-                    (int) config('shell.paper.payout_basis_points', 18000),
+                    (int) ($position->payout_basis_points ?? config('shell.paper.payout_basis_points', 18000)),
                     10000
                 );
                 $profit = Decimal::fromUnits(
@@ -135,7 +147,9 @@ class PaperTradingController extends Controller
             }
 
             if ($position->status !== 'open') {
-                $wallet = $ledger->demoWallet($request->user(), $currency);
+                $wallet = $environment === 'real'
+                    ? $ledger->realWallet($request->user(), $currency)
+                    : $ledger->demoWallet($request->user(), $currency);
                 $walletBalance = Decimal::fromUnits($ledger->balanceUnits($wallet));
             }
 
@@ -146,6 +160,7 @@ class PaperTradingController extends Controller
                     'direction' => $position->direction,
                     'stake' => (string) $position->stake,
                     'currency' => $currency,
+                    'account_type' => $environment,
                     'opening_price' => (string) $position->opening_price,
                     'duration_seconds' => (int) $position->duration_seconds,
                     'opened_at' => $position->opened_at !== null ? Carbon::parse((string) $position->opened_at, 'UTC')->toIso8601String() : null,
@@ -187,6 +202,7 @@ class PaperTradingController extends Controller
                 'direction' => $position->direction,
                 'stake' => (string) $position->stake,
                 'currency' => $position->wallet_currency ?: config('shell.paper.currency', 'USD'),
+                'account_type' => $position->account_type ?? 'demo',
                 'opening_price' => (string) $position->opening_price,
                 'duration_seconds' => (int) $position->duration_seconds,
                 'opened_at' => $position->opened_at !== null ? Carbon::parse((string) $position->opened_at, 'UTC')->toIso8601String() : null,
@@ -206,6 +222,7 @@ class PaperTradingController extends Controller
             'stake' => ['required', 'string', 'max:24'],
             'duration' => ['required', 'integer'],
             'request_key' => ['required', 'string', 'max:100'],
+            'account_type' => ['required', 'in:demo,real'],
         ]);
 
         try {
@@ -231,7 +248,8 @@ class PaperTradingController extends Controller
                 return response()->json(['message' => 'The maximum stake is ' . $maxStake . ' ' . $currency . '.'], 422);
             }
 
-            $demoWallet = $ledger->provisionClientWallets($request->user(), $currency)['demo'];
+            $environment = $values['account_type'];
+            $selectedWallet = $ledger->provisionClientWallets($request->user(), $currency)[$environment];
 
             // PaperTradingService performs the authoritative balance check and
             // debit atomically in the ledger. Avoid a pre-check here: it can
@@ -243,7 +261,8 @@ class PaperTradingController extends Controller
                 $values['direction'],
                 $stake,
                 (int) $values['duration'],
-                $values['request_key']
+                $values['request_key'],
+                $environment
             );
 
             // Return the persisted position in the opening response. The client
@@ -259,15 +278,16 @@ class PaperTradingController extends Controller
             }
 
             return response()->json([
-                'message' => 'Your demo trade has been opened successfully.',
+                'message' => $environment === 'real' ? 'Your real-money trade has been opened successfully.' : 'Your demo trade has been opened successfully.',
                 'trade_id' => $id,
-                'wallet_balance' => Decimal::fromUnits($ledger->balanceUnits($demoWallet)),
+                'wallet_balance' => Decimal::fromUnits($ledger->balanceUnits($selectedWallet)),
                 'trade' => [
                     'id' => (int) $position->id,
                     'symbol' => $position->symbol,
                     'direction' => $position->direction,
                     'stake' => (string) $position->stake,
                     'currency' => $position->wallet_currency ?: $currency,
+                    'account_type' => $position->account_type ?? $environment,
                     'opening_price' => (string) $position->opening_price,
                     'duration_seconds' => (int) $position->duration_seconds,
                     'opened_at' => $position->opened_at !== null ? Carbon::parse((string) $position->opened_at, 'UTC')->toIso8601String() : null,
