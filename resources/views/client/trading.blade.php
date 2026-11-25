@@ -183,7 +183,6 @@
                 <div class="position-live-outcome">
                     <span>LIVE INDICATIVE RESULT</span>
                     <strong id="position-live-outcome">Waiting for market price…</strong>
-                    <small id="position-potential-payout">Potential payout: —</small>
                 </div>
             </div>
             <div class="position-details-grid">
@@ -1855,12 +1854,11 @@
                 move.style.fontWeight = '800';
                 const outcome = document.getElementById('position-live-outcome');
                 const outcomeWrap = outcome.closest('.position-live-outcome');
-                outcome.textContent = (indicative > 0 ? '+' : '') + money(indicative) + ' ' + activePosition.currency +
-                    (delta === 0 ? ' · AT OPEN' : favorable ? ' · INDICATIVE PROFIT' : ' · INDICATIVE LOSS');
+                outcome.textContent = (indicative > 0 ? '+' : indicative < 0 ? '−' : '') +
+                    money(Math.abs(indicative)) + ' ' + activePosition.currency;
                 outcomeWrap.classList.toggle('is-win', favorable);
                 outcomeWrap.classList.toggle('is-loss', delta !== 0 && !favorable);
-                setPositionText('position-potential-payout', 'Potential total payout if settled as a win: ' + money(
-                    totalPayout) + ' ' + activePosition.currency);
+
             }
             window.addEventListener('shell:market-price', event => {
                 if (activePosition && event.detail?.symbol === activePosition.symbol && event.detail?.source === 'websocket') updatePositionPrice(event.detail.price, 'websocket');
@@ -1959,8 +1957,9 @@
                 setPositionText('position-closing-price', priceText(trade.closing_price));
                 setPositionText('position-final-payout', money(trade.payout_amount ?? (status === 'WON' ? Number(trade.stake) * payoutRate : status === 'TIE' ? Number(trade.stake) : 0)) + ' ' + trade.currency);
                 setPositionText('position-final-profit', money(trade.profit_amount ?? (status === 'WON' ? Number(trade.stake) * (payoutRate - 1) : status === 'LOST' ? -Number(trade.stake) : 0)) + ' ' + trade.currency);
-                setPositionText('position-live-outcome', (status === 'WON' ? 'NET PROFIT · +' : status === 'LOST' ? 'NET LOSS · ' : 'NO PROFIT OR LOSS · ') + money(trade.profit_amount ?? 0) + ' ' + trade.currency);
-                setPositionText('position-potential-payout', 'Confirmed total payout: ' + money(trade.payout_amount ?? 0) + ' ' + trade.currency);
+                const settledNet = Number(trade.profit_amount ?? 0);
+                setPositionText('position-live-outcome', (settledNet > 0 ? '+' : settledNet < 0 ? '−' : '') +
+                    money(Math.abs(settledNet)) + ' ' + trade.currency);
                 if (trade.wallet_balance !== undefined && trade.wallet_balance !== null) {
                     setText('demo-wallet-balance', money(trade.wallet_balance) + ' ' + trade.currency);
                 }
@@ -2120,9 +2119,7 @@
                     dir.classList.toggle('down', activePosition.direction === 'DOWN');
                     setPositionText('position-stake', money(activePosition.stake) + ' ' + activePosition.currency);
                     setPositionText('position-opening-price', priceText(activePosition.opening_price));
-                    setPositionText('position-live-outcome', 'Waiting for live quote…');
-                    setPositionText('position-potential-payout', 'Potential total payout if settled as a win: ' +
-                        money(Number(activePosition.stake) * payoutRate) + ' ' + activePosition.currency);
+                    setPositionText('position-live-outcome', '—');
                     setPositionText('position-expiry', new Date(activePosition.expires_at).toLocaleTimeString());
                     if (!hasPositionPrice) setPositionText('position-current-price', 'Waiting for live price…');
                     setPositionText('position-price-label', 'LIVE MARKET PRICE');
