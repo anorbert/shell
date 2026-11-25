@@ -118,9 +118,15 @@ class ManualWalletService
                 'reviewed_by' => $admin->id, 'reviewed_at' => now(), 'ledger_key' => $key, 'updated_at' => now(),
             ]);
             app(ReferralCommissionService::class)->recordForConfirmedDeposit($requestId, $isFirstDeposit);
-            $this->notifyUser($user, 'wallet-deposit-confirmed:'.$requestId, 'Deposit confirmed',
-                'Your crypto deposit request #'.$requestId.' was verified and credited to your real wallet.',
-                ['wallet_request_id' => $requestId]);
+            $this->notifyUser(
+                $user,
+                'wallet-deposit-confirmed:'.$requestId,
+                $manualApproval ? 'Deposit manually approved' : 'Deposit confirmed',
+                $manualApproval
+                    ? 'An administrator manually authorized and credited deposit request #'.$requestId.'. Internal reference: '.$internalReference.'. No blockchain transaction hash was recorded.'
+                    : 'Your crypto deposit request #'.$requestId.' was verified and credited to your real wallet.',
+                ['wallet_request_id' => $requestId, 'verification_method' => $manualApproval ? 'admin_manual_override' : 'blockchain', 'internal_reference' => $internalReference]
+            );
         }, 3);
     }
 
