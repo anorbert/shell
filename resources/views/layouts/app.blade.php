@@ -76,10 +76,40 @@
                             : $activeWalletLedger->demoWallet(auth()->user(), $activeWalletCurrency);
                         $activeWalletBalance = \App\Support\Decimal::fromUnits($activeWalletLedger->balanceUnits($activeWalletId));
                     @endphp
-                    <a class="topbar-wallet-balance" href="{{ route('wallet-requests.index', ['account' => $activeWalletType]) }}" title="Open {{ strtoupper($activeWalletType) }} wallet">
-                        <span class="topbar-wallet-meta"><i></i>{{ strtoupper($activeWalletType) }}</span>
-                        <strong>@money($activeWalletBalance) <small>{{ $activeWalletCurrency }}</small></strong>
-                    </a>
+                    @php
+                        $demoWalletId = $activeWalletLedger->demoWallet(auth()->user(), $activeWalletCurrency);
+                        $realWalletId = $activeWalletLedger->realWallet(auth()->user(), $activeWalletCurrency);
+                        $demoWalletBalance = \\App\\Support\\Decimal::fromUnits($activeWalletLedger->balanceUnits($demoWalletId));
+                        $realWalletBalance = \\App\\Support\\Decimal::fromUnits($activeWalletLedger->balanceUnits($realWalletId));
+                    @endphp
+                    <details class="topbar-wallet-menu">
+                        <summary class="topbar-wallet-balance" aria-label="Current {{ strtoupper($activeWalletType) }} account balance; open account switcher">
+                            <span class="topbar-wallet-meta"><i></i>{{ strtoupper($activeWalletType) }} ACCOUNT <span class="wallet-switch-chevron">⌄</span></span>
+                            <strong>@money($activeWalletBalance) <small>{{ $activeWalletCurrency }}</small></strong>
+                        </summary>
+                        <div class="wallet-switch-dropdown">
+                            <div class="wallet-switch-heading">
+                                <span>TRADING ACCOUNTS</span>
+                                <small>Select an account to trade with</small>
+                            </div>
+                            @foreach ([
+                                'demo' => ['label' => 'Demo account', 'balance' => $demoWalletBalance, 'description' => 'Practice with virtual funds'],
+                                'real' => ['label' => 'Real account', 'balance' => $realWalletBalance, 'description' => 'Trade with your available funds'],
+                            ] as $walletKey => $walletOption)
+                                <form method="POST" action="{{ route('wallet.account.switch') }}">
+                                    @csrf
+                                    <input type="hidden" name="account" value="{{ $walletKey }}">
+                                    <button type="submit" class="wallet-switch-option {{ $activeWalletType === $walletKey ? 'is-active' : '' }}">
+                                        <span class="wallet-switch-icon {{ $walletKey }}"><svg class="nav-icon"><use href="#i-wallet"/></svg></span>
+                                        <span class="wallet-switch-copy"><strong>{{ $walletOption['label'] }}</strong><small>{{ $walletOption['description'] }}</small></span>
+                                        <span class="wallet-switch-amount"><strong>@money($walletOption['balance'])</strong><small>{{ $activeWalletCurrency }}</small></span>
+                                        @if ($activeWalletType === $walletKey)<span class="wallet-switch-check">✓</span>@endif
+                                    </button>
+                                </form>
+                            @endforeach
+                            <a class="wallet-switch-manage" href="{{ route('wallet-requests.index', ['account' => $activeWalletType]) }}">Manage wallet <span>↗</span></a>
+                        </div>
+                    </details>
                 @endif
                 @if(auth()->user()->role==='admin')
                     <span class="status-pill"><i></i>Administrator</span>
