@@ -208,6 +208,7 @@
 .wallet-page .crypto-deposit-form .muted{font-size:10px}
 @media(max-width:640px){.wallet-page .crypto-method-grid{grid-template-columns:1fr;margin-left:15px;margin-right:15px}.wallet-page .crypto-deposit-intro{margin-left:15px;margin-right:15px}.wallet-page .crypto-safety-note{margin-left:15px;margin-right:15px}.wallet-page .crypto-modal{padding:9px}.wallet-page .crypto-modal-dialog{max-height:94vh;border-radius:15px}.wallet-page .crypto-modal-head,.wallet-page .crypto-modal-body{padding-left:16px;padding-right:16px}}
 
+.wallet-page .crypto-address-layout{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;align-items:stretch}.wallet-page .crypto-qr-panel{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;min-width:0;padding:13px;border:1px solid #34465c;border-radius:12px;background:#fff}.wallet-page #crypto-deposit-qr{display:grid;place-items:center;width:124px;height:124px}.wallet-page #crypto-deposit-qr canvas,.wallet-page #crypto-deposit-qr img{display:block;max-width:100%;height:auto}.wallet-page .crypto-qr-panel small{color:#43546a;font-size:10px;font-weight:800;text-align:center}.wallet-page .crypto-address-layout .crypto-address-panel{min-width:0}.wallet-page .crypto-form-title{margin-top:18px}.wallet-page .crypto-deposit-form .button{margin-top:3px}@media(max-width:480px){.wallet-page .crypto-address-layout{grid-template-columns:1fr}.wallet-page .crypto-qr-panel{flex-direction:row;justify-content:flex-start}.wallet-page #crypto-deposit-qr{width:112px;height:112px}}
 </style>
 <div class="wallet-page">
 
@@ -254,12 +255,12 @@
         <div class="page-action-row"><a class="button button-secondary" href="{{ route('trading.index') }}">Open demo trading</a><a class="button button-secondary" href="{{ route('convert.index') }}">Convert demo assets</a></div>
     </section>
 @else
-    <x-client-attention title="Real wallet" tag="REAL ACCOUNT"><p>Deposit and withdrawal requests are recorded here. Deposits are credited after transaction verification. Withdrawals are processed after identity approval and operations review.</p></x-client-attention>
+    <x-client-attention title="Real wallet" tag="REAL ACCOUNT"><p>Manage crypto deposits and withdrawals from your real trading wallet. Withdrawals are processed after identity approval and operations review.</p></x-client-attention>
     <div class="content-grid">
         <section class="panel" id="deposit-form">
             <div class="panel-head"><div><span class="wallet-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrow"/></svg></span><span class="eyebrow">ADD REAL FUNDS</span><h2>Deposit crypto</h2></div></div>
             <p class="muted">Choose the asset and network you intend to use, then follow the deposit instructions.</p>
-            @php($depositMethods = $methods->where('deposits_enabled', true)->values())
+            @php($depositMethods = $methods->where('deposits_enabled', true)->filter(fn ($method) => in_array(strtoupper($method->asset), ['USDT', 'USDC'], true))->values())
             @if($depositMethods->isEmpty())
                 <div class="wallet-empty"><strong>Crypto deposits are not available yet</strong><p class="muted">No deposit networks are currently enabled. Available assets will appear here as soon as the operations team configures and enables them.</p><p class="muted">Never send funds to an address from an old request or external message. Always use the address shown inside the selected deposit option.</p></div>
             @else
@@ -280,26 +281,22 @@
                         </button>
                     @endforeach
                 </div>
-                <div class="crypto-safety-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 4.5 6v5.5c0 4.5 3.2 7.7 7.5 9.5 4.3-1.8 7.5-5 7.5-9.5V6L12 3Z"/><path d="m9 12 2 2 4-4"/></svg><span><strong>Check the network before sending.</strong> Deposits sent through the wrong network may be permanently lost. Your wallet is credited only after the transaction is verified.</span></div>
+                <div class="crypto-safety-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 4.5 6v5.5c0 4.5 3.2 7.7 7.5 9.5 4.3-1.8 7.5-5 7.5-9.5V6L12 3Z"/><path d="m9 12 2 2 4-4"/></svg><span><strong>Check the network before sending.</strong> Deposits sent through the wrong network may be permanently lost. Confirm the asset and network before sending.</span></div>
                 <div class="crypto-modal" id="crypto-deposit-modal" hidden aria-hidden="true">
                     <button type="button" class="crypto-modal-backdrop" data-close-crypto-modal aria-label="Close deposit details"></button>
                     <section class="crypto-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="crypto-modal-title">
                         <div class="crypto-modal-head"><div><span class="eyebrow">SECURE DEPOSIT</span><h3 id="crypto-modal-title">Deposit crypto</h3><p id="crypto-modal-subtitle">Review the destination carefully.</p></div><button type="button" class="crypto-modal-close" data-close-crypto-modal aria-label="Close">×</button></div>
                         <div class="crypto-modal-body">
                             <div class="crypto-network-summary"><span class="crypto-method-symbol" id="crypto-modal-symbol">₿</span><div><strong id="crypto-modal-asset">Asset</strong><small id="crypto-modal-network">Network</small></div><span class="crypto-network-badge">DEPOSIT</span></div>
-                            <div class="crypto-address-panel"><div class="crypto-field-heading"><strong>Receiving address</strong><span>Only send the selected asset on this network</span></div><code id="crypto-modal-address"></code><button type="button" class="button button-secondary" id="crypto-copy-address">Copy address</button></div>
+                            <div class="crypto-address-layout"><div class="crypto-qr-panel"><div id="crypto-deposit-qr" role="img" aria-label="QR code for the deposit address"></div><small>Scan with your wallet app</small></div><div class="crypto-address-panel"><div class="crypto-field-heading"><strong>Receiving address</strong><span>Only send the selected asset on this network</span></div><code id="crypto-modal-address"></code><button type="button" class="button button-secondary" id="crypto-copy-address">Copy address</button></div></div>
                             <div class="crypto-memo-panel" id="crypto-modal-memo-wrap" hidden><strong id="crypto-modal-memo-label">Memo</strong><code id="crypto-modal-memo"></code></div>
                             <div class="crypto-instructions" id="crypto-modal-instructions" hidden></div>
                             <form method="POST" action="{{ route('wallet-requests.deposit') }}" class="form-stack crypto-deposit-form">
                                 @csrf
                                 <input type="hidden" name="method_id" id="crypto-modal-method-id">
-                                <div class="crypto-form-title"><strong>Submit your transaction</strong><small>After sending funds, provide the transaction details below.</small></div>
-                                <label>Crypto amount sent<input name="asset_amount" type="number" min="0.00000001" step="0.000000000001" placeholder="0.00" required></label>
-                                <label>Estimated USD value<input name="amount_usd" type="number" min="1" step="0.00000001" placeholder="0.00" required></label>
-                                <label>Transaction hash / TxID<input name="transaction_hash" maxlength="255" placeholder="Paste your transaction hash" required></label>
-                                <label>Note (optional)<textarea name="client_note" maxlength="1000" placeholder="Additional information for the operations team"></textarea></label>
-                                <button class="button button-primary" type="submit">Submit deposit for verification</button>
-                                <p class="muted">Submitting a request does not immediately credit your balance. The operations team must verify the transaction on-chain.</p>
+                                <div class="crypto-form-title"><strong>Amount sent</strong><small>Enter the stablecoin amount you sent. USDT and USDC are estimated at 1 USD per token.</small></div>
+                                <label>Stablecoin amount sent<input name="asset_amount" type="number" min="0.00000001" step="0.00000001" placeholder="0.00" required></label>
+                                <button class="button button-primary" type="submit">Submit deposit</button>
                             </form>
                         </div>
                     </section>
@@ -336,6 +333,8 @@
 @push('scripts')
 <script>
 const cryptoModal=document.getElementById('crypto-deposit-modal');
+let cryptoQrInstance=null;
+function renderCryptoQr(address){const target=document.getElementById('crypto-deposit-qr');if(!target)return;target.replaceChildren();if(!address){target.textContent='QR unavailable';return;}if(typeof QRCode==='undefined'){target.textContent='QR library unavailable';return;}cryptoQrInstance=new QRCode(target,{text:address,width:124,height:124,colorDark:'#101c2c',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});}
 const cryptoOpeners=document.querySelectorAll('[data-crypto-method]');
 const cryptoCloseButtons=document.querySelectorAll('[data-close-crypto-modal]');
 let cryptoPreviousFocus=null;
@@ -351,6 +350,7 @@ cryptoOpeners.forEach(card=>card.addEventListener('click',()=>{
  document.getElementById('crypto-modal-title').textContent='Deposit '+(d.asset||'crypto');
  document.getElementById('crypto-modal-subtitle').textContent='Confirm the asset and network before sending funds.';
  document.getElementById('crypto-modal-address').textContent=d.address||'';
+ renderCryptoQr(d.address||'');
  const memoWrap=document.getElementById('crypto-modal-memo-wrap');
  memoWrap.hidden=!d.memo;
  document.getElementById('crypto-modal-memo-label').textContent=d.memoLabel||'Memo / destination tag';
@@ -371,4 +371,5 @@ document.getElementById('crypto-copy-address')?.addEventListener('click',async()
 });
 document.getElementById('wallet-demo-topup-form')?.addEventListener('submit',async(event)=>{event.preventDefault();const form=event.currentTarget;const button=form.querySelector('button[type="submit"]');const message=document.getElementById('wallet-demo-topup-message');button.disabled=true;message.textContent='Processing demo credit…';try{const result=await window.shellAjax(@json(route('portfolio.demo.top-up')),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:form.amount.value,request_key:crypto.randomUUID()})});message.textContent=result.message;window.shellToast(result.message);window.location.href=@json(route('wallet-requests.index',['account'=>'demo']));}catch(error){message.textContent=error.message;window.shellToast(error.message,'error');}finally{button.disabled=false;}});
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 @endpush
