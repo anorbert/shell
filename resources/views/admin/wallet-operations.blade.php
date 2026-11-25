@@ -33,4 +33,19 @@
 <section class="panel"><div class="panel-head"><div><span class="eyebrow">IDENTITY CONTROL</span><h2>KYC case management</h2></div><a class="button button-primary" href="{{ route('admin.kyc.index') }}">Open dedicated KYC review →</a></div>
 <p class="muted">Identity documents are reviewed in a separate case workspace with search, status filters, secure document previews, client submission history and a mandatory approval checklist.</p>
 </section>
+
+<section class="panel">
+    <div class="panel-head"><div><span class="eyebrow">REAL-MONEY RISK CONTROL</span><h2>Funded payout reserve</h2></div>
+        <span class="table-status {{ (float) $realPayoutReserve > 0 ? 'verified' : 'pending' }}">{{ (float) $realPayoutReserve > 0 ? 'FUNDED' : 'NOT FUNDED' }}</span>
+    </div>
+    <p class="muted">Available payout reserve: <strong>@money($realPayoutReserve) USD</strong>. Real trades reserve their maximum potential profit before opening. This prevents the platform from accepting more winning exposure than its recorded reserve.</p>
+    <div class="notice-banner"><div><strong>Important treasury control</strong><p>Only record funds that have already been independently verified and segregated in the external treasury. This form records an accounting balance only; it does not transfer funds, verify blockchain custody, or prove that the external balance exists. Reconcile every entry against actual custody records before submitting.</p></div></div>
+    <form method="POST" action="{{ route('admin.wallet-operations.reserve.fund') }}" class="form-grid">
+        @csrf
+        <label>Verified amount (USD)<input name="amount_usd" type="number" min="0.00000001" max="99999999" step="0.00000001" required></label>
+        <label>External custody / bank reference<input name="external_reference" minlength="12" maxlength="255" required></label>
+        <label class="full-width">Verification and reconciliation note<textarea name="admin_note" minlength="10" maxlength="2000" required></textarea></label>
+        <button class="button button-primary" type="submit">Record verified reserve funding</button>
+    </form>
+</section>
 @endsection
