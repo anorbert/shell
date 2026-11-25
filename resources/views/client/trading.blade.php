@@ -23,6 +23,12 @@
             <a class="button button-primary" href="{{ route('wallet-requests.index', ['account' => 'real']) }}">Make a real deposit</a>
         </div>
     @endif
+    @if ($selectedAccount === 'real' && $hasConfirmedDeposit && (float) $realPayoutReserve <= 0)
+        <div class="panel" role="status">
+            <strong>Real trading is temporarily paused.</strong>
+            <p>The platform payout reserve has not been funded. Your real wallet remains available and your funds are not affected. Trading will unlock when operations records verified, segregated payout capital.</p>
+        </div>
+    @endif
 
     <div class="trading-layout">
         <section class="panel trading-chart-panel">
@@ -111,7 +117,7 @@
                             appears in Trade history.</li>
                     </ol>
                 </details>
-                <div class="direction-buttons"><button class="direction-up" type="submit" data-direction="UP" {{ $selectedAccount === 'real' && ! $hasConfirmedDeposit ? 'disabled' : '' }}>↗ UP
+                <div class="direction-buttons"><button class="direction-up" type="submit" data-direction="UP" {{ $selectedAccount === 'real' && (! $hasConfirmedDeposit || (float) $realPayoutReserve <= 0) ? 'disabled' : '' }}>↗ UP
                         <small>Price rises</small></button><button class="direction-down" type="submit"
                         data-direction="DOWN" {{ $selectedAccount === 'real' && ! $hasConfirmedDeposit ? 'disabled' : '' }}>↘ DOWN <small>Price falls</small></button></div>
                 <input type="hidden" name="direction" id="trade-direction" value="UP">
