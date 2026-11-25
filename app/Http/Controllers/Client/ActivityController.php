@@ -21,7 +21,7 @@ class ActivityController extends Controller
 
         return DB::table('paper_trades')
             ->where('user_id', $request->user()->id)
-            ->where('account_type', $values['account'] ?? 'demo')
+            ->where('account_type', $request->session()->get('active_wallet', 'demo'))
             ->when($values['status'] ?? null, fn ($query, $value) => $query->where('status', $value))
             ->when($values['symbol'] ?? null, fn ($query, $value) => $query->where('symbol', strtoupper($value)))
             ->when($values['from'] ?? null, fn ($query, $value) => $query->whereDate('opened_at', '>=', $value))
