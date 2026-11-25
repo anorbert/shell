@@ -21,6 +21,9 @@ return new class extends Migration {
 
     public function down(): void
     {
+        // Guest-only tickets cannot survive reverting the schema to a required user_id.
+        DB::table('support_tickets')->whereNull('user_id')->delete();
+
         Schema::table('support_tickets', function (Blueprint $table) {
             $table->dropIndex(['guest_email']);
             $table->dropColumn(['guest_name', 'guest_email', 'guest_access_token_hash']);
