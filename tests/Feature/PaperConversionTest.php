@@ -118,3 +118,30 @@ test('clients can open the paper conversion workspace', function () {
         ->assertSee('Currency conversion')
         ->assertSee('PAPER ONLY');
 });
+
+
+test('conversion preview refreshes the requested market pair from the provider', function () {
+    $client = User::factory()->create();
+    $client->markEmailAsVerified();
+
+    Illuminate\\Support\\Facades\\Http::fake([
+        'api.binance.com/api/v3/ticker/price*' => Illuminate\\Support\\Facades\\Http::response([
+            'symbol' => 'BTCUSDT',
+            'price' => '60000.000000000000',
+        ], 200),
+    ]);
+
+    $this->actingAs($client)
+        ->postJson('/convert/quote', [
+            'from_currency' => 'USD',
+            'to_currency' => 'BTC',
+            'amount' => '10.00',
+        ])
+        ->assertOk()
+        ->assertJsonPath('from_currency', 'USD')
+        ->assertJsonPath('to_currency', 'BTC')
+        ->assertJsonPath('target_price', '60000.000000000000');
+
+    expect(DB::table('market_quotes')->where('symbol', 'BTCUSDT')->value('price'))
+        ->toBe('60000.000000000000');
+});
