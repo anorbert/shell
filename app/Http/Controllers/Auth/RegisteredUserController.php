@@ -76,7 +76,7 @@ class RegisteredUserController extends Controller
                 'password' => $validated['password'],
             ]);
 
-            if ($referrerId && (int) $referrerId !== (int) $user->id) {
+            DB::table('users')->where('id', $user->id)->update(['referral_code' => $newReferralCode]);\n\n            if ($referrerId && (int) $referrerId !== (int) $user->id) {
                 DB::table('users')->where('id', $user->id)->update(['referred_by_user_id' => $referrerId]);
             }
 
