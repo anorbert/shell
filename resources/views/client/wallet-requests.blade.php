@@ -258,12 +258,11 @@
     <div class="content-grid">
         <section class="panel" id="deposit-form">
             <div class="panel-head"><div><span class="wallet-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrow"/></svg></span><span class="eyebrow">ADD REAL FUNDS</span><h2>Deposit crypto</h2></div></div>
-            <p class="muted">Choose the correct asset and network, send funds to the displayed address, then submit the transaction hash. Your real wallet is credited after operations verifies the transaction.</p>
+            <p class="muted">Choose the asset and network you intend to use, then follow the deposit instructions.</p>
             @php($depositMethods = $methods->where('deposits_enabled', true)->values())
             @if($depositMethods->isEmpty())
                 <div class="wallet-empty"><strong>Crypto deposits are not available yet</strong><p class="muted">No deposit networks are currently enabled. Available assets will appear here as soon as the operations team configures and enables them.</p><p class="muted">Never send funds to an address from an old request or external message. Always use the address shown inside the selected deposit option.</p></div>
             @else
-                <div class="crypto-deposit-intro"><span class="crypto-live-dot"></span><span>{{ $depositMethods->count() }} deposit {{ \Illuminate\Support\Str::plural('network', $depositMethods->count()) }} available</span><small>Select the exact asset and network you intend to use.</small></div>
                 <div class="crypto-method-grid" aria-label="Available crypto deposit networks">
                     @foreach($depositMethods as $method)
                         <button type="button" class="crypto-method-card" data-crypto-method
