@@ -129,16 +129,19 @@ class SupportController extends Controller
             $lines[] = '';
         }
 
-        try {
-            Mail::raw(implode("\n", $lines), function ($mail) use ($ticket, $ticketId) {
-                $mail->to($ticket->guest_email)->subject('SHELL support conversation update · ticket #'.$ticketId);
-            });
-        } catch (\Throwable $exception) {
-            Log::error('Guest support reply email could not be sent.', [
-                'ticket_id' => $ticketId,
-                'recipient' => $ticket->guest_email,
-                'error' => $exception->getMessage(),
-            ]);
+        $recipients = array_filter([$ticket->guest_email, config('support.inbox_email')]);
+        foreach (array_unique($recipients) as $recipient) {
+            try {
+                Mail::raw(implode("\n", $lines), function ($mail) use ($recipient, $ticketId) {
+                    $mail->to($recipient)->subject('SHELL support conversation update · ticket #'.$ticketId);
+                });
+            } catch (\Throwable $exception) {
+                Log::error('Guest support reply email could not be sent.', [
+                    'ticket_id' => $ticketId,
+                    'recipient' => $recipient,
+                    'error' => $exception->getMessage(),
+                ]);
+            }
         }
     }
 }
