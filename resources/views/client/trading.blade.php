@@ -1715,6 +1715,7 @@
                 lastPositionWebSocketTickAt = 0,
                 hasPositionPrice = false,
                 positionPricePollBusy = false;
+            const positionPriceCache = new Map();
             const money = (value, maximum = 8) => new Intl.NumberFormat(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: maximum
@@ -1773,7 +1774,7 @@
                 if (el) el.textContent = value;
             }
 
-            function updatePositionPrice(marketPrice, source = 'websocket') {
+            function updatePositionPrice(marketPrice, source = 'websocket', receivedAt = Date.now()) {
                 if (!activePosition || activePosition.status !== 'open' || positionSettlementInFlight
                     || new Date(activePosition.expires_at).getTime() <= Date.now()
                     || !Number.isFinite(Number(marketPrice))) return;
@@ -1785,7 +1786,10 @@
                     setPositionText('position-price-label', source === 'websocket' ? 'LIVE MARKET PRICE' : 'SERVER MARKET PRICE · INDICATIVE');
                     feedBadge.className = 'position-feed-badge ' + (source === 'websocket' ? 'is-live' : 'is-server');
                 }
-                if (source === 'websocket') lastPositionWebSocketTickAt = Date.now();
+                if (source === 'websocket') lastPositionWebSocketTickAt = receivedAt;
+                if (activePosition?.id !== undefined) positionPriceCache.set(String(activePosition.id), {
+                    price: String(marketPrice), source, receivedAt
+                });
                 const opening = Number(activePosition.opening_price),
                     delta = latestStreamPrice - opening;
                 const favorable = activePosition.direction === 'UP' ? delta > 0 : delta < 0;
@@ -2046,6 +2050,7 @@
                         positionRetryTimer = null;
                     }
                     activePosition = data.trade;
+                    const cachedPositionPrice = positionPriceCache.get(String(activePosition.id));
                     positionSettlementInFlight = false;
                     if (positionSettlementRetryTimer) { window.clearTimeout(positionSettlementRetryTimer); positionSettlementRetryTimer = null; }
                     const resultHero = document.getElementById('position-result-hero');
@@ -2060,6 +2065,9 @@
                     positionPricePollFailures = 0;
                     const feedBadge = document.getElementById('position-feed-badge');
                     if (feedBadge) { feedBadge.textContent = 'Reconnecting…'; feedBadge.className = 'position-feed-badge is-reconnecting'; }
+                    if (cachedPositionPrice) {
+                        updatePositionPrice(cachedPositionPrice.price, cachedPositionPrice.source, cachedPositionPrice.receivedAt);
+                    }
                     setPositionText('position-symbol', activePosition.symbol);
                     setPositionText('position-direction', activePosition.direction + ' · ' + (activePosition
                         .direction === 'UP' ? 'PRICE RISE' : 'PRICE FALL'));
