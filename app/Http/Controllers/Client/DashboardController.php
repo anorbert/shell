@@ -1,13 +1,13 @@
 <?php
 
-namespace App\\Http\\Controllers\\Client;
+namespace App\Http\Controllers\Client;
 
-use App\\Http\\Controllers\\Controller;
-use App\\Services\\LedgerService;
-use App\\Services\\MarketQuoteService;
-use App\\Support\\Decimal;
-use Illuminate\\Http\\Request;
-use Illuminate\\Support\\Facades\\DB;
+use App\Http\Controllers\Controller;
+use App\Services\LedgerService;
+use App\Services\MarketQuoteService;
+use App\Support\Decimal;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
