@@ -59,16 +59,6 @@
                 <a class="button button-primary" href="{{ route('wallet-requests.index', ['account' => 'real']) }}">Deposit to real wallet <span aria-hidden="true">→</span></a>
             </div>
         </section>
-    @elseif ($selectedAccount === 'real')
-        <section class="real-activation real-activation-funded" role="status" aria-labelledby="real-activation-title">
-            <div class="real-activation-top">
-                <span class="real-activation-icon" aria-hidden="true">✓</span>
-                <span class="real-activation-kicker">REAL ACCOUNT STATUS</span>
-                <span class="real-activation-status">DEPOSIT VERIFIED</span>
-            </div>
-            <h2 id="real-activation-title">Your real account is funded</h2>
-            <p class="real-activation-copy">Your deposit has been verified and credited. You can use your available real-wallet balance for real positions when the platform has sufficient payout liquidity for the selected stake. Approved KYC is required only when you request a withdrawal.</p>
-        </section>
     @endif
 
     <div class="trading-layout">
