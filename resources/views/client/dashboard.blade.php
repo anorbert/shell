@@ -10,6 +10,69 @@
     @media(max-width:650px){.dash-hero{align-items:flex-start;flex-direction:column;padding:18px}.dash-actions{width:100%}.dash-actions .button{flex:1;justify-content:center}.dash-secondary{grid-template-columns:1fr}.dash-quick-grid{grid-template-columns:1fr}.dash-metric{padding:14px}.dash-metric strong{font-size:23px}}
 
     .dash-market-subtitle{margin:5px 0 0;color:var(--muted,#91a0b5);font-size:11px;line-height:1.5}.dash-market-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;padding:0 16px 14px}.dash-market-card{min-width:0;padding:13px;border:1px solid var(--line,#263247);border-radius:13px;background:rgba(8,17,31,.55)}.dash-market-card-top,.dash-market-card-bottom{display:flex;align-items:center;justify-content:space-between;gap:7px}.dash-market-card-top strong{font-size:12px}.dash-trend-badge{padding:4px 7px;border-radius:20px;font-size:8px;font-weight:900;letter-spacing:.06em;white-space:nowrap}.dash-trend-badge.up{color:#62d6a6;background:rgba(52,190,132,.13)}.dash-trend-badge.down{color:#ff8d99;background:rgba(225,82,99,.13)}.dash-trend-badge.hot{color:#ffd27a;background:rgba(238,166,57,.16)}.dash-trend-badge.neutral{color:#aab7c8;background:rgba(150,165,185,.1)}.dash-market-card-price{margin-top:12px;font-size:clamp(16px,1.7vw,21px);font-weight:850;font-variant-numeric:tabular-nums;letter-spacing:-.04em;overflow-wrap:anywhere}.dash-market-card-change{margin-top:3px;font-size:10px;font-weight:750;font-variant-numeric:tabular-nums}.dash-market-card-change.up{color:#62d6a6}.dash-market-card-change.down{color:#ff8d99}.dash-market-card-change.neutral{color:var(--muted,#91a0b5)}.dash-sparkline{display:block;width:100%;height:62px;margin:7px 0 4px}.dash-market-card-bottom{font-size:9px;color:var(--muted,#91a0b5)}.dash-trade-link{color:#80bfe4;text-decoration:none;font-size:10px;font-weight:800;white-space:nowrap}.dash-trade-link:hover{text-decoration:underline}.dash-market-error{margin:7px 0 0;color:#ff9aa5;font-size:10px}@media(max-width:900px){.dash-market-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:420px){.dash-market-grid{grid-template-columns:1fr}}
+
+    /* Dashboard layout safeguards for narrow screens and touch devices. */
+    .dash-hero,.dash-metrics,.dash-secondary,.dash-layout,.dash-panel,.dash-market-grid,.dash-market-card,.dash-table{min-width:0}
+    .dash-layout>div{min-width:0}
+    .dash-panel{overflow:hidden}
+    .dash-panel .panel-head>div{min-width:0}
+    .dash-panel .panel-head h2{overflow-wrap:anywhere}
+    .dash-market-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .dash-sparkline{max-width:100%}
+    .dash-table{width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .dash-table .data-table{width:max-content;min-width:640px}
+    .dash-quick-link>span:nth-child(2){min-width:0}
+    .dash-quick-link strong,.dash-quick-link small{overflow-wrap:anywhere}
+    @media(max-width:900px){
+        .dash-layout{grid-template-columns:minmax(0,1fr)}
+        .dash-market-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @media(max-width:720px){
+        .dash-hero{gap:15px;margin-bottom:15px;padding:17px}
+        .dash-hero p{max-width:58ch}
+        .dash-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+        .dash-actions .button{min-width:0;padding:11px 9px;font-size:11px;white-space:normal;text-align:center}
+        .dash-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+        .dash-metric{padding:13px}
+        .dash-metric-top{font-size:9px;letter-spacing:.055em}
+        .dash-metric-icon{width:28px;height:28px;flex:0 0 28px}
+        .dash-metric strong{font-size:clamp(17px,5vw,23px);overflow-wrap:anywhere}
+        .dash-secondary{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-bottom:14px}
+        .dash-secondary-item{display:grid;align-content:space-between;gap:8px;padding:11px 9px}
+        .dash-secondary-item span{font-size:10px;line-height:1.4}
+        .dash-secondary-item strong{font-size:16px}
+        .dash-panel{padding:15px;margin-bottom:13px}
+        .dash-panel .panel-head{align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+        .dash-panel .panel-head .dash-link{flex:0 0 auto;margin-left:auto}
+        .dash-chart{gap:6px;padding-inline:0}
+        .dash-chart-track{max-width:28px}
+        .dash-pending-row{align-items:flex-start;flex-wrap:wrap}
+        .dash-pending-row>.dash-status{margin-left:auto}
+    }
+    @media(max-width:480px){
+        .dash-market-grid{grid-template-columns:minmax(0,1fr);padding:0 12px 12px;gap:8px}
+        .dash-market-card{padding:11px}
+        .dash-sparkline{height:54px}
+        .dash-secondary{grid-template-columns:minmax(0,1fr)}
+        .dash-secondary-item{display:flex;align-items:center}
+        .dash-quick-grid{grid-template-columns:minmax(0,1fr)}
+        .dash-actions{grid-template-columns:minmax(0,1fr)}
+        .dash-hero h2{font-size:19px}
+        .dash-chart{height:145px}
+        .dash-chart-track{height:103px}
+        .dash-status{font-size:8px}
+        .dash-table .data-table{min-width:600px}
+    }
+    @media(max-width:360px){
+        .dash-metrics{gap:7px}
+        .dash-metric{padding:10px}
+        .dash-metric-top{font-size:8px}
+        .dash-metric-icon{width:25px;height:25px;flex-basis:25px}
+        .dash-metric strong{font-size:17px}
+        .dash-panel{padding:12px}
+        .dash-hero{padding:14px}
+    }
+
 </style>
 @endpush
 
