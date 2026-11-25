@@ -113,8 +113,8 @@
         <section class="panel">
             <div class="panel-head"><div><span class="wallet-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-wallet"/></svg></span><span class="eyebrow">PAYOUT</span><h2>Withdraw real funds</h2></div></div>
             @if(!$kycVerified)
-                <p class="muted">Withdrawals are locked until your KYC documents are approved. You can complete verification at any time in the section above; no deposit is required to submit KYC.</p>
-                <a class="button button-secondary" href="#kyc-form">Complete identity verification</a>
+                <p class="muted">Withdrawals are locked until your KYC documents are approved. Complete identity verification on the dedicated KYC page. You do not need to deposit funds first.</p>
+                <a class="button button-secondary" href="{{ route('kyc.index') }}">Complete identity verification</a>
             @elseif($methods->where('withdrawals_enabled', true)->isEmpty())
                 <p class="muted">Withdrawal networks configured for your account will appear here. Contact support if you need help with an available network.</p>
             @else
