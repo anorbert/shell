@@ -77,6 +77,88 @@
 @media(max-width:900px){.wallet-page .content-grid{grid-template-columns:1fr}.wallet-page .content-grid>.panel{height:auto}}
 @media(max-width:700px){.wallet-page .wallet-account-switch{grid-template-columns:1fr}.wallet-page .wallet-account-option{padding:16px}.wallet-page .wallet-detail-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.wallet-page .panel>.panel-head{padding:15px 16px}.wallet-page .panel>.muted{margin-left:16px;margin-right:16px}.wallet-page .panel>.form-stack{margin-left:16px;margin-right:16px}.wallet-page .panel>.page-action-row{margin-left:16px;margin-right:16px}.wallet-page .panel>.muted+.button{margin-left:16px}.wallet-page .metric-card{padding:16px;min-height:120px}}
 @media(max-width:440px){.wallet-page .wallet-detail-metrics{grid-template-columns:1fr}.wallet-page .page-action-row{align-items:stretch}.wallet-page .page-action-row .button{width:100%}.wallet-page .panel>.panel-head{gap:8px}.wallet-page .panel-head h2{font-size:15px}}
+
+/* Wallet workspace refinement: consistent spacing, hierarchy and responsive alignment. */
+.wallet-page{width:100%;max-width:100%;min-width:0;color:var(--text,#eef3f8)}
+.wallet-page>*{min-width:0}
+.wallet-page .wallet-account-switch{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:0 0 18px}
+.wallet-page .wallet-account-option{min-height:142px;padding:20px 22px;justify-content:space-between;border-radius:18px;background:linear-gradient(145deg,rgba(20,34,52,.96),rgba(12,22,36,.98));box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.wallet-page .wallet-account-option.active{border-color:rgba(105,184,230,.72);background:linear-gradient(145deg,rgba(35,91,126,.30),rgba(12,22,36,.98));box-shadow:inset 0 0 0 1px rgba(105,184,230,.12),0 10px 26px rgba(0,0,0,.16)}
+.wallet-page .wallet-account-name{display:flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.1em}
+.wallet-page .wallet-account-name .wallet-section-icon{width:32px;height:32px;margin:0;border-radius:10px}
+.wallet-page .wallet-account-option>strong{display:block;margin:8px 0 2px;font-size:clamp(25px,3vw,32px);line-height:1.15;letter-spacing:-.035em}
+.wallet-page .wallet-account-option>strong small{font-size:12px;font-weight:700;letter-spacing:0}
+.wallet-page .wallet-account-hint{display:block;line-height:1.5}
+.wallet-page .page-action-row{gap:10px;margin:0 0 20px}
+.wallet-page .page-action-row .button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:10px 16px;border-radius:10px;font-weight:750}
+.wallet-page .notice-banner{margin:0 0 18px;padding:14px 16px;line-height:1.55}
+.wallet-page .metric-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:0 0 20px}
+.wallet-page .metric-card{display:flex;flex-direction:column;justify-content:center;gap:7px;min-height:126px;padding:20px 22px;border-radius:16px;background:linear-gradient(145deg,rgba(19,33,51,.98),rgba(12,21,34,.98));box-shadow:0 8px 24px rgba(0,0,0,.10)}
+.wallet-page .metric-card .metric-label{color:var(--muted,#91a0b5);font-size:10px;font-weight:800;letter-spacing:.11em}
+.wallet-page .metric-card>strong{display:block;margin:0;font-size:clamp(24px,3vw,31px);line-height:1.15;letter-spacing:-.03em}
+.wallet-page .metric-card>small{font-size:11px;line-height:1.45;color:var(--muted,#91a0b5)}
+.wallet-page .content-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:stretch;margin:0 0 20px}
+.wallet-page .panel{min-width:0;border:1px solid var(--line,#26364a);border-radius:16px;background:var(--panel,#101b2b);box-shadow:0 10px 28px rgba(0,0,0,.10)}
+.wallet-page .content-grid>.panel{height:100%;min-height:100%}
+.wallet-page .panel>.panel-head{min-height:78px;padding:17px 20px;gap:12px}
+.wallet-page .panel-head h2{font-size:16px;font-weight:800;letter-spacing:-.015em}
+.wallet-page .panel-head .eyebrow{font-size:9px;font-weight:800;letter-spacing:.12em}
+.wallet-page .panel>.muted{margin:18px 20px 0;font-size:12px;line-height:1.7}
+.wallet-page .panel>.form-stack{margin:18px 20px 22px;gap:15px}
+.wallet-page .form-stack label{display:flex;flex-direction:column;gap:7px;color:#b9c5d3;font-size:11px;font-weight:750;line-height:1.4}
+.wallet-page .form-stack input,.wallet-page .form-stack select,.wallet-page .form-stack textarea{width:100%;min-height:45px;padding:11px 13px;border:1px solid #34445a;border-radius:10px;background:#0a1422;color:#eef3f8;font-size:13px;transition:border-color .18s,box-shadow .18s}
+.wallet-page .form-stack input::placeholder,.wallet-page .form-stack textarea::placeholder{color:#718198}
+.wallet-page .form-stack input:focus,.wallet-page .form-stack select:focus,.wallet-page .form-stack textarea:focus{border-color:#69b8e6;outline:0;box-shadow:0 0 0 3px rgba(105,184,230,.13)}
+.wallet-page .form-stack textarea{min-height:88px;resize:vertical}
+.wallet-page .form-stack .button{width:100%;min-height:46px;border-radius:10px;font-weight:800}
+.wallet-page .panel>.button{margin:18px 20px 22px}
+.wallet-page .panel>.page-action-row{margin:16px 20px 20px}
+.wallet-page #deposit-address-box{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border:1px solid rgba(105,184,230,.25);background:rgba(39,103,145,.12)}
+.wallet-page #deposit-address-box>div{min-width:0}
+.wallet-page #deposit-address{margin:7px 0;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;line-height:1.6;overflow-wrap:anywhere}
+.wallet-page #deposit-address-box button{flex:0 0 auto;min-height:38px}
+.wallet-page .panel>.table-wrap{border-top:1px solid var(--line,#26364a)}
+.wallet-page .data-table{width:100%;min-width:880px;border-collapse:separate;border-spacing:0}
+.wallet-page .data-table th{padding:13px 15px;background:rgba(255,255,255,.025);color:#8fa0b5;font-size:9px;font-weight:850;letter-spacing:.1em;white-space:nowrap}
+.wallet-page .data-table td{padding:14px 15px;border-top:1px solid rgba(120,145,170,.10);font-size:11px;line-height:1.5;vertical-align:middle}
+.wallet-page .data-table tbody tr:hover{background:rgba(105,184,230,.035)}
+.wallet-page .table-status{display:inline-flex;align-items:center;justify-content:center;padding:5px 9px;border-radius:999px;font-size:9px;font-weight:850;letter-spacing:.06em}
+.wallet-page .pagination-wrap{padding:14px 18px}
+.wallet-page .wallet-empty{padding:34px 20px!important}
+.wallet-page .wallet-empty svg{color:#78bfe5}
+.wallet-page .wallet-topup-form{max-width:560px}
+.wallet-page .wallet-topup-form .muted{margin:0;font-size:11px}
+.wallet-page .content-grid .panel>.muted+.form-stack{margin-top:18px}
+.wallet-page .content-grid .panel>.muted+.button{margin:18px 20px 22px}
+@media(max-width:900px){
+ .wallet-page .content-grid{grid-template-columns:1fr;gap:15px}
+ .wallet-page .content-grid>.panel{height:auto}
+}
+@media(max-width:640px){
+ .wallet-page .wallet-account-switch{gap:10px}
+ .wallet-page .wallet-account-option{min-height:126px;padding:16px}
+ .wallet-page .wallet-account-option>strong{font-size:25px}
+ .wallet-page .metric-grid,.wallet-page .wallet-detail-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .wallet-page .metric-card{min-height:112px;padding:15px}
+ .wallet-page .metric-card>strong{font-size:23px}
+ .wallet-page .panel>.panel-head{min-height:70px;padding:14px 15px}
+ .wallet-page .panel>.muted{margin:15px 15px 0}
+ .wallet-page .panel>.form-stack{margin:15px 15px 18px}
+ .wallet-page .panel>.button,.wallet-page .content-grid .panel>.muted+.button{margin:15px}
+ .wallet-page .panel>.page-action-row{margin:14px 15px 18px}
+ .wallet-page .panel>.page-action-row .button{flex:1}
+}
+@media(max-width:420px){
+ .wallet-page .wallet-account-switch{grid-template-columns:1fr}
+ .wallet-page .wallet-account-option{min-height:112px}
+ .wallet-page .metric-grid,.wallet-page .wallet-detail-metrics{grid-template-columns:1fr}
+ .wallet-page .metric-card{min-height:100px}
+ .wallet-page .page-action-row{flex-direction:column;align-items:stretch}
+ .wallet-page .page-action-row .button{width:100%}
+ .wallet-page #deposit-address-box{align-items:stretch;flex-direction:column}
+ .wallet-page #deposit-address-box button{width:100%}
+}
+
 </style>
 <div class="wallet-page">
 
