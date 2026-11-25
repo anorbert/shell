@@ -1851,7 +1851,8 @@
                         const response = await requestJson(@json(route('markets.price')) + '?' + new URLSearchParams({
                             symbol: activePosition.symbol
                         }), { method: 'GET', retries: 0, timeoutMs: 5000 });
-                        if (response.symbol === activePosition.symbol && response.price !== undefined) {
+                        if (response.symbol === activePosition.symbol && response.price !== undefined
+                            && Date.now() - lastPositionWebSocketTickAt > 3000) {
                             updatePositionPrice(response.price, 'server');
                             positionPricePollFailures = 0;
                         } else {
@@ -1883,6 +1884,7 @@
             }
 
             function showSettledResult(trade) {
+                stopPositionPricePolling();
                 if (positionPollTimer) { window.clearInterval(positionPollTimer); window.clearTimeout(positionPollTimer); positionPollTimer = null; }
                 if (positionClockTimer) { window.clearInterval(positionClockTimer); positionClockTimer = null; }
                 if (positionSettlementRetryTimer) { window.clearTimeout(positionSettlementRetryTimer); positionSettlementRetryTimer = null; }
@@ -2028,7 +2030,8 @@
                 // cancels or pauses the persisted position or server settlement.
                 document.getElementById('position-close').disabled = false;
                 document.getElementById('position-modal-x').disabled = false;
-                setPositionText('position-result', 'LIVE POSITION · Waiting for the first market update…');
+                stopPositionPricePolling();
+                setPositionText('position-result', 'LIVE POSITION · Indicative prices update from the live feed or server quote. Final outcome is determined by the server-captured closing quote at expiry.');
                 setPositionText('position-close', 'Hide modal · trade continues');
                 try {
                     const data = initialTrade ? { trade: initialTrade } : await requestJson(@json(url('/trading/paper')) + '/' + id, {
@@ -2051,6 +2054,11 @@
                     document.getElementById('position-status').textContent = 'OPEN';
                     document.getElementById('position-modal-x').disabled = true;
                     latestStreamPrice = null;
+                    lastPositionWebSocketTickAt = 0;
+                    hasPositionPrice = false;
+                    positionPricePollFailures = 0;
+                    const feedBadge = document.getElementById('position-feed-badge');
+                    if (feedBadge) { feedBadge.textContent = 'Reconnecting…'; feedBadge.className = 'position-feed-badge is-reconnecting'; }
                     setPositionText('position-symbol', activePosition.symbol);
                     setPositionText('position-direction', activePosition.direction + ' · ' + (activePosition
                         .direction === 'UP' ? 'PRICE RISE' : 'PRICE FALL'));
@@ -2061,12 +2069,8 @@
                     setPositionText('position-live-outcome', 'Waiting for live quote…');
                     setPositionText('position-potential-payout', 'Potential total payout if settled as a win: ' +
                         money(Number(activePosition.stake) * payoutRate) + ' ' + activePosition.currency);
-                    // Reuse the latest chart candle immediately; do not wait for the next websocket tick.
-                    if (marketSelect.value === activePosition.symbol && candles.length) {
-                        updatePositionPrice(candles[candles.length - 1].close);
-                    }
                     setPositionText('position-expiry', new Date(activePosition.expires_at).toLocaleTimeString());
-                    setPositionText('position-current-price', 'Waiting for live price…');
+                    if (!hasPositionPrice) setPositionText('position-current-price', 'Waiting for live price…');
                     setPositionText('position-price-label', 'LIVE MARKET PRICE');
                     setPositionText('position-closing-price', '—');
                     setPositionText('position-final-payout', 'Pending');
@@ -2086,6 +2090,7 @@
                     }
 
                     updatePositionClock();
+                    schedulePositionPricePoll(0);
                     if (positionPollTimer) window.clearInterval(positionPollTimer);
                     if (positionClockTimer) window.clearInterval(positionClockTimer);
                     // The live market stream updates indicative prices. Expiry itself
@@ -2095,7 +2100,7 @@
                 } catch (error) {
                     setPositionText('position-result', (error.message || 'Connection error') +
                         ' Your trade remains recorded. We will retry automatically.');
-                    setPositionText('position-current-price', 'Live price temporarily unavailable');
+                    if (!hasPositionPrice) setPositionText('position-current-price', 'Waiting for live price…');
                     setPositionText('position-live-outcome', 'Waiting for a verified server response…');
                     setPositionText('position-close', 'Retrying position…');
                     document.getElementById('position-close').disabled = true;
@@ -2106,12 +2111,13 @@
                 }
             }
             function closeSettledPosition() {
+                stopPositionPricePolling();
                 if (positionAutoCloseTimer) { window.clearTimeout(positionAutoCloseTimer); positionAutoCloseTimer = null; }
                 positionModal.classList.remove('is-visible');
                 positionModal.setAttribute('aria-hidden', 'true');
 
-                // An open trade is safely persisted. Hiding its monitor must not
-                // cancel the position or stop polling/automatic settlement.
+                // An open trade is safely persisted. Hiding the modal stops only
+                // its one-second price polling; server-side settlement continues.
                 if (activePosition && activePosition.status === 'open') {
                     if (new Date(activePosition.expires_at).getTime() <= Date.now()) {
                         settleExpiredTrades();
