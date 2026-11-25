@@ -18,6 +18,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin', 'verified']
     Route::post('/referrals/{commission}/approve', [ReferralAdminController::class, 'approve'])->whereNumber('commission')->name('referrals.approve');
     Route::post('/referrals/{commission}/reject', [ReferralAdminController::class, 'reject'])->whereNumber('commission')->name('referrals.reject');
     Route::get('/wallet-operations', [WalletOperationsController::class, 'index'])->name('wallet-operations.index');
+    Route::post('/wallet-operations/real-payout-reserve', [WalletOperationsController::class, 'fundPayoutReserve'])->middleware('throttle:5,1')->name('wallet-operations.reserve.fund');
     Route::get('/kyc', [WalletOperationsController::class, 'kycIndex'])->name('kyc.index');
     Route::get('/kyc/{submission}', [WalletOperationsController::class, 'kycShow'])->whereNumber('submission')->name('kyc.show');
     Route::post('/wallet-operations/methods', [WalletOperationsController::class, 'saveMethod'])->name('wallet-operations.methods.store');
