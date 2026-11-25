@@ -441,6 +441,63 @@ test('an expired winning paper trade settles once using a post-expiry quote', fu
 });
 
 
+test('a tied paper trade records its verified closing price and refunds the stake', function () {
+    Http::fake([
+        'api.binance.com/api/v3/ticker/price*' => Http::response([
+            'symbol' => 'BTCUSDT',
+            'price' => '90000.00000000',
+        ], 200),
+    ]);
+
+    $user = User::factory()->create();
+    $user->markEmailAsVerified();
+    $ledger = app(LedgerService::class);
+    $ledger->creditPaperWallet($user, '100.00000000');
+
+    $openingAt = now();
+    DB::table('market_quotes')->insert([
+        'symbol' => 'BTCUSDT',
+        'price' => '90000.000000000000',
+        'provider' => 'Test provider',
+        'captured_at' => $openingAt,
+        'created_at' => $openingAt,
+        'updated_at' => $openingAt,
+    ]);
+
+    $tradeId = app(PaperTradingService::class)->open(
+        $user,
+        'BTCUSDT',
+        'UP',
+        '10.00000000',
+        60,
+        'test-tied-trade-closing-price'
+    );
+
+    $expiredAt = now('UTC')->subSeconds(5);
+    DB::table('market_quote_snapshots')->where('symbol', 'BTCUSDT')->update([
+        'captured_at' => $expiredAt->copy()->subSecond(),
+    ]);
+    DB::table('paper_trades')->where('id', $tradeId)->update([
+        'expires_at' => $expiredAt,
+        'opened_at' => $expiredAt->copy()->subMinute(),
+    ]);
+
+    // The first server-captured quote at/after expiry exactly matches entry.
+    DB::table('market_quote_snapshots')->insert([
+        'symbol' => 'BTCUSDT',
+        'price' => '90000.000000000000',
+        'captured_at' => now('UTC'),
+    ]);
+
+    expect(app(PaperTradingService::class)->settleDue())->toBe(1)
+        ->and(DB::table('paper_trades')->where('id', $tradeId)->value('status'))->toBe('void')
+        ->and(DB::table('paper_trades')->where('id', $tradeId)->value('closing_price'))->toBe('90000.0000000000')
+        ->and($ledger->balanceUnits($ledger->wallet($user)))->toBe(2000000000000)
+        ->and(app(PaperTradingService::class)->settleDue())->toBe(0)
+        ->and(DB::table('ledger_transactions')->where('idempotency_key', 'paper-settle:' . $tradeId)->count())->toBe(1);
+});
+
+
 test('ledger refuses a posting that would make a paper wallet negative', function () {
     $user = User::factory()->create();
     $user->markEmailAsVerified();
