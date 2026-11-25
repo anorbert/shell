@@ -130,7 +130,7 @@
                 </thead>
                 <tbody>
                     @forelse($trades as $trade)
-                        <tr @if ($trade->status === 'open') data-open-trade="{{ $trade->id }}" @endif>
+                        <tr class="{{ $trade->status === 'won' ? 'trade-row-win' : ($trade->status === 'lost' ? 'trade-row-loss' : '') }}" @if ($trade->status === 'open') data-open-trade="{{ $trade->id }}" @endif>
                             <td><strong>{{ $trade->symbol }}</strong></td>
                             <td>{{ $trade->direction }}</td>
                             <td>@money($trade->stake) {{ $trade->wallet_currency ?? $currency }}</td>
@@ -148,7 +148,7 @@
                                 @endif
                             </td>
                             <td><span
-                                    class="table-status {{ $trade->status === 'open' ? 'pending' : ($trade->status === 'won' ? 'verified' : '') }}">{{ $trade->status === 'won' ? 'WIN' : ($trade->status === 'lost' ? 'LOSS' : ($trade->status === 'void' ? 'TIE' : 'OPEN')) }}</span>
+                                    class="table-status trade-result-badge {{ $trade->status === 'open' ? 'pending' : ($trade->status === 'won' ? 'verified trade-result-win' : ($trade->status === 'lost' ? 'rejected trade-result-loss' : 'pending')) }}">{{ $trade->status === 'won' ? 'WIN' : ($trade->status === 'lost' ? 'LOSS' : ($trade->status === 'void' ? 'TIE' : 'OPEN')) }}</span>
                             </td>
                     </tr>@empty<tr>
                             <td colspan="8" class="table-empty">No paper trades yet. Your first position will appear
@@ -158,7 +158,6 @@
                 </tbody>
             </table>
         </div>
-        <div class="pagination-wrap">{{ $trades->links() }}</div>
     </section>
 
     <div class="position-modal" id="position-modal" role="dialog" aria-modal="true"
@@ -227,6 +226,46 @@
 
         .data-table tbody tr[data-open-trade] {
             cursor: pointer
+        }
+
+        .data-table tbody tr.trade-row-win {
+            background: rgba(35, 170, 116, .075)
+        }
+
+        .data-table tbody tr.trade-row-loss {
+            background: rgba(220, 75, 88, .075)
+        }
+
+        .data-table tbody tr.trade-row-win:hover {
+            background: rgba(35, 170, 116, .13)
+        }
+
+        .data-table tbody tr.trade-row-loss:hover {
+            background: rgba(220, 75, 88, .13)
+        }
+
+        .trade-result-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 58px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 850;
+            letter-spacing: .07em
+        }
+
+        .trade-result-badge.trade-result-win {
+            color: #55e0ad;
+            background: rgba(35, 170, 116, .16);
+            border: 1px solid rgba(85, 224, 173, .35)
+        }
+
+        .trade-result-badge.trade-result-loss {
+            color: #ff8996;
+            background: rgba(220, 75, 88, .16);
+            border: 1px solid rgba(255, 137, 150, .35)
         }
 
         .data-table tbody tr[data-open-trade]:hover {
@@ -1739,7 +1778,9 @@
                             if (row.cells[7]) {
                                 const status = String(trade.status).toUpperCase();
                                 row.cells[7].textContent = status === 'WON' ? 'WIN' : status === 'LOST' ? 'LOSS' : 'TIE';
-                                row.cells[7].className = 'table-status ' + (status === 'WON' ? 'verified' : status === 'LOST' ? 'rejected' : 'pending');
+                                row.cells[7].className = 'table-status trade-result-badge ' + (status === 'WON' ? 'verified trade-result-win' : status === 'LOST' ? 'rejected trade-result-loss' : 'pending');
+                                row.classList.toggle('trade-row-win', status === 'WON');
+                                row.classList.toggle('trade-row-loss', status === 'LOST');
                             }
                             row.removeAttribute('data-open-trade');
                             // Do not reload the terminal underneath another live position.
@@ -1839,6 +1880,9 @@
                 resultCell.appendChild(status);
                 row.appendChild(resultCell);
                 body.prepend(row);
+                while (body.querySelectorAll('tr').length > 10) {
+                    body.querySelector('tr:last-child')?.remove();
+                }
                 updateTradeCountdowns();
             }
 
@@ -1997,7 +2041,9 @@
                     if (historyRow.cells[6]) historyRow.cells[6].textContent = 'Settled';
                     if (historyRow.cells[7]) {
                         historyRow.cells[7].textContent = status === 'WON' ? 'WIN' : status === 'LOST' ? 'LOSS' : 'TIE';
-                        historyRow.cells[7].className = 'table-status ' + (status === 'WON' ? 'verified' : status === 'LOST' ? 'rejected' : 'pending');
+                        historyRow.cells[7].className = 'table-status trade-result-badge ' + (status === 'WON' ? 'verified trade-result-win' : status === 'LOST' ? 'rejected trade-result-loss' : 'pending');
+                        historyRow.classList.toggle('trade-row-win', status === 'WON');
+                        historyRow.classList.toggle('trade-row-loss', status === 'LOST');
                     }
                     historyRow.removeAttribute('data-open-trade');
                 }
