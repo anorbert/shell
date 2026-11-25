@@ -7,6 +7,7 @@ use App\Support\Decimal;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Client\ConnectionException;
 use RuntimeException;
 
 class PaperConversionService
@@ -33,9 +34,14 @@ class PaperConversionService
         $symbol = $currency . 'USDT';
         // A preview must obtain a provider response now; confirmation only reads the
         // just-previewed server snapshot so its timestamp can be compared safely.
-        $quote = $refreshMarketQuote
-            ? $this->markets->refreshSymbolQuote($symbol)
-            : $this->markets->freshQuote($symbol);
+        try {
+            $quote = $refreshMarketQuote
+                ? $this->markets->refreshSymbolQuote($symbol)
+                : $this->markets->freshQuote($symbol);
+        } catch (ConnectionException $exception) {
+            report($exception);
+            throw new RuntimeException('The live market feed is temporarily unreachable for ' . $symbol . '. Please retry shortly.', 0, $exception);
+        }
 
         return ['price' => (string) $quote->price, 'captured_at' => (string) $quote->captured_at];
     }
