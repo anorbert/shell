@@ -21,6 +21,8 @@ test('client accounts can visit the client dashboard', function () {
         ->assertSee('Open positions')
         ->assertSee('Request status')
         ->assertSee('Market availability')
+        ->assertSee('Markets in motion')
+        ->assertSee('ON FIRE')
         ->assertSee('Client');
 });
 
