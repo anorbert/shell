@@ -84,17 +84,10 @@ class PaperTradingService
             if ($payoutBasisPoints < 10000) {
                 throw new RuntimeException('The configured payout rate is invalid; real and demo trading are paused until it is corrected.');
             }
+            // Real positions are not gated by the platform's prefunded payout reserve.
+            // The stake remains escrowed; winning profit is recognized as a payout expense
+            // at settlement. This is an explicit platform credit exposure.
             $reservedProfit = '0.00000000';
-            if ($isReal && $payoutBasisPoints > 10000) {
-                $reservedProfit = Decimal::multiplyRatio($stake, $payoutBasisPoints - 10000, 10000);
-                $reserve = $this->ledger->system('REAL_PAYOUT_RESERVE', $currency, 'credit');
-                $profitEscrow = $this->ledger->system('REAL_PAYOUT_ESCROW', $currency, 'credit');
-                // Move available reserve into a dedicated credit-normal payout escrow.
-                // The reserve is reduced now, so concurrent positions cannot over-commit
-                // the same funds; settlement either pays this escrow or releases it.
-                $entries[] = ['account_id' => $reserve, 'side' => 'debit', 'amount' => $reservedProfit];
-                $entries[] = ['account_id' => $profitEscrow, 'side' => 'credit', 'amount' => $reservedProfit];
-            }
 
             $this->ledger->post(
                 ($isReal ? 'real-open:' : 'paper-open:') . $key,
@@ -254,9 +247,14 @@ class PaperTradingService
             $escrow = $this->ledger->system($isReal ? 'REAL_TRADE_ESCROW' : 'PAPER_ESCROW', $currency);
             $profitEscrow = $isReal ? $this->ledger->system('REAL_PAYOUT_ESCROW', $currency, 'credit') : null;
             $reserve = $isReal ? $this->ledger->system('REAL_PAYOUT_RESERVE', $currency, 'credit') : null;
-            $reservedProfit = $isReal && (int) ($trade->payout_basis_points ?? 18000) > 10000
-                ? Decimal::multiplyRatio((string) $trade->stake, (int) $trade->payout_basis_points - 10000, 10000)
-                : '0.00000000';
+            $payoutExpense = $isReal ? $this->ledger->system('REAL_PAYOUT_EXPENSE', $currency, 'debit') : null;
+            // Preserve the old reserve-backed settlement path for positions opened
+            // before this policy change. New positions carry a zero reserved_profit.
+            $openPosting = $isReal
+                ? DB::table('ledger_transactions')->where('idempotency_key', 'real-open:' . $trade->open_idempotency_key)->value('metadata')
+                : null;
+            $openMetadata = $openPosting ? json_decode((string) $openPosting, true) : [];
+            $reservedProfit = $isReal ? (string) ($openMetadata['reserved_profit'] ?? '0.00000000') : '0.00000000';
             $entries = [];
             $status = 'void';
             $closingPrice = null;
@@ -294,8 +292,13 @@ class PaperTradingService
                     $profit = Decimal::fromUnits(Decimal::units($payout) - Decimal::units((string) $trade->stake));
                     if ($isReal) {
                         if (Decimal::units($profit) > 0) {
-                            // Convert the locked reserve liability into the user's real-wallet liability.
-                            $entries[] = ['account_id' => $profitEscrow, 'side' => 'debit', 'amount' => $profit];
+                            if (Decimal::units($reservedProfit) > 0) {
+                                // Legacy position: consume the profit already locked at opening.
+                                $entries[] = ['account_id' => $profitEscrow, 'side' => 'debit', 'amount' => $profit];
+                            } else {
+                                // New position: recognize the platform-funded payout expense.
+                                $entries[] = ['account_id' => $payoutExpense, 'side' => 'debit', 'amount' => $profit];
+                            }
                         }
                     } else {
                         $rewards = $this->ledger->system('PAPER_REWARDS', $currency, 'debit');
