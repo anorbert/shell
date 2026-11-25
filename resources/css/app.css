@@ -843,3 +843,40 @@ input,select,textarea{accent-color:var(--gold)}
 .shell-home .shell-chart .chart-illustration-note{bottom:22px;z-index:2;font-size:7px}
 .shell-home .shell-chart-grid{top:32px;bottom:18px;background:repeating-linear-gradient(to bottom,transparent 0,transparent 35px,#ffffff0b 36px),repeating-linear-gradient(to right,transparent 0,transparent 76px,#ffffff08 77px)}
 @media(max-width:760px){.shell-home .shell-chart{height:245px}.shell-home .chart-timeframes{font-size:7px}}
+
+
+/* Client topbar alignment: keep the wallet balance and profile on one baseline. */
+@media (min-width: 721px) {
+  .topbar-right {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 12px !important;
+    white-space: nowrap;
+  }
+  .topbar-wallet-balance,
+  .profile-menu {
+    flex: 0 0 auto;
+  }
+  .topbar-wallet-balance {
+    align-self: center;
+  }
+  .profile-trigger {
+    display: flex;
+    align-items: center;
+    min-height: 40px;
+  }
+}
+@media (max-width: 720px) {
+  .topbar-right {
+    gap: 6px !important;
+  }
+  .topbar-wallet-balance {
+    max-width: 116px;
+    overflow: hidden;
+  }
+  .topbar-wallet-balance > strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
