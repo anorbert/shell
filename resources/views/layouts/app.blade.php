@@ -81,7 +81,9 @@
                         <strong>@money($activeWalletBalance) <small>{{ $activeWalletCurrency }}</small></strong>
                     </a>
                 @endif
-                <span class="status-pill"><i></i>{{ auth()->user()->role==='admin'?'Administrator':'Client account' }}</span>
+                @if(auth()->user()->role==='admin')
+                    <span class="status-pill"><i></i>Administrator</span>
+                @endif
                 <details class="profile-menu">
                     <summary class="profile-trigger" aria-label="Open profile menu"><span class="avatar">{{ strtoupper(substr(auth()->user()->name,0,1)) }}</span><span class="profile-trigger-copy"><strong>{{ auth()->user()->name }}</strong><small>{{ auth()->user()->role==='admin'?'Administrator':'My account' }}</small></span><span class="profile-chevron">⌄</span></summary>
                     <div class="profile-dropdown">
