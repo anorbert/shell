@@ -657,3 +657,13 @@ test('server modal price refresh lock limits provider calls for a stale symbol',
     Http::assertSentCount(1);
     expect($first->json('captured_at'))->toBeString();
 });
+
+
+test('position modal never restores the waiting placeholder after receiving a price', function () {
+    $view = file_get_contents(resource_path('views/client/trading.blade.php'));
+
+    expect($view)->toContain('hasPositionPrice = true;')
+        ->and($view)->toContain("if (!hasPositionPrice) setPositionText('position-current-price', 'Waiting for live price…');")
+        ->and($view)->toContain("source === 'websocket' ? 'LIVE MARKET PRICE' : 'SERVER MARKET PRICE · INDICATIVE'")
+        ->and($view)->toContain("detail: { symbol: marketSelect.value, price: value, source: 'websocket' }");
+});
