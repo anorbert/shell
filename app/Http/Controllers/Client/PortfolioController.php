@@ -35,7 +35,7 @@ class PortfolioController extends Controller
             'demoBalance' => $demoBalance,
             'realBalance' => $realBalance,
             'demoBalances' => $demoBalances,
-            'realWalletStatus' => DB::table('wallet_requests')->where('user_id', $user->id)->where('type', 'deposit')->where('status', 'confirmed')->whereNotNull('ledger_key')->exists() ? 'funded' : 'not_funded',
+            'realWalletStatus' => app(\App\Services\ManualWalletService::class)->hasSuccessfulDeposit($user) ? 'funded' : 'not_funded',
         ]);
     }
 }
