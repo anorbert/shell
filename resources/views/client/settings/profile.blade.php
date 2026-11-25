@@ -36,8 +36,9 @@
             @if($kycVerified)
                 <a class="button button-secondary" href="{{ route('wallet-requests.index', ['account' => 'real']) }}">Open real wallet</a>
             @elseif(($kyc?->status ?? '') === 'pending')
-                <a class="button button-secondary" href="{{ route('wallet-requests.index', ['account' => 'real']) }}">View KYC status</a>
-            <a class="button button-primary" href="{{ route('wallet-requests.index', ['account' => 'real']) }}#kyc-form">Continue to KYC <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+                <a class="button button-secondary" href="{{ route('wallet-requests.index', ['account' => 'real']) }}#kyc-form">View KYC status</a>
+            @else
+                <a class="button button-primary" href="{{ route('wallet-requests.index', ['account' => 'real']) }}#kyc-form">Continue to KYC <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
             @endif
         </div>
     </div>
