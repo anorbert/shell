@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Support\Decimal;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -19,11 +20,19 @@ class ReferralCommissionService
         $settings = DB::table('referral_settings')->where('id', 1)->first();
         if (!$settings || !$settings->enabled || Decimal::compare((string) $deposit->amount_usd, (string) $settings->minimum_deposit_usd) < 0) return;
 
-        $percent = (float) ($isFirstDeposit ? $settings->first_deposit_percent : $settings->recurring_deposit_percent);
-        if ($percent <= 0) return;
+        $percentValue = (string) ($isFirstDeposit ? $settings->first_deposit_percent : $settings->recurring_deposit_percent);
+        $percentUnits = Decimal::units($percentValue);
+        $percentNumerator = intdiv($percentUnits, 10000);
+        if ($percentNumerator <= 0) return;
 
-        $amount = number_format(((float) $deposit->amount_usd * $percent) / 100, 8, '.', '');
-        if ((float) $amount <= 0) return;
+        // Split before multiplying to avoid integer overflow for large valid deposits.
+        $depositUnits = Decimal::units((string) $deposit->amount_usd);
+        $denominator = 1000000;
+        $commissionUnits = intdiv($depositUnits, $denominator) * $percentNumerator
+            + intdiv(($depositUnits % $denominator) * $percentNumerator, $denominator);
+        if ($commissionUnits <= 0) return;
+        $amount = Decimal::fromUnits($commissionUnits);
+        $percent = number_format($percentNumerator / 10000, 4, '.', '');
 
         DB::table('referral_commissions')->insertOrIgnore([
             'referrer_user_id' => $referred->referred_by_user_id,
