@@ -8,6 +8,8 @@ return [
     ],
     'paper' => [
         'enabled' => (bool) env('SHELL_PAPER_TRADING_ENABLED', true),
+        // Real-money execution is a separate, explicit production decision.
+        'real_enabled' => (bool) env('SHELL_REAL_TRADING_ENABLED', false),
         'max_stake' => env('SHELL_PAPER_MAX_STAKE', '10000.00000000'),
         'payout_basis_points' => (int) env('SHELL_PAPER_PAYOUT_BPS', 18000),
         'durations' => [60, 300, 900, 3600],
