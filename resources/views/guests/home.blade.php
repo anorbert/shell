@@ -1,15 +1,100 @@
 @extends('layouts.guest')
-@section('title', 'Shell · Markets without the noise')
+@section('title', 'SHELL · Crypto Markets & Fixed-Time Trading')
 @section('content')
-<div class="marketing-shell">
-    <header class="marketing-nav"><a class="brand" href="{{ route('home') }}"><span class="brand-mark">S</span><span>SHELL<span class="brand-sub">FINANCIAL TERMINAL</span></span></a><nav><a href="#markets">Markets</a><a href="#platform">Platform</a><a href="#security">Security</a></nav><div class="nav-actions"><a class="button button-quiet" href="{{ route('login') }}">Sign in</a><a class="button button-primary" href="{{ route('register') }}">Create account</a></div></header>
+<div class="marketing-shell shell-home">
+    <header class="marketing-nav">
+        <a class="brand" href="{{ route('home') }}" aria-label="SHELL home"><span class="brand-mark">S</span><span>SHELL<span class="brand-sub">MARKET & TRADING PLATFORM</span></span></a>
+        <nav aria-label="Main navigation"><a href="#markets">Markets</a><a href="#how-it-works">How it works</a><a href="#platform">Platform</a><a href="#faq">FAQs</a></nav>
+        <div class="nav-actions"><a class="button button-quiet" href="{{ route('login') }}">Sign in</a><a class="button button-primary" href="{{ route('register') }}">Get started <span>↗</span></a></div>
+    </header>
+
     <main>
-        <section class="hero"><div class="hero-copy"><span class="eyebrow"><i class="live-dot"></i> MARKET ACCESS, REIMAGINED</span><h1>Clarity for every<br><em>market decision.</em></h1><p>A complete trading workspace for market discovery, portfolio management, fixed-time demo trading and clear transaction history. Everything you need to explore markets and practise your strategy in one place.</p><div class="hero-actions"><a class="button button-primary button-large" href="{{ route('register') }}">Open your account <span>↗</span></a><a class="button button-quiet button-large" href="#platform">Explore the platform</a></div><div class="hero-note"><span class="note-icon">✓</span> No fabricated market data. No guaranteed-return promises.</div></div>
-        <div class="hero-visual"><div class="terminal-card"><div class="terminal-head"><div><span class="eyebrow">SHELL / MARKET VIEW</span><strong>Market overview</strong></div><span class="market-state">MARKET OVERVIEW</span></div><div class="chart-placeholder"><div class="chart-grid"></div><svg viewBox="0 0 600 190" preserveAspectRatio="none" aria-label="Illustrative market chart"><path d="M0 145 C35 132 48 148 78 119 S126 125 155 98 S205 112 235 86 S280 103 310 67 S360 92 390 54 S430 76 465 45 S510 62 540 27 S575 45 600 18" fill="none" stroke="#b8a16a" stroke-width="3"/><path d="M0 145 C35 132 48 148 78 119 S126 125 155 98 S205 112 235 86 S280 103 310 67 S360 92 390 54 S430 76 465 45 S510 62 540 27 S575 45 600 18 L600 190 L0 190Z" fill="url(#g)" opacity=".16"/><defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#b8a16a"/><stop offset="1" stop-color="#b8a16a" stop-opacity="0"/></linearGradient></defs></svg></div><div class="terminal-foot"><span>Platform interface preview</span><span>Live market data inside your account</span></div></div><div class="floating-chip chip-top">01 <span>DISCOVER</span></div><div class="floating-chip chip-bottom">02 <span>TRADE WITH DISCIPLINE</span></div></div></section>
-        <section class="trust-strip" id="markets"><span>ONE WORKSPACE</span><span>MARKET DISCOVERY</span><span>PORTFOLIO VISIBILITY</span><span>TRANSPARENT ACTIVITY</span></section>
-        <section class="feature-section" id="platform"><div class="section-intro"><span class="eyebrow">BUILT FOR FOCUS</span><h2>Everything in its<br>right place.</h2><p>One account, one coherent workspace, clear records of every action.</p></div><div class="feature-grid"><article class="feature-card"><span class="feature-number">01 / MARKETS</span><h3>See the market clearly</h3><p>Explore supported spot pairs, monitor current provider quotes and build a personal watchlist.</p></article><article class="feature-card"><span class="feature-number">02 / EXECUTION</span><h3>Practice before capital</h3><p>Open fixed-time demo positions, review potential returns and follow every position through settlement.</p></article><article class="feature-card"><span class="feature-number">03 / CONTROL</span><h3>Know where you stand</h3><p>Keep your demo and real-wallet records organised with clear balances, statements and activity history.</p></article></div></section>
-        <section class="security-section" id="security"><div><span class="eyebrow">TRANSPARENCY FIRST</span><h2>Trust is built into<br>the product.</h2></div><p>Shell keeps demo trading and real-wallet activity clearly separated. Demo positions use simulation credits, while real-wallet deposits and withdrawals follow configured crypto networks, identity checks and administrator verification. The platform is built around transparent records, clear account controls and responsible access to financial services.</p></section>
+        <section class="shell-hero">
+            <div class="shell-hero-copy">
+                <span class="eyebrow"><i class="live-dot"></i> YOUR MARKETS. YOUR NEXT MOVE.</span>
+                <h1>Explore crypto markets.<br><em>Trade with intention.</em></h1>
+                <p class="shell-hero-lead">Discover market movements, analyse price charts and experience fixed-time UP or DOWN trading in one focused platform. Start by exploring the demo environment before deciding whether real-money trading is appropriate for you.</p>
+                <div class="hero-actions"><a class="button button-primary button-large" href="{{ route('register') }}">Create your free account <span>↗</span></a><a class="button button-quiet button-large" href="#how-it-works">See how SHELL works</a></div>
+                <div class="shell-proof-points"><span><b>20</b> configured crypto pairs</span><span><b>6</b> chart timeframes</span><span><b>4</b> trade durations</span></div>
+                <p class="shell-hero-caption">Explore the platform at your pace. Trading involves risk; profits are never guaranteed.</p>
+            </div>
+            <div class="shell-hero-art">
+                <div class="shell-terminal">
+                    <div class="shell-terminal-top"><div><span class="eyebrow">SHELL / MARKET TERMINAL</span><strong>One view. Market movement.</strong></div><span class="terminal-live-label"><i></i> MARKET DATA</span></div>
+                    <div class="shell-terminal-pair"><div><span class="coin-symbol">₿</span><div><strong>Crypto markets</strong><small>Spot market references</small></div></div><span class="pair-count">20 PAIRS</span></div>
+                    <div class="shell-chart">
+                        <div class="shell-chart-grid"></div>
+                        <svg viewBox="0 0 620 220" preserveAspectRatio="none" role="img" aria-label="Illustrative crypto price chart">
+                            <defs><linearGradient id="shellChartLine" x1="0" y1="0" x2="620" y2="0"><stop stop-color="#65c6d8"/><stop offset="1" stop-color="#b8a16a"/></linearGradient><linearGradient id="shellChartFill" x1="0" y1="0" x2="0" y2="220"><stop stop-color="#65c6d8" stop-opacity=".22"/><stop offset="1" stop-color="#65c6d8" stop-opacity="0"/></linearGradient></defs>
+                            <path d="M0 160 C28 150 42 166 67 137 S110 148 136 121 S175 139 204 105 S244 126 270 95 S309 111 337 81 S374 103 401 65 S442 89 468 59 S508 79 536 45 S581 57 620 25 L620 220 L0 220Z" fill="url(#shellChartFill)"/>
+                            <path d="M0 160 C28 150 42 166 67 137 S110 148 136 121 S175 139 204 105 S244 126 270 95 S309 111 337 81 S374 103 401 65 S442 89 468 59 S508 79 536 45 S581 57 620 25" fill="none" stroke="url(#shellChartLine)" stroke-width="3" stroke-linecap="round"/>
+                            <circle cx="620" cy="25" r="5" fill="#b8a16a"/>
+                        </svg>
+                        <span class="chart-illustration-note">ILLUSTRATIVE CHART · NOT A LIVE QUOTE</span>
+                    </div>
+                    <div class="shell-chart-legend"><span><i class="legend-dot legend-cyan"></i> Price analysis</span><span>1m · 5m · 15m · 1h · 4h · 1d</span></div>
+                    <div class="shell-direction-preview"><div><span>↗</span><strong>UP</strong><small>Price moves higher</small></div><div><span>↘</span><strong>DOWN</strong><small>Price moves lower</small></div></div>
+                    <div class="shell-terminal-bottom"><span>Fixed-time trading interface</span><span>Demo & real account modes</span></div>
+                </div>
+                <div class="shell-float-note"><b>01</b><span>ANALYSE THE MARKET</span></div>
+            </div>
+        </section>
+
+        <section class="shell-market-band" id="markets">
+            <div class="shell-section-kicker"><span>EXPLORE THE MARKETS</span><span>20 CONFIGURED CRYPTO SPOT PAIRS</span></div>
+            <div class="shell-asset-grid">
+                @foreach (['BTC/USDT','ETH/USDT','BNB/USDT','SOL/USDT','XRP/USDT','ADA/USDT','DOGE/USDT','AVAX/USDT','DOT/USDT','LTC/USDT','LINK/USDT','UNI/USDT','ATOM/USDT','XLM/USDT','ALGO/USDT','NEAR/USDT','AAVE/USDT','TRX/USDT','ETC/USDT','BCH/USDT'] as $asset)
+                    <span class="shell-asset-chip"><i></i>{{ $asset }}</span>
+                @endforeach
+            </div>
+            <p class="shell-market-footnote">These are configured market instruments, not a live price board. Current quotes and chart data are shown inside the authenticated platform when available.</p>
+        </section>
+
+        <section class="shell-how-section" id="how-it-works">
+            <div class="shell-section-heading"><span class="eyebrow">GET STARTED IN THREE STEPS</span><h2>A clear path from market discovery<br><em>to trade review.</em></h2><p>Understand the workflow before risking capital. You stay in control of whether and when you place a position.</p></div>
+            <div class="shell-steps-grid">
+                <article><span class="shell-step-number">01</span><div class="shell-step-icon">⌕</div><h3>Create your account</h3><p>Register to access your personal workspace, explore supported markets and use the demo account to learn the trading flow.</p><span class="shell-step-foot">ACCOUNT ACCESS</span></article>
+                <article><span class="shell-step-number">02</span><div class="shell-step-icon">⌁</div><h3>Analyse and choose</h3><p>Review price charts across six timeframes. Select a supported pair, choose UP or DOWN, set your stake and select an expiry.</p><span class="shell-step-foot">MARKET & POSITION</span></article>
+                <article><span class="shell-step-number">03</span><div class="shell-step-icon">↗</div><h3>Track every outcome</h3><p>Follow open positions through expiry, then review the recorded result, account balance and activity history.</p><span class="shell-step-foot">SETTLEMENT & HISTORY</span></article>
+            </div>
+        </section>
+
+        <section class="shell-platform-section" id="platform">
+            <div class="shell-platform-intro"><span class="eyebrow">MADE FOR INFORMED DECISIONS</span><h2>Your trading tools,<br><em>in one workspace.</em></h2><p>SHELL brings market discovery, fixed-time trading and account records together without dressing up simulated data as real performance.</p><a class="shell-text-link" href="{{ route('register') }}">Explore SHELL <span>→</span></a></div>
+            <div class="shell-feature-list">
+                <article><span class="shell-feature-icon">⌁</span><div><h3>Charts and market watchlists</h3><p>Explore 20 configured crypto spot pairs, view candlestick data and save markets to your personal watchlist.</p></div><b>01</b></article>
+                <article><span class="shell-feature-icon">◷</span><div><h3>Flexible chart and expiry intervals</h3><p>Review charts at 1m, 5m, 15m, 1h, 4h and 1d intervals. Fixed-time positions offer 1, 5, 15 and 60-minute durations.</p></div><b>02</b></article>
+                <article><span class="shell-feature-icon">⇄</span><div><h3>Separate demo and real accounts</h3><p>Demo credits are for practice and cannot be withdrawn. Real-wallet funds are maintained separately from demo balances.</p></div><b>03</b></article>
+                <article><span class="shell-feature-icon">▤</span><div><h3>Portfolio and transaction records</h3><p>Review positions, account activity and wallet statements to understand what happened to your funds and trades.</p></div><b>04</b></article>
+                <article><span class="shell-feature-icon">◎</span><div><h3>Account controls and support</h3><p>Manage account security, identity verification and support requests from your authenticated workspace.</p></div><b>05</b></article>
+            </div>
+        </section>
+
+        <section class="shell-account-section">
+            <div><span class="eyebrow">TWO DISTINCT ACCOUNT ENVIRONMENTS</span><h2>Practise first.<br><em>Know the difference.</em></h2><p>Demo trading and real-money trading are not interchangeable. Understand what each account does before making a funding decision.</p></div>
+            <div class="shell-account-cards">
+                <article class="shell-demo-card"><span class="shell-account-tag">PRACTICE ENVIRONMENT</span><h3>Demo account</h3><p>Explore the trading interface with simulation credits. Test how positions open, expire and settle without treating demo results as real earnings.</p><ul><li>Practice the UP / DOWN workflow</li><li>Explore chart intervals and expiry times</li><li>Review simulated trade outcomes</li></ul><a href="{{ route('register') }}">Start with demo access <span>→</span></a></article>
+                <article class="shell-real-card"><span class="shell-account-tag">REAL-MONEY ENVIRONMENT</span><h3>Real account</h3><p>Uses a separate real-money wallet. Deposits, identity checks, withdrawals and trading access are subject to platform controls and applicable requirements.</p><ul><li>Real funds are separate from demo credits</li><li>Deposit transactions require verification</li><li>Withdrawals are subject to account checks</li></ul><a href="#risk">Understand the risks <span>→</span></a></article>
+            </div>
+        </section>
+
+        <section class="shell-faq-section" id="faq">
+            <div class="shell-section-heading"><span class="eyebrow">GOOD QUESTIONS. CLEAR ANSWERS.</span><h2>Before you get started.</h2></div>
+            <div class="shell-faq-grid">
+                <article><h3>What can I trade on SHELL?</h3><p>SHELL currently configures 20 cryptocurrency spot pairs quoted against USDT. The available instruments are listed in the markets section above.</p></article>
+                <article><h3>Can I practise before using real money?</h3><p>Yes. The demo environment uses simulation credits so you can learn the interface and trade lifecycle. Demo credits and demo profits are not withdrawable.</p></article>
+                <article><h3>How does a fixed-time trade work?</h3><p>You select a supported market, choose UP or DOWN, enter a stake and select an expiry duration. The position is evaluated at expiry using the platform's server-side market data and settlement rules.</p></article>
+                <article><h3>Are returns guaranteed?</h3><p>No. A trade can lose the full stake. Market prices can move unexpectedly, and a past or demo result does not predict future performance.</p></article>
+                <article><h3>How are deposits and withdrawals handled?</h3><p>Available wallet methods and their instructions are shown in your account. Deposit transaction details are reviewed before funds are credited. Withdrawals are subject to identity and operational checks.</p></article>
+                <article><h3>Can I use SHELL from any country?</h3><p>Availability of binary-style and fixed-time trading products differs by jurisdiction. Check local laws and obtain independent advice before registering or funding an account.</p></article>
+            </div>
+        </section>
+
+        <section class="shell-final-cta"><div><span class="eyebrow">TAKE THE FIRST STEP</span><h2>Get to know the platform<br><em>before you commit capital.</em></h2><p>Create an account, explore the markets and understand the tools available to you.</p></div><a class="button button-primary button-large" href="{{ route('register') }}">Create your SHELL account <span>↗</span></a></section>
+
+        <section class="shell-risk-section" id="risk"><div class="shell-risk-icon">!</div><div><span class="eyebrow">IMPORTANT RISK INFORMATION</span><h2>Trading involves significant risk.</h2><p>Fixed-time and binary-style options are high-risk financial products. You may lose all the money committed to a position. These products may not be suitable for every investor and may be restricted or prohibited in some jurisdictions. Do not trade with money you cannot afford to lose. Understand the product, its payout structure, fees and settlement rules, and seek independent financial and legal advice where appropriate. SHELL does not promise profits or guaranteed income.</p></div></section>
     </main>
-    <footer class="marketing-footer"><a class="brand" href="{{ route('home') }}"><span class="brand-mark">S</span><span>SHELL<span class="brand-sub">FINANCIAL TERMINAL</span></span></a><span>© {{ date('Y') }} Shell. Market risk is real. Returns are never guaranteed.</span><div><a href="{{ route('login') }}">Sign in</a><a href="{{ route('register') }}">Register</a></div></footer>
+
+    <footer class="shell-home-footer"><a class="brand" href="{{ route('home') }}"><span class="brand-mark">S</span><span>SHELL<span class="brand-sub">MARKET & TRADING PLATFORM</span></span></a><p>© {{ date('Y') }} SHELL. All rights reserved. Trading involves risk.</p><div><a href="{{ route('login') }}">Sign in</a><a href="{{ route('register') }}">Create account</a></div></footer>
 </div>
 @endsection
