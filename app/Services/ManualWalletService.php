@@ -75,7 +75,7 @@ class ManualWalletService
             if (!$request || $request->type !== 'deposit' || $request->status !== 'pending') {
                 throw new RuntimeException('This deposit is no longer awaiting confirmation.');
             }
-            $user = User::findOrFail($request->user_id);
+            $user = User::query()->whereKey($request->user_id)->lockForUpdate()->firstOrFail();
             $isFirstDeposit = !DB::table('wallet_requests')->where('user_id', $user->id)->where('type', 'deposit')->where('status', 'confirmed')->whereNotNull('ledger_key')->exists();
             $wallet = $this->ledger->realWallet($user, 'USD');
             $clearing = $this->ledger->system('CRYPTO_DEPOSIT_CLEARING', 'USD', 'debit');
