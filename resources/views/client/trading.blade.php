@@ -5,7 +5,11 @@
 @section('content')
     <x-client-attention :title="$selectedAccount === 'real' ? 'Real-money trading' : 'Demo trading account'" :tag="$selectedAccount === 'real' ? 'REAL ACCOUNT' : 'PRACTICE ACCOUNT'">
         @if ($selectedAccount === 'real')
-            <p>Trade with your own funded balance when real trading is available. Deposit verification activates your real trading eligibility; identity verification is required for withdrawals, not for trading.</p>
+            @if ($hasConfirmedDeposit)
+            <p>Your deposit has been verified and credited. You can use your available real-wallet balance for real positions when real trading is available.</p>
+        @else
+            <p>Your real account is ready for funding. Make your first deposit to qualify for real-money trading. Once your payment is verified and credited, you can use your available balance when real trading is enabled.</p>
+        @endif
         @else
             <p>Practise fixed-time UP and DOWN positions with demo credits. Demo trading is independent of deposits and KYC; positions settle against server-captured market quotes.</p>
         @endif
@@ -47,9 +51,7 @@
             </div>
             <div class="real-activation-footer">
                 <a class="button button-primary" href="{{ route('wallet-requests.index', ['account' => 'real']) }}">Deposit to real wallet <span aria-hidden="true">→</span></a>
-                <span class="real-activation-note">KYC is only required when you request a withdrawal.</span>
             </div>
-            <p class="real-activation-disclaimer">Deposits are subject to verification. A submitted request or transaction hash is not a confirmed deposit. Trading involves risk; you can lose the full amount staked.</p>
         </section>
     @elseif ($selectedAccount === 'real')
         <section class="real-activation real-activation-funded" role="status" aria-labelledby="real-activation-title">
