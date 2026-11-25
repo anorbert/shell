@@ -3,6 +3,8 @@
 use App\Models\User;
 use App\Services\LedgerService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\UploadedFile;
 
 function createCryptoMethodForTest(array $overrides = []): int
 {
@@ -62,17 +64,22 @@ test('manual crypto deposit stays pending and never credits the real wallet befo
         ->and($ledger->balanceUnits($wallet))->toBe(12500000000);
 });
 
-test('clients cannot submit KYC before their first confirmed real deposit', function () {
+test('clients may submit KYC before making a deposit because KYC is a withdrawal control', function () {
+    Storage::fake('local');
     $client = User::factory()->create();
     $client->markEmailAsVerified();
 
-    $this->actingAs($client)->post('/wallet-requests/kyc', [])
-        ->assertSessionHasErrors(['kyc' => 'Complete and receive confirmation for at least one real-money deposit before submitting KYC.']);
+    $this->actingAs($client)->post('/kyc', [
+        'document_type' => 'national_id',
+        'document_number' => 'ID123456789',
+        'document' => UploadedFile::fake()->create('identity.pdf', 100, 'application/pdf'),
+        'selfie' => UploadedFile::fake()->image('selfie.jpg'),
+    ])->assertRedirect(route('kyc.index'));
 
-    expect(DB::table('kyc_submissions')->where('user_id', $client->id)->count())->toBe(0);
+    expect(DB::table('kyc_submissions')->where('user_id', $client->id)->value('status'))->toBe('pending');
 });
 
-test('withdrawals are blocked until a real deposit has been confirmed', function () {
+test('withdrawals are blocked until KYC is approved, regardless of deposit history', function () {
     $client = User::factory()->create();
     $client->markEmailAsVerified();
     $method = createCryptoMethodForTest();
@@ -80,7 +87,7 @@ test('withdrawals are blocked until a real deposit has been confirmed', function
     $this->actingAs($client)->post('/wallet-requests/withdraw', [
         'method_id' => $method, 'amount_usd' => '25.00000000',
         'wallet_address' => 'TClientReceivingAddress123456789',
-    ])->assertSessionHasErrors(['withdrawal' => 'At least one real-money deposit must be successfully confirmed before withdrawals are available.']);
+    ])->assertSessionHasErrors(['withdrawal' => 'An approved KYC profile is required before requesting a withdrawal.']);
 
     expect(DB::table('wallet_requests')->where('user_id', $client->id)->count())->toBe(0);
 });
