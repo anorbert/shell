@@ -36,7 +36,7 @@ class ReferralController extends Controller
             ->selectRaw("COALESCE(SUM(CASE WHEN status = 'pending' THEN commission_amount_usd ELSE 0 END),0) as pending_total")
             ->selectRaw('COUNT(*) as commission_count')->first();
 
-        $referralUrl = route('register', ['ref' => $user->referral_code]);
+        $referralUrl = route('referral.capture', ['code' => $user->referral_code]);
         return view('client.referrals', compact('settings', 'referrals', 'commissions', 'totals', 'referralUrl'));
     }
 
