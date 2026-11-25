@@ -6,6 +6,7 @@ use App\Services\PaperTradingService;
 use App\Services\MarketQuoteService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 
 test('paper wallet credits create balanced ledger entries', function () {
     $user = User::factory()->create();
@@ -611,4 +612,48 @@ test('repeated settlement workers cannot credit the same expired trade twice', f
         ->and(DB::table('paper_trades')->where('id', $tradeId)->value('status'))->toBe('won')
         ->and(DB::table('ledger_transactions')->where('idempotency_key', 'paper-settle:' . $tradeId)->count())->toBe(1)
         ->and($ledger->balanceUnits($wallet))->toBe(10800000000);
+});
+
+
+test('server modal price endpoint rejects unsupported symbols', function () {
+    $user = User::factory()->create();
+    $user->markEmailAsVerified();
+
+    $this->actingAs($user)->getJson('/markets/price?symbol=NOTREAL')
+        ->assertUnprocessable()
+        ->assertJsonPath('message', 'Unsupported market symbol.');
+});
+
+test('server modal price refresh lock limits provider calls for a stale symbol', function () {
+    Http::fake([
+        'api.binance.com/api/v3/ticker/price*' => Http::response([
+            'symbol' => 'BTCUSDT',
+            'price' => '91234.56000000',
+        ], 200),
+    ]);
+
+    Cache::flush();
+    $user = User::factory()->create();
+    $user->markEmailAsVerified();
+    $staleAt = now('UTC')->subSeconds(10);
+
+    DB::table('market_quotes')->insert([
+        'symbol' => 'BTCUSDT',
+        'price' => '90000.000000000000',
+        'provider' => 'Test provider',
+        'captured_at' => $staleAt,
+        'created_at' => $staleAt,
+        'updated_at' => $staleAt,
+    ]);
+
+    $first = $this->actingAs($user)->getJson('/markets/price?symbol=BTCUSDT')
+        ->assertOk()
+        ->assertJsonPath('symbol', 'BTCUSDT')
+        ->assertJsonPath('price', '91234.56000000');
+    $this->getJson('/markets/price?symbol=BTCUSDT')
+        ->assertOk()
+        ->assertJsonPath('price', '91234.56000000');
+
+    Http::assertSentCount(1);
+    expect($first->json('captured_at'))->toBeString();
 });
