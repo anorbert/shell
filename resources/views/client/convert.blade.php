@@ -5,7 +5,7 @@
 
 @section('content')
 @php
-    $formatConversion = fn ($value) => is_numeric($value) ? number_format((float) $value, 8, '.', ',') : '—';
+    $formatConversion = fn ($value) => is_numeric($value) ? number_format((float) $value, 2, '.', ',') : '—';
 @endphp
 
 <style>
@@ -121,7 +121,7 @@
                 <div class="conversion-field">
                     <label for="conversion-amount">AMOUNT TO CONVERT</label>
                     <input id="conversion-amount" name="amount" type="number" min="0.00000001" step="0.00000001" max="{{ $balances[$currency] ?? '0' }}" value="10.00000000" inputmode="decimal" autocomplete="off" required>
-                    <div class="conversion-balance"><span>Maximum per conversion</span><span>8 decimal places · demo only</span></div>
+                    <div class="conversion-balance"><span>Maximum per conversion</span><span>Maximum 8 decimal places accepted · display uses 2</span></div>
                 </div>
 
                 <button class="conversion-primary" id="preview-conversion" type="button">
@@ -216,10 +216,10 @@
     let conversionReady = false;
     let previewSignature = '';
 
-    // Keep every displayed asset quantity and market rate at exactly 8 decimal places.
+    // Display monetary values with at most 2 decimal places. Server-side calculations retain full precision.
     const fixedDecimal = new Intl.NumberFormat('en-US', {
-        minimumFractionDigits: 8,
-        maximumFractionDigits: 8,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
         useGrouping: true
     });
     const format = value => fixedDecimal.format(Number(value));
