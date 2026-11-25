@@ -31,27 +31,23 @@ class WalletRequestController extends Controller
     {
         $data = $request->validate([
             'method_id' => ['required', 'integer', 'exists:crypto_payment_methods,id'],
-            'amount_usd' => ['required', 'regex:/^(?:[1-9][0-9]{0,7})(?:\.[0-9]{1,8})?$/'],
-            'asset_amount' => ['required', 'numeric', 'gt:0', 'max:1000000000000000', 'regex:/^(?:[0-9]+)(?:\.[0-9]{1,12})?$/'],
-            'transaction_hash' => ['required', 'string', 'min:12', 'max:255'],
-            'client_note' => ['nullable', 'string', 'max:1000'],
+            'asset_amount' => ['required', 'numeric', 'gt:0', 'max:1000000000000000', 'regex:/^(?:[0-9]+)(?:\.[0-9]{1,8})?$/'],
         ]);
         $method = DB::table('crypto_payment_methods')->where('id', $data['method_id'])->where('deposits_enabled', true)->first();
-        abort_unless($method, 404);
+        abort_unless($method && in_array(strtoupper($method->asset), ['USDT', 'USDC'], true), 404, 'This deposit method is not an enabled USD stablecoin.');
         $user = $request->user();
-        if (DB::table('wallet_requests')->where('type', 'deposit')->where('transaction_hash', $data['transaction_hash'])->where('network', $method->network)->exists()) {
-            return back()->withErrors(['transaction_hash' => 'This transaction hash has already been submitted.']);
-        }
+        // USDT and USDC are treated at a 1:1 USD reference value for this manual-deposit workflow.
+        $usdAmount = $data['asset_amount'];
         $id = DB::table('wallet_requests')->insertGetId([
             'user_id' => $user->id, 'type' => 'deposit', 'status' => 'pending',
-            'amount_usd' => $data['amount_usd'], 'asset_amount' => $data['asset_amount'], 'asset' => $method->asset, 'network' => $method->network,
-            'wallet_address' => $method->wallet_address, 'transaction_hash' => $data['transaction_hash'],
-            'client_note' => $data['client_note'] ?? null, 'created_at' => now(), 'updated_at' => now(),
+            'amount_usd' => $usdAmount, 'asset_amount' => $data['asset_amount'], 'asset' => $method->asset, 'network' => $method->network,
+            'wallet_address' => $method->wallet_address, 'transaction_hash' => null,
+            'client_note' => null, 'created_at' => now(), 'updated_at' => now(),
         ]);
         $wallets->notifyAdmins('wallet-deposit:'.$id, 'Deposit request requires confirmation',
-            $user->name.' ('.$user->email.') reported a '.$data['amount_usd'].' USD deposit via '.$method->asset.' / '.$method->network.'. Verify the transaction on-chain before confirming.',
+            $user->name.' ('.$user->email.') reported a '.$data['asset_amount'].' '.$method->asset.' deposit (estimated '.$usdAmount.' USD) via '.$method->network.'. Match the deposit against the configured receiving wallet before confirming.',
             ['wallet_request_id' => $id, 'type' => 'deposit']);
-        return back()->with('status', 'Deposit request submitted. Your real wallet will only be credited after admin verification.');
+        return back()->with('status', 'Stablecoin deposit request submitted.');
     }
 
     public function withdraw(Request $request, ManualWalletService $wallets)
