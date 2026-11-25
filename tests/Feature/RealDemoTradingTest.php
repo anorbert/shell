@@ -18,7 +18,7 @@ function configureTradingQuoteForEnvironmentTests(): void
         'shell.market.symbols' => ['BTCUSDT'],
     ]);
 
-    $markets = \\Mockery::mock(MarketQuoteService::class);
+    $markets = \Mockery::mock(MarketQuoteService::class);
     $markets->shouldReceive('freshExecutionQuote')->andReturn((object) [
         'symbol' => 'BTCUSDT',
         'price' => '65000.000000000000',
