@@ -17,24 +17,30 @@
 
 
     @if ($selectedAccount === 'real' && (float) $realPayoutReserve <= 0)
-        <section class="real-activation" aria-labelledby="real-activation-title">
-            <div class="real-activation-top">
-                <span class="real-activation-icon" aria-hidden="true">↗</span>
-                <span class="real-activation-kicker">YOUR REAL ACCOUNT</span>
-                <span class="real-activation-status">READY FOR YOUR FIRST DEPOSIT</span>
+        <details class="real-activation real-activation-collapsible">
+            <summary class="real-activation-summary">
+                <div class="real-activation-top">
+                    <span class="real-activation-icon" aria-hidden="true">↗</span>
+                    <span class="real-activation-kicker">YOUR REAL ACCOUNT</span>
+                    <span class="real-activation-status">READY FOR YOUR FIRST DEPOSIT</span>
+                    <span class="real-activation-toggle" aria-hidden="true"></span>
+                </div>
+                <h2 id="real-activation-title">Start your trading journey with a deposit</h2>
+                <span class="real-activation-hint">View funding steps and details</span>
+            </summary>
+            <div class="real-activation-details">
+                <p class="real-activation-copy">Your real account is ready for funding. Make your first deposit to begin setting up your real-money trading account. Once your payment has been verified, credited and real trading is enabled, you can use your available balance to open positions.</p>
+                <div class="real-activation-steps">
+                    <div><span>01</span><strong>Fund your account</strong><small>Choose an available payment method and deposit into your real wallet.</small></div>
+                    <div><span>02</span><strong>Get your payment confirmed</strong><small>Our operations team reviews your transaction and credits your wallet after verification.</small></div>
+                    <div><span>03</span><strong>Begin trading</strong><small>When real trading is enabled, use your available real balance to place your first position.</small></div>
+                </div>
+                <div class="real-activation-footer">
+                    <a class="button button-primary" href="{{ route('wallet-requests.index', ['account' => 'real']) }}">Make your first deposit <span aria-hidden="true">→</span></a>
+                    <span class="real-activation-note">Only deposit through the payment methods shown in your wallet center.</span>
+                </div>
             </div>
-            <h2 id="real-activation-title">Start your trading journey with a deposit</h2>
-            <p class="real-activation-copy">Your real account is ready for funding. Make your first deposit to begin setting up your real-money trading account. Once your payment has been verified, credited and real trading is enabled, you can use your available balance to open positions.</p>
-            <div class="real-activation-steps">
-                <div><span>01</span><strong>Fund your account</strong><small>Choose an available payment method and deposit into your real wallet.</small></div>
-                <div><span>02</span><strong>Get your payment confirmed</strong><small>Our operations team reviews your transaction and credits your wallet after verification.</small></div>
-                <div><span>03</span><strong>Begin trading</strong><small>When real trading is enabled, use your available real balance to place your first position.</small></div>
-            </div>
-            <div class="real-activation-footer">
-                <a class="button button-primary" href="{{ route('wallet-requests.index', ['account' => 'real']) }}">Make your first deposit <span aria-hidden="true">→</span></a>
-                <span class="real-activation-note">Only deposit through the payment methods shown in your wallet center.</span>
-            </div>
-        </section>
+        </details>
     @elseif ($selectedAccount === 'real' && ! $hasConfirmedDeposit)
         <section class="real-activation" aria-labelledby="real-activation-title">
             <div class="real-activation-top">
