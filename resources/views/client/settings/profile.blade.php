@@ -27,10 +27,8 @@
                 <strong>Your documents are being reviewed.</strong><p>Your KYC submission was received. You do not need to submit it again while the review is pending. Withdrawals remain locked until approval.</p>
             @elseif(($kyc?->status ?? '') === 'rejected')
                 <strong>Your previous submission needs attention.</strong><p>{{ $kyc->review_note ?: 'Your previous KYC submission was not approved. Review your details and submit a corrected application.' }}</p>
-            @elseif(!$hasSuccessfulDeposit)
-                <strong>Identity verification is not yet available.</strong><p>To prevent incomplete or premature verification requests, KYC opens after your first real-money deposit has been successfully confirmed. A pending deposit or demo balance does not qualify.</p>
             @else
-                <strong>Complete identity verification to unlock withdrawals.</strong><p>Your first real-money deposit is confirmed. Submit a valid identity document and a selfie for administrator review. Withdrawals remain unavailable until approval.</p>
+                <strong>Complete identity verification to unlock withdrawals.</strong><p>KYC is available at any time. Submit a valid identity document and a selfie for administrator review. Withdrawals remain unavailable until approval.</p>
             @endif
             <div class="kyc-facts"><span>Secure document submission</span><span>Manual review</span><span>Required for withdrawals</span></div>
         </div>
@@ -39,10 +37,7 @@
                 <a class="button button-secondary" href="{{ route('wallet-requests.index', ['account' => 'real']) }}">Open real wallet</a>
             @elseif(($kyc?->status ?? '') === 'pending')
                 <a class="button button-secondary" href="{{ route('wallet-requests.index', ['account' => 'real']) }}">View KYC status</a>
-            @elseif($hasSuccessfulDeposit)
-                <a class="button button-primary" href="{{ route('wallet-requests.index', ['account' => 'real']) }}">Continue to KYC <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-            @else
-                <a class="button button-primary" href="{{ route('wallet-requests.index', ['account' => 'real']) }}#deposit-form">Go to real wallet <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            <a class="button button-primary" href="{{ route('wallet-requests.index', ['account' => 'real']) }}#kyc-form">Continue to KYC <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
             @endif
         </div>
     </div>
