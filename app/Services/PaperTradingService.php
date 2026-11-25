@@ -25,9 +25,7 @@ class PaperTradingService
             throw new RuntimeException('Invalid trading account.');
         }
 
-        if ($environment === 'real' && !DB::table('wallet_requests')
-            ->where('user_id', $user->id)->where('type', 'deposit')->where('status', 'confirmed')
-            ->whereNotNull('ledger_key')->exists()) {
+        if ($environment === 'real' && !app(ManualWalletService::class)->hasSuccessfulDeposit($user)) {
             throw new RuntimeException('Real trading unlocks after your first deposit has been verified and credited to your real wallet.');
         }
 
