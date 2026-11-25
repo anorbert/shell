@@ -27,7 +27,7 @@ class PaperTradingController extends Controller
         return view('client.trading', [
             'balance' => Decimal::fromUnits($ledger->balanceUnits($wallet)),
             'selectedAccount' => $selectedAccount,
-            'hasConfirmedDeposit' => DB::table('wallet_requests')->where('user_id', $request->user()->id)->where('type', 'deposit')->where('status', 'confirmed')->whereNotNull('ledger_key')->exists(),
+            'hasConfirmedDeposit' => app(\App\Services\ManualWalletService::class)->hasSuccessfulDeposit($request->user()),
             'realPayoutReserve' => Decimal::fromUnits($ledger->normalBalanceUnits($ledger->system('REAL_PAYOUT_RESERVE', $currency, 'debit'))),
             'demoBalance' => Decimal::fromUnits($ledger->balanceUnits($ledger->demoWallet($request->user(), $currency))),
             'realBalance' => Decimal::fromUnits($ledger->balanceUnits($ledger->realWallet($request->user(), $currency))),
