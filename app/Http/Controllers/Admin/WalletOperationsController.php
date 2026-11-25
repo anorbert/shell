@@ -149,12 +149,9 @@ class WalletOperationsController extends Controller
         $data = $request->validate([
             'amount_usd' => ['required', 'numeric', 'gt:0', 'max:99999999', 'regex:/^(?:[0-9]{1,8})(?:\\.[0-9]{1,2})?$/'],
             'approval_mode' => ['required', 'in:blockchain,manual'],
-            'chain_verified' => ['required_if:approval_mode,blockchain', 'accepted'],
-            'manual_approval_confirmed' => ['required_if:approval_mode,manual', 'accepted'],
-            'admin_note' => ['required', 'string', 'min:10', 'max:2000'],
-        ], [
-            'chain_verified.accepted' => 'Confirm that you independently verified the transaction on the correct blockchain.',
-            'manual_approval_confirmed.accepted' => 'Confirm that you authorize a manual wallet credit without a blockchain transaction hash.',
+            'chain_verified' => ['sometimes', 'accepted'],
+            'manual_approval_confirmed' => ['sometimes', 'accepted'],
+            'admin_note' => ['nullable', 'string', 'max:2000'],
         ]);
 
         $deposit = DB::table('wallet_requests')->where('id', $walletRequest)
@@ -171,7 +168,7 @@ class WalletOperationsController extends Controller
         $internalReference = $manual ? 'SHELL-MANUAL-DEP-'.strtoupper(Str::random(12)) : null;
 
         try {
-            $wallets->confirmDeposit($walletRequest, $request->user(), $data['amount_usd'], $data['admin_note'], $manual, $internalReference);
+            $wallets->confirmDeposit($walletRequest, $request->user(), $data['amount_usd'], $data['admin_note'] ?? null, $manual, $internalReference);
             return back()->with('status', $manual
                 ? 'Manual deposit credit approved. Internal reference: '.$internalReference.'. No blockchain transaction hash was recorded.'
                 : 'Deposit verified and credited to the client real wallet.');
