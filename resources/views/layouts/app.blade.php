@@ -77,8 +77,8 @@
                     @php
                         $demoWalletId = $activeWalletLedger->demoWallet(auth()->user(), $activeWalletCurrency);
                         $realWalletId = $activeWalletLedger->realWallet(auth()->user(), $activeWalletCurrency);
-                        $demoWalletBalance = \\App\\Support\\Decimal::fromUnits($activeWalletLedger->balanceUnits($demoWalletId));
-                        $realWalletBalance = \\App\\Support\\Decimal::fromUnits($activeWalletLedger->balanceUnits($realWalletId));
+                        $demoWalletBalance = \App\Support\Decimal::fromUnits($activeWalletLedger->balanceUnits($demoWalletId));
+                        $realWalletBalance = \App\Support\Decimal::fromUnits($activeWalletLedger->balanceUnits($realWalletId));
                     @endphp
                     <details class="topbar-wallet-menu">
                         <summary class="topbar-wallet-balance" aria-label="Current {{ strtoupper($activeWalletType) }} account balance; open account switcher">
