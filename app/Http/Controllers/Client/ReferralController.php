@@ -43,7 +43,10 @@ class ReferralController extends Controller
     public function capture(string $code)
     {
         $referrer = DB::table('users')->where('referral_code', strtoupper($code))->where('role', 'client')->first();
-        if (!$referrer) {\n            session()->forget('referral_code');\n            return redirect()->route('register')->with('referral_error', 'That referral link is not valid.');\n        }
+        if (!$referrer) {
+            session()->forget('referral_code');
+            return redirect()->route('register')->with('referral_error', 'That referral link is not valid.');
+        }
         session(['referral_code' => $referrer->referral_code]);
         return redirect()->route('register');
     }
