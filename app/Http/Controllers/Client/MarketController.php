@@ -72,8 +72,12 @@ class MarketController extends Controller
 
         if (!$isFresh) {
             try {
-                Cache::lock('market-price-refresh:' . $symbol, 1)->get(function () use ($markets, $symbol) {
-                    $markets->refreshSymbolQuote($symbol);
+                Cache::lock('market-price-refresh:' . $symbol, 10)->get(function () use ($markets, $symbol) {
+                    // The short-lived rate key prevents rapid sequential refreshes;
+                    // the longer lock prevents overlapping slow provider requests.
+                    if (Cache::add('market-price-refresh-rate:' . $symbol, true, 1)) {
+                        $markets->refreshSymbolQuote($symbol);
+                    }
                 });
             } catch (\Throwable $exception) {
                 report($exception);
@@ -84,8 +88,9 @@ class MarketController extends Controller
             $quote = DB::table('market_quotes')->where('symbol', $symbol)->first();
         }
 
-        if (!$quote) {
-            return response()->json(['message' => 'Server market price is temporarily unavailable.'], 503);
+        if (!$quote || Carbon::parse((string) $quote->captured_at, 'UTC')->lessThan(now('UTC')->subSeconds(2))
+            || Carbon::parse((string) $quote->captured_at, 'UTC')->greaterThan(now('UTC'))) {
+            return response()->json(['message' => 'A fresh server market price is temporarily unavailable.'], 503);
         }
 
         return response()->json([
