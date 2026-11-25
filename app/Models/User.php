@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Models;
+namespace App\\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Illuminate\\Contracts\\Auth\\MustVerifyEmail;
+use Illuminate\\Database\\Eloquent\\Factories\\HasFactory;
+use Illuminate\\Foundation\\Auth\\User as Authenticatable;
+use Illuminate\\Notifications\\Notifiable;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -14,7 +14,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $attributes = ['role' => 'client'];
 
     protected $fillable = [
-        'name', 'email', 'password', 'country_code', 'phone_e164',
+        'name', 'email', 'password', 'country_code', 'phone_e164', 'google_id',
     ];
 
     protected $hidden = ['password', 'remember_token'];
