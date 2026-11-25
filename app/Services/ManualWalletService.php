@@ -76,6 +76,7 @@ class ManualWalletService
                 throw new RuntimeException('This deposit is no longer awaiting confirmation.');
             }
             $user = User::findOrFail($request->user_id);
+            $isFirstDeposit = !DB::table('wallet_requests')->where('user_id', $user->id)->where('type', 'deposit')->where('status', 'confirmed')->whereNotNull('ledger_key')->exists();
             $wallet = $this->ledger->realWallet($user, 'USD');
             $clearing = $this->ledger->system('CRYPTO_DEPOSIT_CLEARING', 'USD', 'debit');
             $key = 'manual-deposit-credit:'.$requestId;
@@ -87,6 +88,7 @@ class ManualWalletService
                 'status' => 'confirmed', 'amount_usd' => $amount, 'admin_note' => $note,
                 'reviewed_by' => $admin->id, 'reviewed_at' => now(), 'ledger_key' => $key, 'updated_at' => now(),
             ]);
+            app(ReferralCommissionService::class)->recordForConfirmedDeposit($requestId, $isFirstDeposit);
             $this->notifyUser($user, 'wallet-deposit-confirmed:'.$requestId, 'Deposit confirmed',
                 'Your manual deposit request #'.$requestId.' was confirmed and credited to your real wallet.',
                 ['wallet_request_id' => $requestId]);
