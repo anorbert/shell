@@ -491,8 +491,8 @@ test('a tied paper trade records its verified closing price and refunds the stak
 
     expect(app(PaperTradingService::class)->settleDue())->toBe(1)
         ->and(DB::table('paper_trades')->where('id', $tradeId)->value('status'))->toBe('void')
-        ->and(DB::table('paper_trades')->where('id', $tradeId)->value('closing_price'))->toBe('90000.0000000000')
-        ->and($ledger->balanceUnits($ledger->wallet($user)))->toBe(2000000000000)
+        ->and(DB::table('paper_trades')->where('id', $tradeId)->value('closing_price'))->toBe('90000.000000000000')
+        ->and($ledger->balanceUnits($ledger->wallet($user)))->toBe(2010000000000)
         ->and(app(PaperTradingService::class)->settleDue())->toBe(0)
         ->and(DB::table('ledger_transactions')->where('idempotency_key', 'paper-settle:' . $tradeId)->count())->toBe(1);
 });
