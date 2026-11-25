@@ -65,27 +65,56 @@ class ManualWalletService
         }, 3);
     }
 
-    public function confirmDeposit(int $requestId, User $admin, string $amount, ?string $note = null): void
-    {
-        DB::transaction(function () use ($requestId, $admin, $amount, $note) {
+    public function confirmDeposit(
+        int $requestId,
+        User $admin,
+        string $amount,
+        ?string $note = null,
+        bool $manualApproval = false,
+        ?string $internalReference = null
+    ): void {
+        DB::transaction(function () use ($requestId, $admin, $amount, $note, $manualApproval, $internalReference) {
             $request = DB::table('wallet_requests')->where('id', $requestId)->lockForUpdate()->first();
             if (!$request || $request->type !== 'deposit' || $request->status !== 'pending') {
                 throw new RuntimeException('This deposit is no longer awaiting confirmation.');
             }
-            if (empty($request->transaction_hash)) {
-                throw new RuntimeException('A blockchain transaction hash is required before a deposit can be reviewed or credited.');
+            if (!$manualApproval && empty($request->transaction_hash)) {
+                throw new RuntimeException('A blockchain transaction hash is required for blockchain verification.');
+            }
+            if ($manualApproval && !filled($internalReference)) {
+                throw new RuntimeException('A unique internal reference is required for manual deposit approval.');
             }
             $user = User::query()->whereKey($request->user_id)->lockForUpdate()->firstOrFail();
             $isFirstDeposit = !DB::table('wallet_requests')->where('user_id', $user->id)->where('type', 'deposit')->where('status', 'confirmed')->whereNotNull('ledger_key')->exists();
             $wallet = $this->ledger->realWallet($user, 'USD');
             $clearing = $this->ledger->system('CRYPTO_DEPOSIT_CLEARING', 'USD', 'debit');
             $key = 'manual-deposit-credit:'.$requestId;
-            $this->ledger->post($key, 'Admin-verified blockchain deposit #'.$requestId, [
-                ['account_id' => $clearing, 'side' => 'debit', 'amount' => $amount],
-                ['account_id' => $wallet, 'side' => 'credit', 'amount' => $amount],
-            ], ['user_id' => $user->id, 'wallet_request_id' => $requestId, 'admin_id' => $admin->id, 'type' => 'admin_verified_crypto_deposit', 'transaction_hash' => $request->transaction_hash, 'network' => $request->network, 'asset' => $request->asset]);
+            $ledgerMetadata = [
+                'user_id' => $user->id,
+                'wallet_request_id' => $requestId,
+                'admin_id' => $admin->id,
+                'type' => $manualApproval ? 'admin_manual_deposit_credit' : 'admin_verified_crypto_deposit',
+                'verification_method' => $manualApproval ? 'admin_manual_override' : 'blockchain',
+                'transaction_hash' => $request->transaction_hash,
+                'internal_reference' => $internalReference,
+                'network' => $request->network,
+                'asset' => $request->asset,
+                'admin_note' => $note,
+            ];
+            $this->ledger->post(
+                $key,
+                $manualApproval ? 'Admin-authorized manual deposit credit #'.$requestId : 'Admin-verified blockchain deposit #'.$requestId,
+                [
+                    ['account_id' => $clearing, 'side' => 'debit', 'amount' => $amount],
+                    ['account_id' => $wallet, 'side' => 'credit', 'amount' => $amount],
+                ],
+                $ledgerMetadata
+            );
+            $recordedNote = $manualApproval
+                ? '[MANUAL ADMIN CREDIT '.$internalReference.' — NO BLOCKCHAIN HASH] '.$note
+                : $note;
             DB::table('wallet_requests')->where('id', $requestId)->update([
-                'status' => 'confirmed', 'amount_usd' => $amount, 'admin_note' => $note,
+                'status' => 'confirmed', 'amount_usd' => $amount, 'admin_note' => $recordedNote,
                 'reviewed_by' => $admin->id, 'reviewed_at' => now(), 'ledger_key' => $key, 'updated_at' => now(),
             ]);
             app(ReferralCommissionService::class)->recordForConfirmedDeposit($requestId, $isFirstDeposit);
