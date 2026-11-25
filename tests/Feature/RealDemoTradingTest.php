@@ -136,9 +136,12 @@ test('real trading fails closed when the payout reserve cannot cover maximum win
     $ledger = app(LedgerService::class);
     $ledger->provisionClientWallets($user, 'USD');
     fundRealTradingWallet($user, $ledger);
+    // At an 1.8x total return, a $10 stake requires $8 of available profit reserve.
+    // A positive but insufficient reserve must still fail closed.
+    fundRealPayoutReserveForTest($ledger, '7.00000000');
 
     expect(fn () => app(PaperTradingService::class)->open(
-        $user, 'BTCUSDT', 'UP', '10.00000000', 60, 'unfunded-real-reserve-trade', 'real'
+        $user, 'BTCUSDT', 'UP', '10.00000000', 60, 'underfunded-real-reserve-trade', 'real'
     ))->toThrow(RuntimeException::class, 'Real trading is temporarily unavailable because the funded payout reserve is insufficient for this position.');
 
     expect(DB::table('paper_trades')->count())->toBe(0)
