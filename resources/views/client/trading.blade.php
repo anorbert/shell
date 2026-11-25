@@ -1782,6 +1782,7 @@
                 const feedBadge = document.getElementById('position-feed-badge');
                 if (feedBadge) {
                     feedBadge.textContent = source === 'websocket' ? 'Live feed' : 'Server price (1s)';
+                    setPositionText('position-price-label', source === 'websocket' ? 'LIVE MARKET PRICE' : 'SERVER MARKET PRICE · INDICATIVE');
                     feedBadge.className = 'position-feed-badge ' + (source === 'websocket' ? 'is-live' : 'is-server');
                 }
                 if (source === 'websocket') lastPositionWebSocketTickAt = Date.now();
