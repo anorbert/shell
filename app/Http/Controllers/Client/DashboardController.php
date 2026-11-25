@@ -24,6 +24,7 @@ class DashboardController extends Controller
         $currency = config('shell.paper.currency', 'USD');
         $wallets = $ledger->provisionClientWallets($user, $currency);
         $quotes = $markets->freshQuotes();
+        $dashboardSymbols = array_slice(config('shell.market.symbols', []), 0, 4);
 
         $tradeQuery = DB::table('paper_trades')->where('user_id', $user->id);
         $tradeStats = (clone $tradeQuery)
@@ -76,6 +77,8 @@ class DashboardController extends Controller
         return view('client.dashboard', [
             'user' => $user,
             'quotes' => $quotes,
+            'dashboardSymbols' => $dashboardSymbols,
+            'candlesUrl' => route('markets.candles'),
             'marketConnected' => $quotes->isNotEmpty(),
             'demoBalance' => Decimal::fromUnits($ledger->balanceUnits($wallets['demo'])),
             'realBalance' => Decimal::fromUnits($ledger->balanceUnits($wallets['real'])),
