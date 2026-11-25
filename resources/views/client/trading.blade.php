@@ -185,14 +185,13 @@
                     <strong id="position-live-outcome">Waiting for market price…</strong>
                 </div>
             </div>
-            <div class="position-details-grid">
-                <div><span>Stake</span><strong id="position-stake">—</strong></div>
-                <div><span>Opening price</span><strong id="position-opening-price">—</strong></div>
-                <div><span>Expiry</span><strong id="position-expiry">—</strong></div>
-                <div><span>Time remaining</span><strong id="position-countdown">—</strong></div>
-                <div><span>Confirmed closing price</span><strong id="position-closing-price">—</strong></div>
-                <div><span>Total payout</span><strong id="position-final-payout">—</strong></div>
-                <div><span>Net result</span><strong id="position-final-profit">—</strong></div>
+            <div class="position-details-grid" aria-label="Position details">
+                <div class="position-detail-item"><span class="position-detail-label"><svg class="position-detail-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Stake</span></span><strong id="position-stake">—</strong></div>
+                <div class="position-detail-item"><span class="position-detail-label"><svg class="position-detail-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 12h18M12 3v18M7 7l-4 5 4 5M17 7l4 5-4 5"/></svg><span>Opening price</span></span><strong id="position-opening-price">—</strong></div>
+                <div class="position-detail-item"><span class="position-detail-label"><svg class="position-detail-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 2v4m8-4v4M3 10h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/></svg><span>Expiry</span></span><strong id="position-expiry">—</strong></div>
+                <div class="position-detail-item"><span class="position-detail-label"><svg class="position-detail-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 8v4l3 2m6-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg><span>Time remaining</span></span><strong id="position-countdown">—</strong></div>
+                <div class="position-detail-item"><span class="position-detail-label"><svg class="position-detail-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 19V5m0 14h16M7 15l4-4 3 2 5-6"/></svg><span>Confirmed closing price</span></span><strong id="position-closing-price">—</strong></div>
+                <div class="position-detail-item"><span class="position-detail-label"><svg class="position-detail-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2v20m5-16H9a3 3 0 0 0 0 6h6a3 3 0 0 1 0 6H6"/></svg><span>Total payout</span></span><strong id="position-final-payout">—</strong></div>
             </div>
             <div class="position-result" id="position-result" aria-live="polite"></div>
             <button type="button" class="button button-primary position-close" id="position-close" disabled>Waiting for
@@ -541,7 +540,7 @@
 
         .position-modal-card {
             position: relative;
-            width: min(100%, 490px);
+            width: min(100%, 520px);
             max-height: calc(100vh - 36px);
             overflow: auto;
             border: 1px solid #35445a;
@@ -568,7 +567,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            margin: 20px 0 12px
+            margin: 15px 0 12px
         }
 
         .position-market-line strong {
@@ -720,30 +719,60 @@
         .position-details-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 0 18px;
-            margin: 0 0 12px;
-            padding: 5px 16px;
+            gap: 9px;
+            margin: 0 0 14px
+        }
+
+        .position-detail-item {
+            min-width: 0;
+            display: grid;
+            align-content: space-between;
+            gap: 10px;
+            min-height: 76px;
+            padding: 12px;
             border: 1px solid #29384d;
             border-radius: 10px;
-            background: #0b1625
+            background: linear-gradient(145deg, #101e30, #0b1625);
+            transition: border-color .18s ease, background .18s ease
         }
 
-        .position-details-grid>div {
-            min-width: 0;
-            display: flex;
+        .position-detail-item:hover {
+            border-color: #53657d;
+            background: #122238
+        }
+
+        .position-detail-label {
+            display: inline-flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(53, 68, 90, .55)
+            gap: 7px;
+            min-width: 0
         }
 
-        .position-details-grid>div:nth-last-child(-n+2) {
-            border-bottom: 0
+        .position-detail-label>span {
+            font-size: 10px;
+            line-height: 1.3;
+            color: #91a0b4;
+            letter-spacing: .035em
         }
 
-        .position-details-grid strong {
+        .position-detail-icon {
+            width: 15px;
+            height: 15px;
+            flex: 0 0 15px;
+            fill: none;
+            stroke: #c8a96a;
+            stroke-width: 1.7;
+            stroke-linecap: round;
+            stroke-linejoin: round
+        }
+
+        .position-detail-item strong {
+            display: block;
+            min-width: 0;
+            color: #edf3fb;
             font-size: 13px;
+            line-height: 1.35;
+            font-weight: 750;
             font-variant-numeric: tabular-nums;
             overflow-wrap: anywhere
         }
@@ -1956,7 +1985,6 @@
                 setPositionText('position-countdown', 'Settled');
                 setPositionText('position-closing-price', priceText(trade.closing_price));
                 setPositionText('position-final-payout', money(trade.payout_amount ?? (status === 'WON' ? Number(trade.stake) * payoutRate : status === 'TIE' ? Number(trade.stake) : 0)) + ' ' + trade.currency);
-                setPositionText('position-final-profit', money(trade.profit_amount ?? (status === 'WON' ? Number(trade.stake) * (payoutRate - 1) : status === 'LOST' ? -Number(trade.stake) : 0)) + ' ' + trade.currency);
                 const settledNet = Number(trade.profit_amount ?? 0);
                 setPositionText('position-live-outcome', (settledNet > 0 ? '+' : settledNet < 0 ? '−' : '') +
                     money(Math.abs(settledNet)) + ' ' + trade.currency);
@@ -2125,7 +2153,6 @@
                     setPositionText('position-price-label', 'LIVE MARKET PRICE');
                     setPositionText('position-closing-price', '—');
                     setPositionText('position-final-payout', 'Pending');
-                    setPositionText('position-final-profit', 'Pending');
 
                     // The scheduler may have settled this position while the page
                     // was loading. Hydrate the same modal with its final payout.
