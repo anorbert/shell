@@ -103,17 +103,33 @@ class LedgerService
             if ($debit !== $credit || $debit === 0) throw new RuntimeException('Unbalanced ledger transaction.');
 
             foreach ($accounts as $account) {
-                if (!in_array($account->code, ['PAPER_WALLET', 'REAL_WALLET'], true) || $account->normal_side !== 'credit') continue;
                 $netChange = 0;
                 foreach ($entries as $entry) {
                     if ((int) $entry['account_id'] !== (int) $account->id) continue;
                     $units = Decimal::units((string) $entry['amount']);
-                    $netChange += $entry['side'] === 'credit' ? $units : -$units;
+                    if ($account->normal_side === 'debit') {
+                        $netChange += $entry['side'] === 'debit' ? $units : -$units;
+                    } else {
+                        $netChange += $entry['side'] === 'credit' ? $units : -$units;
+                    }
                 }
-                if ($this->balanceUnits((int) $account->id) + $netChange < 0) {
-                    throw new RuntimeException($account->code === 'PAPER_WALLET'
-                        ? 'Insufficient paper balance; ledger posting would create a negative wallet balance.'
-                        : 'Insufficient real wallet balance; ledger posting would create a negative balance.');
+
+                if (in_array($account->code, ['PAPER_WALLET', 'REAL_WALLET'], true) && $account->normal_side === 'credit') {
+                    if ($this->balanceUnits((int) $account->id) + $netChange < 0) {
+                        throw new RuntimeException($account->code === 'PAPER_WALLET'
+                            ? 'Insufficient paper balance; ledger posting would create a negative wallet balance.'
+                            : 'Insufficient real wallet balance; ledger posting would create a negative balance.');
+                    }
+                }
+
+                // The real payout reserve is a debit-normal asset account. Locking
+                // exposure must be atomic with the ledger posting so concurrent
+                // positions cannot promise more profit than the funded reserve.
+                if ($account->code === 'REAL_PAYOUT_RESERVE' && $account->normal_side === 'debit') {
+                    $current = -$this->balanceUnits((int) $account->id);
+                    if ($current + $netChange < 0) {
+                        throw new RuntimeException('Real trading is temporarily unavailable because the funded payout reserve is insufficient for this position.');
+                    }
                 }
             }
 
