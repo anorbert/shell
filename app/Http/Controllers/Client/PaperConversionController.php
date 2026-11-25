@@ -54,7 +54,8 @@ class PaperConversionController extends Controller
             return response()->json($service->quote(
                 strtoupper($values['from_currency']),
                 strtoupper($values['to_currency']),
-                $values['amount']
+                $values['amount'],
+                true
             ));
         } catch (RuntimeException | InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
