@@ -14,10 +14,7 @@ class ProfileController extends Controller
     public function edit(Request $request)
     {
         $user = $request->user();
-        $kyc = DB::table('kyc_submissions')->where('user_id', $user->id)->latest()->first();
-        $kycVerified = DB::table('kyc_submissions')->where('user_id', $user->id)->where('status', 'verified')->exists();
-
-        return view('client.settings.profile', compact('kyc', 'kycVerified'));
+        return view('client.settings.profile');
     }
 
     public function update(ProfileUpdateRequest $request): RedirectResponse
