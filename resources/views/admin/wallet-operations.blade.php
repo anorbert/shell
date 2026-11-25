@@ -3,7 +3,7 @@
 @section('eyebrow','ADMINISTRATION')
 @section('heading','Wallet operations')
 @section('content')
-<div class="notice-banner"><span class="notice-icon">!</span><div><strong>Real-wallet operations</strong><p>Review incoming deposits and outgoing withdrawal requests. Confirm each transfer on the correct blockchain and network, then record its transaction reference to maintain a complete financial audit trail.</p></div><span class="mode-tag">ADMIN REVIEW</span></div>
+<div class="notice-banner"><span class="notice-icon">!</span><div><strong>Real-wallet operations</strong><p>Review incoming deposits and outgoing withdrawal requests. Client-submitted deposits remain pending until an administrator independently verifies the transaction on the correct blockchain and network. Only then can the real wallet be credited.</p></div><span class="mode-tag">ADMIN REVIEW</span></div>
 @if(session('status'))<div class="notice-banner"><div><strong>{{ session('status') }}</strong></div></div>@endif
 @if($errors->any())<div class="notice-banner"><div><strong>Action not completed</strong><p>{{ $errors->first() }}</p></div></div>@endif
 <section class="panel"><div class="panel-head"><div><span class="eyebrow">INBOUND AND OUTBOUND</span><h2>Deposit and withdrawal queue</h2></div><span class="count-chip">{{ $requests->total() }} requests</span></div>
@@ -11,7 +11,11 @@
 @forelse($requests as $item)<tr><td><strong>{{ $item->client_name }}</strong><small>{{ $item->client_email }} · #{{ $item->id }}</small></td><td>{{ strtoupper($item->type) }}<small>@money($item->amount_usd) USD · {{ $item->asset }}/{{ $item->network }}<small>Client crypto quantity: {{ $item->asset_amount ? \App\Support\NumberFormatter::decimal($item->asset_amount) : '—' }} {{ $item->asset }}</small></small></td><td><small>Address: {{ $item->wallet_address }}</small><small>TxID: {{ $item->transaction_hash ?: 'Not recorded' }}</small><small>Memo / tag: {{ $item->wallet_memo ?: '—' }}</small></td><td><span class="table-status {{ in_array($item->status,['confirmed','paid']) ? 'verified' : 'pending' }}">{{ strtoupper($item->status) }}</span></td><td>
 @if($item->status==='pending')
 @if($item->type==='deposit')
-<form method="POST" action="{{ route('admin.wallet-operations.deposit.confirm',$item->id) }}" class="form-stack">@csrf<label>Verified USD credit<input name="amount_usd" type="number" min="1" step="0.00000001" value="{{ $item->amount_usd }}" required></label><label>Admin note<input name="admin_note" maxlength="2000"></label><button class="button button-primary" type="submit">Verify and credit</button></form>
+<form method="POST" action="{{ route('admin.wallet-operations.deposit.confirm',$item->id) }}" class="form-stack">@csrf
+<label>Verified on-chain USD amount<input name="amount_usd" type="number" min="0.00000001" step="0.00000001" value="{{ $item->amount_usd }}" required></label>
+<label>Verification record / admin note<textarea name="admin_note" minlength="10" maxlength="2000" placeholder="Record the explorer result, token contract, received amount and confirmation count." required></textarea></label>
+<label class="check-row"><input type="checkbox" name="chain_verified" value="1" required> I independently verified this transaction on the correct blockchain, including destination, token contract, amount and confirmations.</label>
+<button class="button button-primary" type="submit">Approve and credit real wallet</button></form>
 @else
 <form method="POST" action="{{ route('admin.wallet-operations.withdrawal.paid',$item->id) }}" class="form-stack">@csrf<label>On-chain payout TxID<input name="transaction_hash" maxlength="255" required></label><label>Actual crypto amount sent<input name="settlement_amount" type="number" min="0.000000000001" step="0.000000000001" required></label><label>Fee (USD, optional)<input name="fee_usd" type="number" min="0" step="0.00000001"></label><label>Admin note<input name="admin_note" maxlength="2000" required></label><button class="button button-primary" type="submit">Mark paid</button></form>
 @endif
