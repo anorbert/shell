@@ -15,8 +15,12 @@ use Illuminate\Validation\Rules;
 
 class RegisteredUserController extends Controller
 {
-    public function create()
+    public function create(Request $request)
     {
+        $code = strtoupper(trim((string) $request->query('ref', '')));
+        if ($code !== '' && DB::table('users')->where('referral_code', $code)->where('role', 'client')->exists()) {
+            $request->session()->put('referral_code', $code);
+        }
         return view('auth.register');
     }
 
@@ -60,7 +64,10 @@ class RegisteredUserController extends Controller
             ])->withInput();
         }
 
-        $user = DB::transaction(function () use ($validated, $phoneE164, $ledger) {
+        $referralCode = $request->session()->pull('referral_code');
+        $referrerId = $referralCode ? DB::table('users')->where('referral_code', $referralCode)->where('role', 'client')->value('id') : null;
+
+        $user = DB::transaction(function () use ($validated, $phoneE164, $ledger, $referrerId) {
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
@@ -68,6 +75,10 @@ class RegisteredUserController extends Controller
                 'phone_e164' => $phoneE164,
                 'password' => $validated['password'],
             ]);
+
+            if ($referrerId && (int) $referrerId !== (int) $user->id) {
+                DB::table('users')->where('id', $user->id)->update(['referred_by_user_id' => $referrerId]);
+            }
 
             // Provision both independent wallets atomically. No real funds are created.
             $ledger->provisionClientWallets($user, config('shell.paper.currency', 'USD'));
