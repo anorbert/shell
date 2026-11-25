@@ -7,6 +7,8 @@ use App\Services\MarketQuoteService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Carbon;
 use RuntimeException;
 
 class MarketController extends Controller
@@ -44,6 +46,52 @@ class MarketController extends Controller
                 'favorite' => in_array($quote->symbol, $favorites, true),
             ]),
             'stale_after_seconds' => config('shell.market.max_age_seconds'),
+        ]);
+    }
+
+    /**
+     * Authenticated fallback price for the active position modal. The cache
+     * lock is shared across workers, so one stale symbol triggers at most one
+     * provider refresh per second regardless of how many clients poll.
+     */
+    public function price(Request $request, MarketQuoteService $markets)
+    {
+        $values = $request->validate([
+            'symbol' => ['required', 'string', 'max:24'],
+        ]);
+        $symbol = strtoupper(trim($values['symbol']));
+
+        if (!in_array($symbol, config('shell.market.symbols', []), true)) {
+            return response()->json(['message' => 'Unsupported market symbol.'], 422);
+        }
+
+        $quote = DB::table('market_quotes')->where('symbol', $symbol)->first();
+        $now = now('UTC');
+        $isFresh = $quote && Carbon::parse((string) $quote->captured_at, 'UTC')
+            ->betweenIncluded($now->copy()->subSeconds(2), $now);
+
+        if (!$isFresh) {
+            try {
+                Cache::lock('market-price-refresh:' . $symbol, 1)->get(function () use ($markets, $symbol) {
+                    $markets->refreshSymbolQuote($symbol);
+                });
+            } catch (\Throwable $exception) {
+                report($exception);
+            }
+
+            // A concurrent request may have refreshed the quote while this
+            // request failed to acquire the one-second lock.
+            $quote = DB::table('market_quotes')->where('symbol', $symbol)->first();
+        }
+
+        if (!$quote) {
+            return response()->json(['message' => 'Server market price is temporarily unavailable.'], 503);
+        }
+
+        return response()->json([
+            'symbol' => $quote->symbol,
+            'price' => (string) $quote->price,
+            'captured_at' => Carbon::parse((string) $quote->captured_at, 'UTC')->toIso8601String(),
         ]);
     }
 
