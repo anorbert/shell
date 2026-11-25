@@ -820,3 +820,11 @@ input,select,textarea{accent-color:var(--gold)}
 .shell-home .shell-chart .chart-illustration-note{bottom:22px;z-index:2;font-size:7px}
 .shell-home .shell-chart-grid{top:32px;bottom:18px;background:repeating-linear-gradient(to bottom,transparent 0,transparent 35px,#ffffff0b 36px),repeating-linear-gradient(to right,transparent 0,transparent 76px,#ffffff08 77px)}
 @media(max-width:760px){.shell-home .shell-chart{height:245px}.shell-home .chart-timeframes{font-size:7px}}
+
+
+/* Landing hero: keep the market visual clean, without terminal labels or quote text. */
+.shell-home .shell-terminal-picture-only{padding:0;border:0;border-radius:16px;background:#0a1421;overflow:hidden;box-shadow:0 35px 100px #0008}
+.shell-home .shell-chart-picture-only{height:320px;margin:0;padding:0;border:0;border-radius:16px;background:#0a1421}
+.shell-home .shell-chart-picture-only .shell-chart-grid{top:0;bottom:0}
+.shell-home .shell-chart-picture-only svg{top:0;height:100%}
+@media(max-width:760px){.shell-home .shell-chart-picture-only{height:245px}}
