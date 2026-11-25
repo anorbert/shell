@@ -1,15 +1,16 @@
 /* Active wallet balance in the client top navigation. */
 .topbar-wallet-balance{
   display:flex;flex-direction:column;justify-content:center;gap:3px;
+  font-family:'DM Sans',sans-serif;
   min-width:132px;padding:7px 12px;border:1px solid #34465c;border-radius:9px;
   background:linear-gradient(135deg,#142337,#0d1725);text-decoration:none;
   transition:border-color .18s,background .18s;
 }
 .topbar-wallet-balance:hover{border-color:#c8a96a;background:#19283b}
-.topbar-wallet-meta{display:flex;align-items:center;gap:6px;color:#91a1b6;font-size:8px;font-weight:800;letter-spacing:.12em;line-height:1.2}
+.topbar-wallet-meta{display:flex;align-items:center;gap:6px;color:#91a1b6;font-family:inherit;font-size:10px;font-weight:700;letter-spacing:.08em;line-height:1.2}
 .topbar-wallet-meta i{width:6px;height:6px;border-radius:50%;background:#65c99c;box-shadow:0 0 0 3px #65c99c18}
-.topbar-wallet-balance>strong{color:#f0d99f;font:800 14px 'Manrope';font-variant-numeric:tabular-nums;white-space:nowrap}
-.topbar-wallet-balance>strong small{color:#91a1b6;font:700 9px 'DM Sans';margin-left:2px}
+.topbar-wallet-balance>strong{color:#f0d99f;font-family:inherit;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1.25}
+.topbar-wallet-balance>strong small{color:#91a1b6;font-family:inherit;font-size:9px;font-weight:600;margin-left:2px}
 @media(max-width:720px){
   .topbar-wallet-balance{min-width:0;padding:6px 8px;gap:2px;border-radius:8px}
   .topbar-wallet-meta{font-size:7px;letter-spacing:.08em}
