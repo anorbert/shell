@@ -139,11 +139,20 @@ class WalletOperationsController extends Controller
     public function confirmDeposit(Request $request, int $walletRequest, ManualWalletService $wallets)
     {
         $data = $request->validate([
-            'amount_usd' => ['required', 'regex:/^(?:[1-9][0-9]{0,7})(?:\.[0-9]{1,8})?$/'],
-            'admin_note' => ['nullable', 'string', 'max:2000'],
+            'amount_usd' => ['required', 'regex:/^(?:[1-9][0-9]{0,7})(?:\\.[0-9]{1,8})?$/'],
+            'chain_verified' => ['required', 'accepted'],
+            'admin_note' => ['required', 'string', 'min:10', 'max:2000'],
+        ], [
+            'chain_verified.accepted' => 'Confirm that you independently verified the transaction on the correct blockchain.',
         ]);
+
+        $deposit = DB::table('wallet_requests')->where('id', $walletRequest)
+            ->where('type', 'deposit')->where('status', 'pending')->first();
+        abort_unless($deposit && filled($deposit->transaction_hash), 422,
+            'This deposit has no submitted transaction hash and cannot be credited.');
+
         try {
-            $wallets->confirmDeposit($walletRequest, $request->user(), $data['amount_usd'], $data['admin_note'] ?? null);
+            $wallets->confirmDeposit($walletRequest, $request->user(), $data['amount_usd'], $data['admin_note']);
             return back()->with('status', 'Deposit verified and credited to the client real wallet.');
         } catch (RuntimeException $exception) {
             return back()->withErrors(['wallet_request' => $exception->getMessage()]);
