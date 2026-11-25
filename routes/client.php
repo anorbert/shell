@@ -14,10 +14,11 @@ use App\Http\Controllers\Client\StatementController;
 use App\Http\Controllers\Client\WalletRequestController;
 use App\Http\Controllers\Client\KycController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\ResolveActiveWallet;
 
 Route::get('/r/{code}', [ReferralController::class, 'capture'])->whereAlphaNumeric('code')->name('referral.capture');
 
-Route::middleware(['auth', 'client', 'verified'])->group(function () {
+Route::middleware(['auth', 'client', 'verified', ResolveActiveWallet::class])->group(function () {
     Route::get('/referrals', [ReferralController::class, 'index'])->name('referrals.index');
     Route::get('/markets', [MarketController::class, 'index'])->name('markets.index');
     Route::get('/markets/data', [MarketController::class, 'data'])->name('markets.data');
