@@ -33,6 +33,7 @@ Route::middleware(['auth', 'client', 'verified'])->group(function () {
 
     Route::get('/portfolio', PortfolioController::class)->name('portfolio.index');
     Route::get('/wallet-requests', [WalletRequestController::class, 'index'])->name('wallet-requests.index');
+    Route::post('/wallet/account/switch', [WalletRequestController::class, 'switchAccount'])->middleware('throttle:30,1')->name('wallet.account.switch');
     Route::get('/kyc', [KycController::class, 'index'])->name('kyc.index');
     Route::post('/kyc', [KycController::class, 'submit'])->middleware('throttle:3,60')->name('kyc.submit');
     Route::post('/wallet-requests/deposit', [WalletRequestController::class, 'deposit'])->middleware('throttle:5,60')->name('wallet-requests.deposit');
