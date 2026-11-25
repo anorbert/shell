@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
+use Illuminate\Support\Str;
 
 class RegisteredUserController extends Controller
 {
@@ -68,6 +69,10 @@ class RegisteredUserController extends Controller
         $referrerId = $referralCode ? DB::table('users')->where('referral_code', $referralCode)->where('role', 'client')->value('id') : null;
 
         $user = DB::transaction(function () use ($validated, $phoneE164, $ledger, $referrerId) {
+            do {
+                $newReferralCode = strtoupper(Str::random(10));
+            } while (DB::table('users')->where('referral_code', $newReferralCode)->exists());
+
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
@@ -76,7 +81,9 @@ class RegisteredUserController extends Controller
                 'password' => $validated['password'],
             ]);
 
-            DB::table('users')->where('id', $user->id)->update(['referral_code' => $newReferralCode]);\n\n            if ($referrerId && (int) $referrerId !== (int) $user->id) {
+            DB::table('users')->where('id', $user->id)->update(['referral_code' => $newReferralCode]);
+
+            if ($referrerId && (int) $referrerId !== (int) $user->id) {
                 DB::table('users')->where('id', $user->id)->update(['referred_by_user_id' => $referrerId]);
             }
 
