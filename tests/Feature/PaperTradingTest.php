@@ -646,19 +646,26 @@ test('server modal price refresh lock limits provider calls for a stale symbol',
         'updated_at' => $staleAt,
     ]);
 
-    $first = $this->actingAs($user)->getJson('/markets/price?symbol=BTCUSDT')
+    // Simulate another worker currently refreshing this symbol. This request
+    // must not start a second provider call while the distributed lock is held.
+    $heldLock = Cache::lock('market-price-refresh:BTCUSDT', 10);
+    expect($heldLock->get())->toBeTrue();
+
+    $this->actingAs($user)->getJson('/markets/price?symbol=BTCUSDT')->assertStatus(503);
+    Http::assertNothingSent();
+    $heldLock->release();
+
+    $first = $this->getJson('/markets/price?symbol=BTCUSDT')
         ->assertOk()
         ->assertJsonPath('symbol', 'BTCUSDT')
         ->assertJsonPath('price', '91234.56');
     $this->getJson('/markets/price?symbol=BTCUSDT')
         ->assertOk()
-        ->assertJsonPath('price', '91234.56000000');
+        ->assertJsonPath('price', '91234.56');
 
     Http::assertSentCount(1);
     expect($first->json('captured_at'))->toBeString();
 });
-
-
 test('position modal never restores the waiting placeholder after receiving a price', function () {
     $view = file_get_contents(resource_path('views/client/trading.blade.php'));
 
