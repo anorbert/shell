@@ -785,3 +785,24 @@ input,select,textarea{accent-color:var(--gold)}
 @media(max-width:1050px){.shell-footer-main{grid-template-columns:minmax(0,1.5fr) minmax(170px,.8fr);gap:35px}.shell-footer-brand{grid-column:auto;max-width:560px}.shell-footer-brand>p{max-width:500px}.shell-home-footer-bottom{grid-template-columns:1fr auto}}
 @media(max-width:760px){.shell-footer-main{grid-template-columns:minmax(0,1fr) minmax(120px,.8fr);gap:24px 20px}.shell-footer-brand{grid-column:auto}.shell-footer-support{display:none}.shell-home-footer-bottom{grid-template-columns:1fr auto}.shell-footer-legal{display:none}}
 @media(max-width:520px){.shell-footer-main{grid-template-columns:1fr;gap:25px}.shell-footer-brand{grid-column:1}.shell-footer-column{padding-top:18px;border-top:1px solid #253247}.shell-home-footer-bottom{grid-template-columns:1fr auto}}
+
+
+/* Landing page spacing refinement: tighter section rhythm without crowding content. */
+.shell-home .shell-hero{min-height:560px;padding:58px 0 64px}
+.shell-home .shell-how-section{padding:70px 0}
+.shell-home .shell-platform-section{padding:62px 0;gap:56px}
+.shell-home .shell-account-section{padding:70px 0;gap:52px}
+.shell-home .shell-faq-section{padding:65px 0}
+.shell-home .shell-faq-section .shell-section-heading{margin-bottom:25px}
+.shell-home .shell-final-cta{margin:8px 0 42px;padding:36px}
+.shell-home>.shell-risk-section{margin-bottom:28px}
+@media(max-width:760px){
+  .shell-home .shell-hero{min-height:0;padding:42px 0 48px;gap:26px}
+  .shell-home .shell-how-section{padding:48px 0}
+  .shell-home .shell-platform-section{padding:46px 0;gap:22px}
+  .shell-home .shell-account-section{padding:48px 0;gap:22px}
+  .shell-home .shell-faq-section{padding:46px 0}
+  .shell-home .shell-faq-section .shell-section-heading{margin-bottom:20px}
+  .shell-home .shell-final-cta{margin:8px 0 32px;padding:23px}
+  .shell-home>.shell-risk-section{margin-bottom:24px}
+}
