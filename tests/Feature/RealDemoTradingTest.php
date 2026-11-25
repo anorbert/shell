@@ -5,6 +5,7 @@ use App\Services\LedgerService;
 use App\Services\MarketQuoteService;
 use App\Services\PaperTradingService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 use Mockery;
 
 function configureTradingQuoteForEnvironmentTests(): void
@@ -24,6 +25,7 @@ function configureTradingQuoteForEnvironmentTests(): void
         'price' => '65000.000000000000',
         'captured_at' => now('UTC')->toDateTimeString(),
     ]);
+    $markets->shouldReceive('refreshSymbolQuote')->andReturn(true);
     app()->instance(MarketQuoteService::class, $markets);
 }
 
@@ -137,4 +139,43 @@ test('real trading fails closed when the payout reserve cannot cover maximum win
 
     expect(DB::table('paper_trades')->count())->toBe(0)
         ->and($ledger->balanceUnits($ledger->realWallet($user, 'USD')))->toBe(10000000000);
+});
+
+test('real winning settlement pays the real wallet using the opening payout snapshot', function () {
+    configureTradingQuoteForEnvironmentTests();
+    $user = User::factory()->create();
+    createConfirmedTradingDeposit($user);
+    $ledger = app(LedgerService::class);
+    $ledger->provisionClientWallets($user, 'USD');
+    fundRealTradingWallet($user, $ledger);
+    fundRealPayoutReserveForTest($ledger);
+
+    $tradeId = app(PaperTradingService::class)->open(
+        $user, 'BTCUSDT', 'UP', '10.00000000', 60, 'real-win-settlement', 'real'
+    );
+    $trade = DB::table('paper_trades')->where('id', $tradeId)->first();
+
+    Carbon::setTestNow(Carbon::parse($trade->expires_at, 'UTC')->addSecond());
+    DB::table('market_quote_snapshots')->insert([
+        'symbol' => 'BTCUSDT',
+        'price' => '66000.000000000000',
+        'captured_at' => now('UTC')->toDateTimeString(),
+    ]);
+
+    // Changing the live setting after opening must not alter this trade's terms.
+    config(['shell.paper.payout_basis_points' => 10000]);
+    expect(app(PaperTradingService::class)->settleDue())->toBe(1);
+
+    $settled = DB::table('paper_trades')->where('id', $tradeId)->first();
+    $realWallet = $ledger->realWallet($user, 'USD');
+    $reserve = $ledger->system('REAL_PAYOUT_RESERVE', 'USD', 'credit');
+    $profitEscrow = $ledger->system('REAL_PAYOUT_ESCROW', 'USD', 'credit');
+
+    expect($settled->status)->toBe('won')
+        ->and((int) $settled->payout_basis_points)->toBe(18000)
+        ->and($ledger->balanceUnits($realWallet))->toBe(10800000000)
+        ->and($ledger->normalBalanceUnits($reserve))->toBe(99200000000)
+        ->and($ledger->normalBalanceUnits($profitEscrow))->toBe(0);
+
+    Carbon::setTestNow();
 });
