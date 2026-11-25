@@ -72,22 +72,25 @@ class ManualWalletService
             if (!$request || $request->type !== 'deposit' || $request->status !== 'pending') {
                 throw new RuntimeException('This deposit is no longer awaiting confirmation.');
             }
+            if (empty($request->transaction_hash)) {
+                throw new RuntimeException('A blockchain transaction hash is required before a deposit can be reviewed or credited.');
+            }
             $user = User::query()->whereKey($request->user_id)->lockForUpdate()->firstOrFail();
             $isFirstDeposit = !DB::table('wallet_requests')->where('user_id', $user->id)->where('type', 'deposit')->where('status', 'confirmed')->whereNotNull('ledger_key')->exists();
             $wallet = $this->ledger->realWallet($user, 'USD');
             $clearing = $this->ledger->system('CRYPTO_DEPOSIT_CLEARING', 'USD', 'debit');
             $key = 'manual-deposit-credit:'.$requestId;
-            $this->ledger->post($key, 'Admin-confirmed manual crypto deposit #'.$requestId, [
+            $this->ledger->post($key, 'Admin-verified blockchain deposit #'.$requestId, [
                 ['account_id' => $clearing, 'side' => 'debit', 'amount' => $amount],
                 ['account_id' => $wallet, 'side' => 'credit', 'amount' => $amount],
-            ], ['user_id' => $user->id, 'wallet_request_id' => $requestId, 'admin_id' => $admin->id, 'type' => 'manual_deposit']);
+            ], ['user_id' => $user->id, 'wallet_request_id' => $requestId, 'admin_id' => $admin->id, 'type' => 'admin_verified_crypto_deposit', 'transaction_hash' => $request->transaction_hash, 'network' => $request->network, 'asset' => $request->asset]);
             DB::table('wallet_requests')->where('id', $requestId)->update([
                 'status' => 'confirmed', 'amount_usd' => $amount, 'admin_note' => $note,
                 'reviewed_by' => $admin->id, 'reviewed_at' => now(), 'ledger_key' => $key, 'updated_at' => now(),
             ]);
             app(ReferralCommissionService::class)->recordForConfirmedDeposit($requestId, $isFirstDeposit);
             $this->notifyUser($user, 'wallet-deposit-confirmed:'.$requestId, 'Deposit confirmed',
-                'Your manual deposit request #'.$requestId.' was confirmed and credited to your real wallet.',
+                'Your crypto deposit request #'.$requestId.' was verified and credited to your real wallet.',
                 ['wallet_request_id' => $requestId]);
         }, 3);
     }
