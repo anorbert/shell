@@ -144,12 +144,30 @@ class ManualWalletService
 
     public function hasSuccessfulDeposit(User $user): bool
     {
-        return DB::table('wallet_requests')
+        $deposits = DB::table('wallet_requests')
             ->where('user_id', $user->id)
             ->where('type', 'deposit')
             ->where('status', 'confirmed')
             ->whereNotNull('ledger_key')
-            ->exists();
+            ->get(['ledger_key', 'amount_usd']);
+
+        foreach ($deposits as $deposit) {
+            $credited = DB::table('ledger_transactions')
+                ->join('ledger_entries', 'ledger_entries.ledger_transaction_id', '=', 'ledger_transactions.id')
+                ->join('ledger_accounts', 'ledger_accounts.id', '=', 'ledger_entries.ledger_account_id')
+                ->where('ledger_transactions.idempotency_key', $deposit->ledger_key)
+                ->where('ledger_accounts.owner_key', 'USER:'.$user->id)
+                ->where('ledger_accounts.code', 'REAL_WALLET')
+                ->where('ledger_entries.side', 'credit')
+                ->where('ledger_entries.amount', $deposit->amount_usd)
+                ->exists();
+
+            if ($credited) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function hasApprovedKyc(User $user): bool
