@@ -208,10 +208,6 @@
     </section>
 @else
     <x-client-attention title="Real wallet" tag="REAL ACCOUNT"><p>Deposit and withdrawal requests are recorded here. Deposits are credited after transaction verification. Withdrawals are processed after identity approval and operations review.</p></x-client-attention>
-    <div class="metric-grid wallet-detail-metrics">
-        <article class="metric-card"><span class="metric-label">AVAILABLE REAL BALANCE</span><strong>@money($selectedBalance)</strong><small>{{ $currency }} · real wallet</small></article>
-        <article class="metric-card"><span class="metric-label">ACCOUNT TYPE</span><strong>Real</strong><small>Independent from demo trading</small></article>
-    </div>
     <div class="content-grid">
         <section class="panel" id="deposit-form">
             <div class="panel-head"><div><span class="wallet-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrow"/></svg></span><span class="eyebrow">ADD REAL FUNDS</span><h2>Deposit crypto</h2></div></div>
