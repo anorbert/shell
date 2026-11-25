@@ -12,6 +12,7 @@ use App\Http\Controllers\Client\PortfolioController;
 use App\Http\Controllers\Client\ReferralController;
 use App\Http\Controllers\Client\StatementController;
 use App\Http\Controllers\Client\WalletRequestController;
+use App\Http\Controllers\Client\KycController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/r/{code}', [ReferralController::class, 'capture'])->whereAlphaNumeric('code')->name('referral.capture');
@@ -32,7 +33,8 @@ Route::middleware(['auth', 'client', 'verified'])->group(function () {
 
     Route::get('/portfolio', PortfolioController::class)->name('portfolio.index');
     Route::get('/wallet-requests', [WalletRequestController::class, 'index'])->name('wallet-requests.index');
-    Route::post('/wallet-requests/kyc', [WalletRequestController::class, 'submitKyc'])->middleware('throttle:3,60')->name('wallet-requests.kyc');
+    Route::get('/kyc', [KycController::class, 'index'])->name('kyc.index');
+    Route::post('/kyc', [KycController::class, 'submit'])->middleware('throttle:3,60')->name('kyc.submit');
     Route::post('/wallet-requests/deposit', [WalletRequestController::class, 'deposit'])->middleware('throttle:5,60')->name('wallet-requests.deposit');
     Route::post('/wallet-requests/withdraw', [WalletRequestController::class, 'withdraw'])->middleware('throttle:5,60')->name('wallet-requests.withdraw');
     Route::post('/portfolio/demo/top-up', [DemoWalletController::class, 'topUp'])->middleware('throttle:5,1')->name('portfolio.demo.top-up');
