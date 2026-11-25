@@ -21,9 +21,16 @@ class WalletOperationsController extends Controller
             ->select('wallet_requests.*', 'users.name as client_name', 'users.email as client_email')
             ->latest('wallet_requests.created_at')->paginate(30);
         $methods = DB::table('crypto_payment_methods')->orderBy('asset')->orderBy('network')->get();
+        $walletStats = DB::table('wallet_requests')
+            ->selectRaw("COUNT(*) as total_requests")
+            ->selectRaw("SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_requests")
+            ->selectRaw("SUM(CASE WHEN type = 'deposit' AND status = 'pending' THEN 1 ELSE 0 END) as pending_deposits")
+            ->selectRaw("SUM(CASE WHEN type = 'withdrawal' AND status = 'pending' THEN 1 ELSE 0 END) as pending_withdrawals")
+            ->selectRaw("SUM(CASE WHEN type = 'deposit' AND status = 'confirmed' THEN amount_usd ELSE 0 END) as confirmed_deposits_usd")
+            ->first();
         $reserveAccount = $ledger->system('REAL_PAYOUT_RESERVE', 'USD', 'credit');
         $realPayoutReserve = Decimal::fromUnits($ledger->normalBalanceUnits($reserveAccount));
-        return view('admin.wallet-operations', compact('requests', 'methods', 'realPayoutReserve'));
+        return view('admin.wallet-operations', compact('requests', 'methods', 'realPayoutReserve', 'walletStats'));
     }
 
     /**
