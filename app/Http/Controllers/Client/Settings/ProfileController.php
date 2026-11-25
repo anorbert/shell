@@ -1,14 +1,14 @@
 <?php
 
-namespace App\\Http\\Controllers\\Client\\Settings;
+namespace App\Http\Controllers\Client\Settings;
 
-use App\\Http\\Controllers\\Controller;
-use App\\Http\\Requests\\Settings\\ProfileUpdateRequest;
-use App\\Services\\ManualWalletService;
-use Illuminate\\Http\\RedirectResponse;
-use Illuminate\\Http\\Request;
-use Illuminate\\Support\\Facades\\Auth;
-use Illuminate\\Support\\Facades\\DB;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Settings\ProfileUpdateRequest;
+use App\Services\ManualWalletService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ProfileController extends Controller
 {
