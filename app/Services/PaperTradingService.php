@@ -87,7 +87,7 @@ class PaperTradingService
             if ($isReal && $payoutBasisPoints > 10000) {
                 $reservedProfit = Decimal::multiplyRatio($stake, $payoutBasisPoints - 10000, 10000);
                 $reserve = $this->ledger->system('REAL_PAYOUT_RESERVE', $currency, 'debit');
-                $profitEscrow = $this->ledger->system('REAL_PAYOUT_ESCROW', $currency, 'credit');
+                $profitEscrow = $this->ledger->system('REAL_PAYOUT_ESCROW', $currency, 'debit');
                 $entries[] = ['account_id' => $reserve, 'side' => 'credit', 'amount' => $reservedProfit];
                 $entries[] = ['account_id' => $profitEscrow, 'side' => 'debit', 'amount' => $reservedProfit];
                 // Reserve is a debit-normal asset account; debit-normal balance must never go below zero.
@@ -292,7 +292,8 @@ class PaperTradingService
                     $profit = Decimal::fromUnits(Decimal::units($payout) - Decimal::units((string) $trade->stake));
                     if ($isReal) {
                         if (Decimal::units($profit) > 0) {
-                            $entries[] = ['account_id' => $profitEscrow, 'side' => 'debit', 'amount' => $profit];
+                            $rewards = $this->ledger->system('REAL_PAYOUT_REWARDS', $currency, 'debit');
+                            $entries[] = ['account_id' => $rewards, 'side' => 'debit', 'amount' => $profit];
                         }
                     } else {
                         $rewards = $this->ledger->system('PAPER_REWARDS', $currency, 'debit');
