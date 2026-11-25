@@ -106,25 +106,10 @@
                 <a href="#faq">Frequently asked questions</a>
                 <a href="#risk">Risk information</a>
             </nav>
-
-            <nav class="shell-footer-column" aria-label="Account links">
-                <h3>Your account</h3>
-                <a href="{{ route('login') }}">Sign in</a>
-                <a href="{{ route('register') }}">Create an account</a>
-                <a href="{{ route('register') }}">Explore demo access</a>
-            </nav>
-
-            <div class="shell-footer-column shell-footer-support">
-                <h3>Need assistance?</h3>
-                <p>Questions about your account, trading workflow or platform access? Contact the SHELL support team.</p>
-                <button type="button" class="shell-footer-support-link" id="shellFooterOpenChat"><span aria-hidden="true">↗</span> Chat with support</button>
-                <span class="shell-footer-response">Support conversations are saved in the SHELL help desk.</span>
-            </div>
         </div>
 
         <div class="shell-home-footer-bottom">
             <p>© {{ date('Y') }} SHELL. All rights reserved.</p>
-            <div class="shell-footer-legal"><span>Market access may be restricted by local law.</span><a href="#risk">Risk disclosure</a><a href="#faq">Help & FAQs</a></div>
             <a class="shell-footer-backtop" href="#top">Back to top <span aria-hidden="true">↑</span></a>
         </div>
     </footer>
