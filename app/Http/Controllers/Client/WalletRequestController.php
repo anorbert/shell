@@ -37,9 +37,6 @@ class WalletRequestController extends Controller
     public function submitKyc(Request $request)
     {
         $user = $request->user();
-        if (!app(ManualWalletService::class)->hasSuccessfulDeposit($user)) {
-            return back()->withErrors(['kyc' => 'Complete and receive confirmation for at least one real-money deposit before submitting KYC.']);
-        }
         $data = $request->validate([
             'document_type' => ['required', 'in:national_id,passport,driving_licence'],
             'document_number' => ['required', 'string', 'min:4', 'max:120'],
