@@ -64,6 +64,23 @@
                 @endif
             </nav>
             <div class="topbar-right">
+                @if(auth()->user()->role==='client')
+                    @php
+                        $activeWalletType = request()->query('account') === 'real'
+                            ? 'real'
+                            : (request()->query('account') === 'demo' ? 'demo' : (session('active_wallet', 'demo') === 'real' ? 'real' : 'demo'));
+                        $activeWalletCurrency = config('shell.paper.currency', 'USD');
+                        $activeWalletLedger = app(\App\Services\LedgerService::class);
+                        $activeWalletId = $activeWalletType === 'real'
+                            ? $activeWalletLedger->realWallet(auth()->user(), $activeWalletCurrency)
+                            : $activeWalletLedger->demoWallet(auth()->user(), $activeWalletCurrency);
+                        $activeWalletBalance = \App\Support\Decimal::fromUnits($activeWalletLedger->balanceUnits($activeWalletId));
+                    @endphp
+                    <a class="topbar-wallet-balance" href="{{ route('wallet-requests.index', ['account' => $activeWalletType]) }}" title="Open {{ strtoupper($activeWalletType) }} wallet">
+                        <span class="topbar-wallet-meta"><i></i>{{ strtoupper($activeWalletType) }} WALLET</span>
+                        <strong>@money($activeWalletBalance) <small>{{ $activeWalletCurrency }}</small></strong>
+                    </a>
+                @endif
                 <span class="status-pill"><i></i>{{ auth()->user()->role==='admin'?'Administrator':'Client account' }}</span>
                 <details class="profile-menu">
                     <summary class="profile-trigger" aria-label="Open profile menu"><span class="avatar">{{ strtoupper(substr(auth()->user()->name,0,1)) }}</span><span class="profile-trigger-copy"><strong>{{ auth()->user()->name }}</strong><small>{{ auth()->user()->role==='admin'?'Administrator':'My account' }}</small></span><span class="profile-chevron">⌄</span></summary>
