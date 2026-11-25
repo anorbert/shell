@@ -179,3 +179,34 @@ test('real winning settlement pays the real wallet using the opening payout snap
 
     Carbon::setTestNow();
 });
+
+test('a confirmed request without its matching real-wallet ledger credit does not unlock real trading', function () {
+    configureTradingQuoteForEnvironmentTests();
+    $user = User::factory()->create();
+    createConfirmedTradingDeposit($user);
+
+    expect(fn () => app(PaperTradingService::class)->open(
+        $user, 'BTCUSDT', 'UP', '10.00000000', 60, 'confirmed-without-ledger', 'real'
+    ))->toThrow(RuntimeException::class, 'Real trading unlocks after your first deposit has been verified and credited to your real wallet.');
+});
+
+test('admin payout reserve funding is audited and idempotent by external custody reference', function () {
+    $admin = User::factory()->create();
+    $admin->forceFill(['role' => 'admin'])->save();
+    $admin->markEmailAsVerified();
+
+    $payload = [
+        'amount_usd' => '500.00000000',
+        'external_reference' => 'custody-proof-reference-001',
+        'admin_note' => 'External treasury balance verified and segregated.',
+    ];
+
+    $this->actingAs($admin)->post('/admin/wallet-operations/real-payout-reserve', $payload)->assertRedirect();
+    $this->actingAs($admin)->post('/admin/wallet-operations/real-payout-reserve', $payload)->assertRedirect();
+
+    $ledger = app(LedgerService::class);
+    $reserve = $ledger->system('REAL_PAYOUT_RESERVE', 'USD', 'credit');
+
+    expect($ledger->normalBalanceUnits($reserve))->toBe(50000000000)
+        ->and(DB::table('ledger_transactions')->where('idempotency_key', 'like', 'real-reserve-fund:%')->count())->toBe(1);
+});
