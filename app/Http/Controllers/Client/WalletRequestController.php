@@ -29,8 +29,7 @@ class WalletRequestController extends Controller
         $user = $request->user();
         $currency = config('shell.paper.currency', 'USD');
         $wallets = $ledger->provisionClientWallets($user, $currency);
-        $selectedAccount = $request->query('account') === 'demo' ? 'demo' : 'real';
-        $request->session()->put('active_wallet', $selectedAccount);
+        $selectedAccount = $request->session()->get('active_wallet', 'demo');
         $selectedBalance = Decimal::fromUnits($ledger->balanceUnits($wallets[$selectedAccount]));
         $demoBalance = Decimal::fromUnits($ledger->balanceUnits($wallets['demo']));
         $realBalance = Decimal::fromUnits($ledger->balanceUnits($wallets['real']));
