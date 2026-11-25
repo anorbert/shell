@@ -22,15 +22,19 @@
                     <div class="shell-terminal-pair"><div><span class="coin-symbol">₿</span><div><strong>Crypto markets</strong><small>Spot market references</small></div></div></div>
                     <div class="shell-chart">
                         <div class="shell-chart-grid"></div>
-                        <svg viewBox="0 0 620 220" preserveAspectRatio="none" role="img" aria-label="Illustrative crypto price chart">
-                            <defs><linearGradient id="shellChartLine" x1="0" y1="0" x2="620" y2="0"><stop stop-color="#65c6d8"/><stop offset="1" stop-color="#b8a16a"/></linearGradient><linearGradient id="shellChartFill" x1="0" y1="0" x2="0" y2="220"><stop stop-color="#65c6d8" stop-opacity=".22"/><stop offset="1" stop-color="#65c6d8" stop-opacity="0"/></linearGradient></defs>
-                            <path d="M0 160 C28 150 42 166 67 137 S110 148 136 121 S175 139 204 105 S244 126 270 95 S309 111 337 81 S374 103 401 65 S442 89 468 59 S508 79 536 45 S581 57 620 25 L620 220 L0 220Z" fill="url(#shellChartFill)"/>
-                            <path d="M0 160 C28 150 42 166 67 137 S110 148 136 121 S175 139 204 105 S244 126 270 95 S309 111 337 81 S374 103 401 65 S442 89 468 59 S508 79 536 45 S581 57 620 25" fill="none" stroke="url(#shellChartLine)" stroke-width="3" stroke-linecap="round"/>
-                            <circle cx="620" cy="25" r="5" fill="#b8a16a"/>
+                        <svg viewBox="0 0 620 220" preserveAspectRatio="none" role="img" aria-label="Illustrative cryptocurrency candlestick chart">
+                            <defs><linearGradient id="shellCandleGlow" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#65c6d8" stop-opacity=".22"/><stop offset="1" stop-color="#65c6d8" stop-opacity="0"/></linearGradient></defs>
+                            <path d="M0 165 L620 42 L620 220 L0 220Z" fill="url(#shellCandleGlow)" opacity=".25"/>
+                            <g stroke-width="2" stroke-linecap="round">
+                              <g stroke="#62c79c" fill="#62c79c"><path d="M28 145V92"/><rect x="21" y="108" width="14" height="25" rx="1"/><path d="M76 132V76"/><rect x="69" y="91" width="14" height="28" rx="1"/><path d="M124 119V63"/><rect x="117" y="78" width="14" height="26" rx="1"/><path d="M172 126V70"/><rect x="165" y="83" width="14" height="30" rx="1"/><path d="M220 101V49"/><rect x="213" y="61" width="14" height="25" rx="1"/><path d="M268 111V53"/><rect x="261" y="69" width="14" height="29" rx="1"/><path d="M316 87V35"/><rect x="309" y="47" width="14" height="25" rx="1"/><path d="M364 94V39"/><rect x="357" y="52" width="14" height="29" rx="1"/><path d="M412 70V20"/><rect x="405" y="31" width="14" height="25" rx="1"/><path d="M460 76V25"/><rect x="453" y="37" width="14" height="25" rx="1"/><path d="M508 53V9"/><rect x="501" y="18" width="14" height="23" rx="1"/><path d="M556 58V13"/><rect x="549" y="23" width="14" height="23" rx="1"/></g>
+                              <g stroke="#e58e8e" fill="#e58e8e"><path d="M52 153V103"/><rect x="45" y="116" width="14" height="24" rx="1"/><path d="M100 143V91"/><rect x="93" y="103" width="14" height="25" rx="1"/><path d="M148 138V88"/><rect x="141" y="98" width="14" height="26" rx="1"/><path d="M196 118V62"/><rect x="189" y="74" width="14" height="26" rx="1"/><path d="M244 116V66"/><rect x="237" y="78" width="14" height="24" rx="1"/><path d="M292 103V48"/><rect x="285" y="60" width="14" height="26" rx="1"/><path d="M340 101V48"/><rect x="333" y="59" width="14" height="25" rx="1"/><path d="M388 84V31"/><rect x="381" y="43" width="14" height="25" rx="1"/><path d="M436 83V31"/><rect x="429" y="42" width="14" height="25" rx="1"/><path d="M484 67V20"/><rect x="477" y="31" width="14" height="23" rx="1"/><path d="M532 61V14"/><rect x="525" y="25" width="14" height="22" rx="1"/><path d="M580 49V5"/><rect x="573" y="15" width="14" height="22" rx="1"/></g>
+                            </g>
+                            <path d="M0 174 C95 160 130 151 210 128 S345 104 420 77 S535 52 620 25" fill="none" stroke="#b8a16a" stroke-width="1.5" stroke-dasharray="5 6" opacity=".7"/>
+                            <circle cx="580" cy="25" r="4" fill="#b8a16a"/>
                         </svg>
-                        <span class="chart-illustration-note">ILLUSTRATIVE CHART · NOT A LIVE QUOTE</span>
+                        <span class="chart-illustration-note">ILLUSTRATIVE CANDLESTICK CHART · NOT LIVE MARKET DATA</span>
                     </div>
-                    <div class="shell-chart-legend"><span><i class="legend-dot legend-cyan"></i> Price analysis</span><span>Chart intervals</span></div>
+                    <div class="shell-chart-legend"><span><i class="legend-dot legend-cyan"></i> Candlestick view</span><span>OHLC price movement</span></div>
                     <div class="shell-direction-preview"><div><span>↗</span><strong>UP</strong><small>Price moves higher</small></div><div><span>↘</span><strong>DOWN</strong><small>Price moves lower</small></div></div>
                     <div class="shell-terminal-bottom"><span>Fixed-time trading interface</span><span>Demo & real account modes</span></div>
                 </div>
