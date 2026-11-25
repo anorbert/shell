@@ -34,13 +34,16 @@ Route::middleware('guest')->group(function () {
         ->name('password.store');
 });
 
+// Email ownership is proven by the expiring signed URL and email hash.
+// Requiring an existing browser session here breaks links opened in another
+// browser or under a localhost/127.0.0.1 hostname alias.
+Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
+    ->middleware(['signed:relative', 'throttle:6,1'])
+    ->name('verification.verify');
+
 Route::middleware('auth')->group(function () {
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');
-
-    Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
-        ->middleware(['signed', 'throttle:6,1'])
-        ->name('verification.verify');
 
     Route::post('email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
         ->middleware('throttle:6,1')
