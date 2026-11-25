@@ -22,6 +22,7 @@ class PaperTradingController extends Controller
         // can never hold the trading terminal open.
         $currency = config('shell.paper.currency', 'USD');
         $selectedAccount = $request->query('account') === 'real' ? 'real' : 'demo';
+        $request->session()->put('active_wallet', $selectedAccount);
         $wallet = $ledger->provisionClientWallets($request->user(), $currency)[$selectedAccount];
 
         return view('client.trading', [
