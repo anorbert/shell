@@ -17,7 +17,7 @@ class ReferralCommissionService
         if (!$referred || !$referred->referred_by_user_id || $referred->referred_by_user_id === $referred->id) return;
 
         $settings = DB::table('referral_settings')->where('id', 1)->first();
-        if (!$settings || !$settings->enabled || (float) $deposit->amount_usd < (float) $settings->minimum_deposit_usd) return;
+        if (!$settings || !$settings->enabled || Decimal::compare((string) $deposit->amount_usd, (string) $settings->minimum_deposit_usd) < 0) return;
 
         $percent = (float) ($isFirstDeposit ? $settings->first_deposit_percent : $settings->recurring_deposit_percent);
         if ($percent <= 0) return;
