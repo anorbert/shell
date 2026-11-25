@@ -11,6 +11,42 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css','resources/js/site.js'])
     @stack('styles')
+    <style>
+        /* Wallet switcher layout is kept with the shell so stale compiled CSS cannot put the menu in the header flow. */
+        .topbar-right{display:flex;align-items:center;justify-content:flex-end;gap:12px;min-width:0}
+        .topbar-wallet-menu{position:relative;display:block;flex:0 0 auto;z-index:300}
+        .topbar-wallet-menu>.topbar-wallet-balance{display:flex;flex-direction:column;align-items:stretch;justify-content:center;min-width:164px;min-height:44px;box-sizing:border-box;padding:6px 11px;border:1px solid #34445a;border-radius:9px;background:#111c2b;gap:3px;list-style:none;cursor:pointer}
+        .topbar-wallet-menu>.topbar-wallet-balance::-webkit-details-marker{display:none}
+        .topbar-wallet-menu>.topbar-wallet-balance::marker{content:""}
+        .topbar-wallet-menu[open]>.topbar-wallet-balance,.topbar-wallet-menu>.topbar-wallet-balance:hover{background:#172337;border-color:#806b43}
+        .topbar-wallet-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#91a1b6;font-size:9px;font-weight:700;letter-spacing:.08em;line-height:1.2}
+        .topbar-wallet-meta i{width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:#65c99c;box-shadow:0 0 0 3px #65c99c18}
+        .topbar-wallet-balance>strong{color:#f0d99f;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1.2}
+        .topbar-wallet-balance>strong small{color:#91a1b6;font-size:9px;font-weight:600;margin-left:2px}
+        .wallet-switch-chevron{font-size:13px;line-height:9px;color:#9eacbf}
+        .topbar-wallet-menu[open] .wallet-switch-chevron{transform:rotate(180deg)}
+        .wallet-switch-dropdown{display:block;position:absolute!important;top:calc(100% + 10px)!important;right:0!important;left:auto!important;width:310px;max-width:calc(100vw - 24px);box-sizing:border-box;padding:10px;background:#111c2b;border:1px solid #35445a;border-radius:10px;box-shadow:0 18px 55px #000b;z-index:400}
+        .topbar-wallet-menu:not([open])>.wallet-switch-dropdown{display:none!important}
+        .wallet-switch-heading{display:grid;gap:5px;padding:11px 11px 13px;margin:0 0 5px;border-bottom:1px solid #29384d}
+        .wallet-switch-heading>span{color:#e6c681;font-size:9px;font-weight:800;letter-spacing:.13em}
+        .wallet-switch-heading>small{color:#8795a9;font-size:10px;line-height:1.45}
+        .wallet-switch-dropdown form{display:block;margin:0}
+        .wallet-switch-option{display:flex;width:100%;align-items:center;gap:9px;padding:10px 8px;border:1px solid transparent;border-radius:7px;background:transparent;color:#e9edf5;text-align:left;cursor:pointer}
+        .wallet-switch-option:hover,.wallet-switch-option.is-active{background:#1a2638;border-color:#34445a}
+        .wallet-switch-icon{width:31px;height:31px;display:grid;place-items:center;flex:0 0 31px;border-radius:8px;background:#243246;color:#aab8ca}
+        .wallet-switch-icon.real{background:#30291d;color:#e2c98e}
+        .wallet-switch-icon .nav-icon{width:16px;height:16px}
+        .wallet-switch-copy{display:grid;gap:3px;min-width:0;flex:1}
+        .wallet-switch-copy strong,.wallet-switch-amount strong{font-size:11px;font-weight:700}
+        .wallet-switch-copy small{color:#8291a6;font-size:9px;white-space:nowrap}
+        .wallet-switch-amount{display:grid;gap:3px;text-align:right}
+        .wallet-switch-amount strong{color:#f0d99f;font-variant-numeric:tabular-nums;white-space:nowrap}
+        .wallet-switch-amount small{color:#8493a8;font-size:8px}
+        .wallet-switch-check{color:#70c9a0;font-size:13px;font-weight:800}
+        .wallet-switch-manage{display:flex;justify-content:space-between;align-items:center;margin-top:6px;padding:11px 9px 4px;border-top:1px solid #29384d;color:#d7bd86;font-size:10px;font-weight:700;text-decoration:none}
+        @media(max-width:720px){.topbar-wallet-menu>.topbar-wallet-balance{min-width:112px;min-height:40px;padding:5px 8px}.wallet-switch-dropdown{top:calc(100% + 8px)!important;right:0!important;width:min(290px,calc(100vw - 20px))}}
+        @media(max-width:380px){.topbar-wallet-menu>.topbar-wallet-balance{min-width:102px;padding:5px 6px}.wallet-switch-dropdown{right:-4px!important;width:min(280px,calc(100vw - 16px))}}
+    </style>
 </head>
 <body class="shell-body">
 <svg aria-hidden="true" class="icon-library" xmlns="http://www.w3.org/2000/svg">
