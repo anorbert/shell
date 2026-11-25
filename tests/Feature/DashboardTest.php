@@ -16,6 +16,11 @@ test('client accounts can visit the client dashboard', function () {
         ->assertSee('Two independent wallets')
         ->assertSee('DEMO WALLET')
         ->assertSee('REAL WALLET')
+        ->assertSee('Trading activity')
+        ->assertSee('Recent trades')
+        ->assertSee('Open positions')
+        ->assertSee('Request status')
+        ->assertSee('Market availability')
         ->assertSee('Client');
 });
 
