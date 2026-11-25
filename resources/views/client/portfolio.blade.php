@@ -61,17 +61,14 @@
             <div class="panel-head">
                 <div><span class="eyebrow">REAL-MONEY ENVIRONMENT</span>
                     <h2>Real wallet</h2>
-                </div><span class="table-status pending">NOT FUNDED</span>
+                </div><span class="table-status {{ $realWalletStatus === 'funded' ? 'verified' : 'pending' }}">{{ $realWalletStatus === 'funded' ? 'FUNDED · REAL TRADING ELIGIBLE' : 'DEPOSIT REQUIRED' }}</span>
             </div>
-            <p class="muted">Your real wallet is maintained separately from demo trading. Submit deposits through a
-                supported asset and network; funds are credited after the transaction is verified by the operations team.
+            <p class="muted">Your real wallet is maintained separately from demo trading. A confirmed deposit unlocks real trading once funds are credited. Pending deposit requests do not unlock trading.
             </p>
             <div class="metric-card"><span class="metric-label">AVAILABLE USD</span><strong>@money($realBalance)</strong></div>
-            <a class="button button-primary" href="{{ route('wallet-requests.index') }}">Open deposit / withdrawal
-                center</a>
-            <p class="muted">Withdrawals are available after identity verification and are processed by the operations
-                team, with transaction details recorded in your request history. Demo trading remains separate from
-                real-wallet funds.</p>
+            <a class="button button-primary" href="{{ route('wallet-requests.index', ['account' => 'real']) }}">Open deposit / withdrawal center</a>
+            <a class="button button-secondary" href="{{ route('trading.index', ['account' => 'real']) }}">Open real trading</a>
+            <p class="muted">Withdrawals require approved KYC and sufficient available real-wallet funds. KYC is not required to deposit or trade. Demo trading remains separate from real-wallet funds.</p>
         </section>
     </div>
     <div class="modal" id="demo-topup-modal" aria-hidden="true">
