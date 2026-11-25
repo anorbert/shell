@@ -89,9 +89,11 @@ class PaperTradingService
                 $reservedProfit = Decimal::multiplyRatio($stake, $payoutBasisPoints - 10000, 10000);
                 $reserve = $this->ledger->system('REAL_PAYOUT_RESERVE', $currency, 'credit');
                 $profitEscrow = $this->ledger->system('REAL_PAYOUT_ESCROW', $currency, 'credit');
-                $entries[] = ['account_id' => $reserve, 'side' => 'credit', 'amount' => $reservedProfit];
-                $entries[] = ['account_id' => $profitEscrow, 'side' => 'debit', 'amount' => $reservedProfit];
-                // Reserve is a debit-normal asset account; debit-normal balance must never go below zero.
+                // Move available reserve into a dedicated credit-normal payout escrow.
+                // The reserve is reduced now, so concurrent positions cannot over-commit
+                // the same funds; settlement either pays this escrow or releases it.
+                $entries[] = ['account_id' => $reserve, 'side' => 'debit', 'amount' => $reservedProfit];
+                $entries[] = ['account_id' => $profitEscrow, 'side' => 'credit', 'amount' => $reservedProfit];
             }
 
             $this->ledger->post(
