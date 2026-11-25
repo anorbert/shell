@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OperationsController;
+use App\Http\Controllers\Admin\ReferralAdminController;
 use App\Http\Controllers\Admin\SupportController;
 use App\Http\Controllers\Admin\WalletOperationsController;
 use Illuminate\Support\Facades\Route;
@@ -12,6 +13,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin', 'verified']
     Route::get('/clients', [ClientController::class, 'index'])->name('clients');
     Route::get('/clients/{client}', [ClientController::class, 'show'])->whereNumber('client')->name('clients.show');
     Route::get('/operations', OperationsController::class)->name('operations');
+    Route::get('/referrals', [ReferralAdminController::class, 'index'])->name('referrals.index');
+    Route::post('/referrals/settings', [ReferralAdminController::class, 'save'])->name('referrals.settings');
+    Route::post('/referrals/{commission}/approve', [ReferralAdminController::class, 'approve'])->whereNumber('commission')->name('referrals.approve');
+    Route::post('/referrals/{commission}/reject', [ReferralAdminController::class, 'reject'])->whereNumber('commission')->name('referrals.reject');
     Route::get('/wallet-operations', [WalletOperationsController::class, 'index'])->name('wallet-operations.index');
     Route::get('/kyc', [WalletOperationsController::class, 'kycIndex'])->name('kyc.index');
     Route::get('/kyc/{submission}', [WalletOperationsController::class, 'kycShow'])->whereNumber('submission')->name('kyc.show');
