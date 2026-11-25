@@ -133,16 +133,13 @@ class LedgerService
                     }
                 }
 
-                // Real stake escrow, payout escrow and the available reserve are
-                // credit-normal liabilities. Their balances may never become negative.
-                // Account locks make exposure reservation safe under concurrent opens.
-                if (in_array($account->code, ['REAL_TRADE_ESCROW', 'REAL_PAYOUT_ESCROW', 'REAL_PAYOUT_RESERVE'], true)
-                    && $account->normal_side === 'credit') {
+                // Stake escrow remains a hard liability control. The payout reserve and
+                // legacy payout escrow are no longer prerequisites for opening a new trade;
+                // new winning profits are posted to REAL_PAYOUT_EXPENSE at settlement.
+                if ($account->code === 'REAL_TRADE_ESCROW' && $account->normal_side === 'credit') {
                     $current = $this->balanceUnits((int) $account->id);
                     if ($current + $netChange < 0) {
-                        throw new RuntimeException($account->code === 'REAL_PAYOUT_RESERVE'
-                            ? 'Real trading is temporarily unavailable because the funded payout reserve is insufficient for this position.'
-                            : 'Real trade settlement is blocked because its reserved escrow balance is insufficient.');
+                        throw new RuntimeException('Real trade settlement is blocked because its stake escrow balance is insufficient.');
                     }
                 }
             }
