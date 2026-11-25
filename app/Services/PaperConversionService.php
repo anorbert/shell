@@ -25,15 +25,22 @@ class PaperConversionService
         }
     }
 
-    private function price(string $currency): array
+    private function price(string $currency, bool $refreshMarketQuote): array
     {
         // USD is the demo account's denomination. USDT market quotes are used as a 1:1 pricing proxy.
         if (in_array($currency, ['USD', 'USDT'], true)) return ['price' => '1.000000000000', 'captured_at' => null];
-        $quote = $this->markets->freshQuote($currency.'USDT');
+
+        $symbol = $currency . 'USDT';
+        // A preview must obtain a provider response now; confirmation only reads the
+        // just-previewed server snapshot so its timestamp can be compared safely.
+        $quote = $refreshMarketQuote
+            ? $this->markets->refreshSymbolQuote($symbol)
+            : $this->markets->freshQuote($symbol);
+
         return ['price' => (string) $quote->price, 'captured_at' => (string) $quote->captured_at];
     }
 
-    public function quote(string $from, string $to, string $amount): array
+    public function quote(string $from, string $to, string $amount, bool $refreshMarketQuotes = false): array
     {
         if (!config('shell.paper.enabled')) throw new RuntimeException('Paper conversion is disabled.');
         $this->validatePair($from, $to);
@@ -41,7 +48,7 @@ class PaperConversionService
         if ($units <= 0 || $units > Decimal::units((string) config('shell.paper.max_stake', '10000.00000000'))) {
             throw new RuntimeException('Conversion amount is outside the paper limits.');
         }
-        $source = $this->price($from); $target = $this->price($to);
+        $source = $this->price($from, $refreshMarketQuotes); $target = $this->price($to, $refreshMarketQuotes);
         $out = BigDecimal::of($amount)->multipliedBy($source['price'])->dividedBy($target['price'], 8, RoundingMode::DOWN);
         if ($out->isZero() || $out->isNegative()) throw new RuntimeException('The estimated output is too small to convert.');
         return ['from_currency' => $from, 'to_currency' => $to, 'amount_in' => $amount, 'amount_out' => (string) $out,
@@ -62,7 +69,7 @@ class PaperConversionService
                 }
                 return $existing;
             }
-            $quote = $this->quote($from, $to, $amount);
+            $quote = $this->quote($from, $to, $amount, false);
             if (($quote['source_quote_at'] ?? '') !== $sourceQuoteAt || ($quote['target_quote_at'] ?? '') !== ($targetQuoteAt ?? '')) {
                 throw new RuntimeException('Market quote changed. Refresh the preview before confirming.');
             }
