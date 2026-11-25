@@ -81,6 +81,9 @@ class PaperTradingService
                 ['account_id' => $escrow, 'side' => 'credit', 'amount' => $stake],
             ];
             $payoutBasisPoints = (int) config('shell.paper.payout_basis_points', 18000);
+            if ($payoutBasisPoints < 10000) {
+                throw new RuntimeException('The configured payout rate is invalid; real and demo trading are paused until it is corrected.');
+            }
             $reservedProfit = '0.00000000';
             if ($isReal && $payoutBasisPoints > 10000) {
                 $reservedProfit = Decimal::multiplyRatio($stake, $payoutBasisPoints - 10000, 10000);
