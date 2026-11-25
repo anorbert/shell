@@ -13,20 +13,24 @@
 
 
     @if ($selectedAccount === 'real' && (float) $realPayoutReserve <= 0)
-        <section class="real-activation real-activation-paused" role="status" aria-labelledby="real-activation-title">
+        <section class="real-activation" aria-labelledby="real-activation-title">
             <div class="real-activation-top">
-                <span class="real-activation-icon" aria-hidden="true">!</span>
-                <span class="real-activation-kicker">REAL-MONEY SERVICE STATUS</span>
-                <span class="real-activation-status">TEMPORARILY UNAVAILABLE</span>
+                <span class="real-activation-icon" aria-hidden="true">↗</span>
+                <span class="real-activation-kicker">YOUR REAL ACCOUNT</span>
+                <span class="real-activation-status">READY FOR YOUR FIRST DEPOSIT</span>
             </div>
-            <h2 id="real-activation-title">Real trading is preparing to open</h2>
-            <p class="real-activation-copy">Your real account is separate from demo. We are completing the platform's payout-liquidity setup before accepting real-money positions. You can explore the markets in demo mode in the meantime.</p>
+            <h2 id="real-activation-title">Start your trading journey with a deposit</h2>
+            <p class="real-activation-copy">Your real account is ready for funding. Make your first deposit to begin setting up your real-money trading account. Once your payment has been verified, credited and real trading is enabled, you can use your available balance to open positions.</p>
             <div class="real-activation-steps">
-                <div><span>01</span><strong>Explore the markets</strong><small>Practise with demo funds while real trading is unavailable.</small></div>
-                <div><span>02</span><strong>Keep your funds safe</strong><small>Do not send a deposit until real trading is officially available.</small></div>
-                <div><span>03</span><strong>Get ready to activate</strong><small>When service opens, a verified and credited deposit will qualify your account to trade.</small></div>
+                <div><span>01</span><strong>Fund your account</strong><small>Choose an available payment method and deposit into your real wallet.</small></div>
+                <div><span>02</span><strong>Get your payment confirmed</strong><small>Our operations team reviews your transaction and credits your wallet after verification.</small></div>
+                <div><span>03</span><strong>Begin trading</strong><small>When real trading is enabled, use your available real balance to place your first position.</small></div>
             </div>
-            <a class="button button-primary" href="{{ route('trading.index', ['account' => 'demo']) }}">Explore demo trading</a>
+            <div class="real-activation-footer">
+                <a class="button button-primary" href="{{ route('wallet-requests.index', ['account' => 'real']) }}">Make your first deposit <span aria-hidden="true">→</span></a>
+                <span class="real-activation-note">Only deposit through the payment methods shown in your wallet center.</span>
+            </div>
+            <p class="real-activation-disclaimer">Deposits are subject to verification. A submitted request or transaction hash is not a confirmed deposit. Trading involves risk; you can lose the full amount staked.</p>
         </section>
     @elseif ($selectedAccount === 'real' && ! $hasConfirmedDeposit)
         <section class="real-activation" aria-labelledby="real-activation-title">
