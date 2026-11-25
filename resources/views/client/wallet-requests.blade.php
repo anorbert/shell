@@ -89,7 +89,9 @@
 .wallet-page .wallet-account-option>strong{display:block;margin:8px 0 2px;font-size:clamp(25px,3vw,32px);line-height:1.15;letter-spacing:-.035em}
 .wallet-page .wallet-account-option>strong small{font-size:12px;font-weight:700;letter-spacing:0}
 .wallet-page .wallet-account-hint{display:block;line-height:1.5}
-.wallet-page .page-action-row{gap:10px;margin:0 0 20px}
+.wallet-page .page-action-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:10px;margin:0 0 20px}
+.wallet-page .page-action-row>.button{box-sizing:border-box;display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:0 16px;line-height:1.2;white-space:nowrap;text-align:center}
+.wallet-page .page-action-row>.button svg{display:block;flex:0 0 17px;width:17px;height:17px;margin:0;vertical-align:initial}
 .wallet-page .page-action-row .button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:10px 16px;border-radius:10px;font-weight:750}
 .wallet-page .notice-banner{margin:0 0 18px;padding:14px 16px;line-height:1.55}
 .wallet-page .metric-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:0 0 20px}
@@ -181,6 +183,9 @@
         <a href="#demo-topup-form" class="button button-primary"><svg class="nav-icon"><use href="#i-plus"/></svg> Add demo funds</a>
     @endif
     <a href="{{ route('statement.index', ['wallet' => $selectedAccount === 'demo' ? 'PAPER_WALLET' : 'REAL_WALLET']) }}" class="button button-secondary"><svg class="nav-icon"><use href="#i-receipt"/></svg> {{ ucfirst($selectedAccount) }} statement</a>
+    @if($selectedAccount === 'real')
+        <a href="{{ route('kyc.index') }}" class="button button-secondary"><svg class="nav-icon"><use href="#i-shield"/></svg> Open identity verification</a>
+    @endif
 </div>
 @if(session('status'))<div class="notice-banner"><div><strong>{{ session('status') }}</strong></div></div>@endif
 @if($errors->any())<div class="notice-banner"><div><strong>Check the submitted details</strong><p>{{ $errors->first() }}</p></div></div>@endif
@@ -203,7 +208,6 @@
     </section>
 @else
     <x-client-attention title="Real wallet" tag="REAL ACCOUNT"><p>Deposit and withdrawal requests are recorded here. Deposits are credited after transaction verification. Withdrawals are processed after identity approval and operations review.</p></x-client-attention>
-    <div class="page-action-row"><a class="button button-secondary" href="{{ route('kyc.index') }}"><svg class="nav-icon"><use href="#i-shield"/></svg> Open identity verification</a></div>
     <div class="metric-grid wallet-detail-metrics">
         <article class="metric-card"><span class="metric-label">AVAILABLE REAL BALANCE</span><strong>@money($selectedBalance)</strong><small>{{ $currency }} · real wallet</small></article>
         <article class="metric-card"><span class="metric-label">ACCOUNT TYPE</span><strong>Real</strong><small>Independent from demo trading</small></article>
