@@ -66,9 +66,7 @@
             <div class="topbar-right">
                 @if(auth()->user()->role==='client')
                     @php
-                        $activeWalletType = request()->query('account') === 'real'
-                            ? 'real'
-                            : (request()->query('account') === 'demo' ? 'demo' : (session('active_wallet', 'demo') === 'real' ? 'real' : 'demo'));
+                        $activeWalletType = session('active_wallet', 'demo') === 'real' ? 'real' : 'demo';
                         $activeWalletCurrency = config('shell.paper.currency', 'USD');
                         $activeWalletLedger = app(\App\Services\LedgerService::class);
                         $activeWalletId = $activeWalletType === 'real'
