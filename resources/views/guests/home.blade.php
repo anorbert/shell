@@ -82,16 +82,16 @@
 
     </main>
 
-    <footer class="shell-home-footer" aria-label="SHELL site footer">
-        <section class="shell-risk-section" id="risk" aria-labelledby="shell-risk-title">
-            <div class="shell-risk-icon" aria-hidden="true">!</div>
-            <div>
-                <span class="eyebrow">IMPORTANT RISK INFORMATION</span>
-                <h2 id="shell-risk-title">Trading involves significant risk.</h2>
-                <p>Fixed-time and binary-style options are high-risk financial products. You may lose all the money committed to a position. These products may not be suitable for every investor and may be restricted or prohibited in some jurisdictions. Do not trade with money you cannot afford to lose. Understand the product, its payout structure, fees and settlement rules, and seek independent financial and legal advice where appropriate. SHELL does not promise profits or guaranteed income.</p>
-            </div>
-        </section>
+    <section class="shell-risk-section" id="risk" aria-labelledby="shell-risk-title">
+        <div class="shell-risk-icon" aria-hidden="true">!</div>
+        <div>
+            <span class="eyebrow">IMPORTANT RISK INFORMATION</span>
+            <h2 id="shell-risk-title">Trading involves significant risk.</h2>
+            <p>Fixed-time and binary-style options are high-risk financial products. You may lose all the money committed to a position. These products may not be suitable for every investor and may be restricted or prohibited in some jurisdictions. Do not trade with money you cannot afford to lose. Understand the product, its payout structure, fees and settlement rules, and seek independent financial and legal advice where appropriate. SHELL does not promise profits or guaranteed income.</p>
+        </div>
+    </section>
 
+    <footer class="shell-home-footer" aria-label="SHELL site footer">
         <div class="shell-footer-main">
             <div class="shell-footer-brand">
                 <a class="brand" href="{{ route('home') }}" aria-label="SHELL home"><span class="brand-mark">S</span><span>SHELL<span class="brand-sub">MARKET & TRADING PLATFORM</span></span></a>
