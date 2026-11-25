@@ -6,7 +6,6 @@ use App\Services\MarketQuoteService;
 use App\Services\PaperTradingService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
-use Mockery;
 
 function configureTradingQuoteForEnvironmentTests(): void
 {
@@ -19,7 +18,7 @@ function configureTradingQuoteForEnvironmentTests(): void
         'shell.market.symbols' => ['BTCUSDT'],
     ]);
 
-    $markets = Mockery::mock(MarketQuoteService::class);
+    $markets = \\Mockery::mock(MarketQuoteService::class);
     $markets->shouldReceive('freshExecutionQuote')->andReturn((object) [
         'symbol' => 'BTCUSDT',
         'price' => '65000.000000000000',
