@@ -77,7 +77,7 @@
                         $activeWalletBalance = \App\Support\Decimal::fromUnits($activeWalletLedger->balanceUnits($activeWalletId));
                     @endphp
                     <a class="topbar-wallet-balance" href="{{ route('wallet-requests.index', ['account' => $activeWalletType]) }}" title="Open {{ strtoupper($activeWalletType) }} wallet">
-                        <span class="topbar-wallet-meta"><i></i>{{ strtoupper($activeWalletType) }} WALLET</span>
+                        <span class="topbar-wallet-meta"><i></i>{{ strtoupper($activeWalletType) }}</span>
                         <strong>@money($activeWalletBalance) <small>{{ $activeWalletCurrency }}</small></strong>
                     </a>
                 @endif
