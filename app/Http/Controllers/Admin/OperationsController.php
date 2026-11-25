@@ -23,6 +23,8 @@ class OperationsController extends Controller
             'staleQuoteCount' => max(0, count(config('shell.market.symbols', [])) - $quotes->where('is_fresh', true)->count()),
             'overdueTradeCount' => DB::table('paper_trades')->where('status', 'open')->where('expires_at', '<=', now())->count(),
             'openTradeCount' => DB::table('paper_trades')->where('status', 'open')->count(),
+            'openDemoTradeCount' => DB::table('paper_trades')->where('account_type', 'demo')->where('status', 'open')->count(),
+            'openRealTradeCount' => DB::table('paper_trades')->where('account_type', 'real')->where('status', 'open')->count(),
             'marketLastSuccess' => $marketJob?->last_success_at ? \Illuminate\Support\Carbon::parse($marketJob->last_success_at) : null,
             'openTrades' => DB::table('paper_trades')
                 ->join('users', 'users.id', '=', 'paper_trades.user_id')
