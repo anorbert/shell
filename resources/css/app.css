@@ -806,3 +806,17 @@ input,select,textarea{accent-color:var(--gold)}
   .shell-home .shell-final-cta{margin:8px 0 32px;padding:23px}
   .shell-home>.shell-risk-section{margin-bottom:24px}
 }
+
+/* More authentic landing-page chart terminal details */
+.shell-home .shell-chart{height:270px;padding-top:34px;overflow:hidden;background:#0a1421}
+.shell-home .shell-chart-toolbar{position:absolute;z-index:2;top:0;left:0;right:0;height:32px;display:flex;align-items:center;gap:12px;padding:0 10px;border-bottom:1px solid #ffffff12;background:#111e2d;font-size:8px;color:#aab8c8}
+.shell-home .chart-symbol{font-weight:800;color:#edf2f7;letter-spacing:.04em}
+.shell-home .chart-price{font-weight:700;color:#e7edf4}
+.shell-home .chart-price i{font-style:normal;color:#48c69a;margin-left:4px}
+.shell-home .chart-timeframes{margin-left:auto;color:#8292a7;white-space:nowrap}
+.shell-home .chart-timeframes b{color:#e6c681;background:#3a3020;padding:4px 5px;border-radius:3px}
+.shell-home .shell-chart svg{height:calc(100% - 18px);top:28px}
+.shell-home .shell-chart-axis{position:absolute;bottom:0;left:0;right:0;height:18px;display:flex;justify-content:space-around;align-items:center;background:#0b1725;border-top:1px solid #ffffff12;color:#72839a;font-size:7px}
+.shell-home .shell-chart .chart-illustration-note{bottom:22px;z-index:2;font-size:7px}
+.shell-home .shell-chart-grid{top:32px;bottom:18px;background:repeating-linear-gradient(to bottom,transparent 0,transparent 35px,#ffffff0b 36px),repeating-linear-gradient(to right,transparent 0,transparent 76px,#ffffff08 77px)}
+@media(max-width:760px){.shell-home .shell-chart{height:245px}.shell-home .chart-timeframes{font-size:7px}}
