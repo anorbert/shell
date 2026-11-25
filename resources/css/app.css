@@ -746,7 +746,7 @@ input,select,textarea{accent-color:var(--gold)}
 
 /* SHELL landing page finishing pass */
 .shell-home .shell-home-footer{display:block;border-top:1px solid #2a394e;padding:34px 0 22px}
-.shell-home .shell-risk-section{margin:0 0 38px;grid-template-columns:42px minmax(0,1fr);padding:25px 28px}
+.shell-home>.shell-risk-section{width:min(1180px,calc(100% - 48px));margin:0 auto 38px;grid-template-columns:42px minmax(0,1fr);padding:25px 28px}
 .shell-home .shell-risk-section p{max-width:1120px;margin-bottom:0}
 .shell-footer-main{display:grid;grid-template-columns:minmax(240px,1.55fr) minmax(130px,.8fr) minmax(130px,.8fr) minmax(190px,1fr);gap:42px;padding:12px 0 38px;align-items:start}
 .shell-footer-brand>p,.shell-footer-support>p{font-size:11px;line-height:1.85;color:#92a1b5;margin:18px 0 16px;max-width:340px}
