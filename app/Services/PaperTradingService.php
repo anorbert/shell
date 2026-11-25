@@ -84,8 +84,8 @@ class PaperTradingService
             $reservedProfit = '0.00000000';
             if ($isReal && $payoutBasisPoints > 10000) {
                 $reservedProfit = Decimal::multiplyRatio($stake, $payoutBasisPoints - 10000, 10000);
-                $reserve = $this->ledger->system('REAL_PAYOUT_RESERVE', $currency, 'debit');
-                $profitEscrow = $this->ledger->system('REAL_PAYOUT_ESCROW', $currency, 'debit');
+                $reserve = $this->ledger->system('REAL_PAYOUT_RESERVE', $currency, 'credit');
+                $profitEscrow = $this->ledger->system('REAL_PAYOUT_ESCROW', $currency, 'credit');
                 $entries[] = ['account_id' => $reserve, 'side' => 'credit', 'amount' => $reservedProfit];
                 $entries[] = ['account_id' => $profitEscrow, 'side' => 'debit', 'amount' => $reservedProfit];
                 // Reserve is a debit-normal asset account; debit-normal balance must never go below zero.
@@ -247,8 +247,8 @@ class PaperTradingService
             $user = User::query()->findOrFail($trade->user_id);
             $wallet = $isReal ? $this->ledger->realWallet($user, $currency) : $this->ledger->demoWallet($user, $currency);
             $escrow = $this->ledger->system($isReal ? 'REAL_TRADE_ESCROW' : 'PAPER_ESCROW', $currency);
-            $profitEscrow = $isReal ? $this->ledger->system('REAL_PAYOUT_ESCROW', $currency, 'debit') : null;
-            $reserve = $isReal ? $this->ledger->system('REAL_PAYOUT_RESERVE', $currency, 'debit') : null;
+            $profitEscrow = $isReal ? $this->ledger->system('REAL_PAYOUT_ESCROW', $currency, 'credit') : null;
+            $reserve = $isReal ? $this->ledger->system('REAL_PAYOUT_RESERVE', $currency, 'credit') : null;
             $reservedProfit = $isReal && (int) ($trade->payout_basis_points ?? 18000) > 10000
                 ? Decimal::multiplyRatio((string) $trade->stake, (int) $trade->payout_basis_points - 10000, 10000)
                 : '0.00000000';
@@ -261,8 +261,8 @@ class PaperTradingService
                 $entries[] = ['account_id' => $escrow, 'side' => 'debit', 'amount' => (string) $trade->stake];
                 $entries[] = ['account_id' => $wallet, 'side' => 'credit', 'amount' => (string) $trade->stake];
                 if ($isReal && Decimal::units($reservedProfit) > 0) {
-                    $entries[] = ['account_id' => $profitEscrow, 'side' => 'credit', 'amount' => $reservedProfit];
-                    $entries[] = ['account_id' => $reserve, 'side' => 'debit', 'amount' => $reservedProfit];
+                    $entries[] = ['account_id' => $profitEscrow, 'side' => 'debit', 'amount' => $reservedProfit];
+                    $entries[] = ['account_id' => $reserve, 'side' => 'credit', 'amount' => $reservedProfit];
                 }
             } else {
                 $closingPrice = (string) $quote->price;
@@ -273,13 +273,12 @@ class PaperTradingService
 
                 $entries[] = ['account_id' => $escrow, 'side' => 'debit', 'amount' => (string) $trade->stake];
 
-                if ($isReal && Decimal::units($reservedProfit) > 0) {
-                    $entries[] = ['account_id' => $profitEscrow, 'side' => 'credit', 'amount' => $reservedProfit];
-                    $entries[] = ['account_id' => $reserve, 'side' => 'debit', 'amount' => $reservedProfit];
-                }
-
                 if ($tie) {
                     $entries[] = ['account_id' => $wallet, 'side' => 'credit', 'amount' => (string) $trade->stake];
+                    if ($isReal && Decimal::units($reservedProfit) > 0) {
+                        $entries[] = ['account_id' => $profitEscrow, 'side' => 'debit', 'amount' => $reservedProfit];
+                        $entries[] = ['account_id' => $reserve, 'side' => 'credit', 'amount' => $reservedProfit];
+                    }
                     $status = 'void';
                 } elseif ($won) {
                     $payout = Decimal::multiplyRatio(
@@ -290,8 +289,8 @@ class PaperTradingService
                     $profit = Decimal::fromUnits(Decimal::units($payout) - Decimal::units((string) $trade->stake));
                     if ($isReal) {
                         if (Decimal::units($profit) > 0) {
-                            $rewards = $this->ledger->system('REAL_PAYOUT_REWARDS', $currency, 'debit');
-                            $entries[] = ['account_id' => $rewards, 'side' => 'debit', 'amount' => $profit];
+                            // Convert the locked reserve liability into the user's real-wallet liability.
+                            $entries[] = ['account_id' => $profitEscrow, 'side' => 'debit', 'amount' => $profit];
                         }
                     } else {
                         $rewards = $this->ledger->system('PAPER_REWARDS', $currency, 'debit');
@@ -302,6 +301,10 @@ class PaperTradingService
                 } else {
                     $revenue = $this->ledger->system($isReal ? 'REAL_TRADE_REVENUE' : 'PAPER_REVENUE', $currency);
                     $entries[] = ['account_id' => $revenue, 'side' => 'credit', 'amount' => (string) $trade->stake];
+                    if ($isReal && Decimal::units($reservedProfit) > 0) {
+                        $entries[] = ['account_id' => $profitEscrow, 'side' => 'debit', 'amount' => $reservedProfit];
+                        $entries[] = ['account_id' => $reserve, 'side' => 'credit', 'amount' => $reservedProfit];
+                    }
                     $status = 'lost';
                 }
             }
