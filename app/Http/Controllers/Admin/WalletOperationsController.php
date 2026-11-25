@@ -155,8 +155,13 @@ class WalletOperationsController extends Controller
 
         $deposit = DB::table('wallet_requests')->where('id', $walletRequest)
             ->where('type', 'deposit')->where('status', 'pending')->first();
-        abort_unless($deposit && filled($deposit->transaction_hash), 422,
-            'This deposit has no submitted transaction hash and cannot be credited.');
+        if (!$deposit) {
+            return back()->withErrors(['wallet_request' => 'This deposit is no longer pending review. Refresh the wallet operations queue.']);
+        }
+
+        if (!filled($deposit->transaction_hash)) {
+            return back()->withErrors(['wallet_request' => 'This deposit has no submitted transaction hash. It cannot be credited. Reject this incomplete request and ask the client to submit a new deposit with the correct transaction hash.']);
+        }
 
         try {
             $wallets->confirmDeposit($walletRequest, $request->user(), $data['amount_usd'], $data['admin_note']);
