@@ -57,6 +57,7 @@ class PaperTradingController extends Controller
                 ->value('id'),
             'hasExpiredOpenTrades' => DB::table('paper_trades')
                 ->where('user_id', $request->user()->id)
+                ->where('account_type', $selectedAccount)
                 ->where('status', 'open')
                 ->where('expires_at', '<=', now())
                 ->exists(),
