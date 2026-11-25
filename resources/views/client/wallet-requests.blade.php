@@ -23,7 +23,7 @@
 .wallet-page .metric-card:after{content:"$";position:absolute;right:28px;top:22px;color:#78bfe5;font-size:17px;font-weight:800}
 .wallet-page .metric-card .metric-label{font-size:10px;letter-spacing:.09em}
 .wallet-page .metric-card>strong{font-size:clamp(22px,3vw,29px);font-variant-numeric:tabular-nums}
-.wallet-page .panel{overflow:hidden}
+.wallet-page .panel{overflow:hidden}.wallet-page #deposit-form,.wallet-page #demo-topup-form{scroll-margin-top:24px}
 .wallet-page .panel-head{padding:18px 20px;border-bottom:1px solid var(--line,#26364a);margin-bottom:16px}
 .wallet-page .panel-head h2{font-size:17px;margin-top:3px}
 .wallet-page .form-stack{gap:14px}
@@ -59,6 +59,11 @@
     </a>
 </div>
 <div class="page-action-row">
+    @if($selectedAccount === 'real')
+        <a href="#deposit-form" class="button button-primary" id="wallet-deposit-shortcut"><svg class="nav-icon"><use href="#i-plus"/></svg> Deposit funds</a>
+    @else
+        <a href="#demo-topup-form" class="button button-primary"><svg class="nav-icon"><use href="#i-plus"/></svg> Add demo funds</a>
+    @endif
     <a href="{{ route('statement.index', ['wallet' => $selectedAccount === 'demo' ? 'PAPER_WALLET' : 'REAL_WALLET']) }}" class="button button-secondary"><svg class="nav-icon"><use href="#i-receipt"/></svg> {{ ucfirst($selectedAccount) }} statement</a>
 </div>
 @if(session('status'))<div class="notice-banner"><div><strong>{{ session('status') }}</strong></div></div>@endif
@@ -72,7 +77,7 @@
     <section class="panel">
         <div class="panel-head"><div><span class="wallet-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-wallet"/></svg></span><span class="eyebrow">DEMO ACCOUNT</span><h2>Manage demo funds</h2></div><span class="table-status verified">ACTIVE</span></div>
         <p class="muted">Use this balance to practise fixed-time trading and simulated conversions. Demo funds have no cash value and cannot be withdrawn or transferred to your real account.</p>
-        <form id="wallet-demo-topup-form" class="form-stack wallet-topup-form">
+        <form id="demo-topup-form" class="form-stack wallet-topup-form">
             @csrf
             <label>Add demo funds (USD)<input type="number" name="amount" min="100" max="20000" step="0.01" value="1000" required></label>
             <button class="button button-primary" type="submit">Add demo funds</button>
