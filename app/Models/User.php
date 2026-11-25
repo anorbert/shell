@@ -14,7 +14,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $attributes = ['role' => 'client'];
 
     protected $fillable = [
-        'name', 'email', 'password', 'country_code', 'phone_e164',
+        'name', 'email', 'password', 'country_code', 'phone_e164', 'referral_code', 'referred_by_user_id',
     ];
 
     protected $hidden = ['password', 'remember_token'];
