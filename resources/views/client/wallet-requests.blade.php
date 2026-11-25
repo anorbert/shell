@@ -74,10 +74,10 @@
         <article class="metric-card"><span class="metric-label">CURRENT DEMO BALANCE</span><strong>@money($selectedBalance)</strong><small>{{ $currency }} simulation credits</small></article>
         <article class="metric-card"><span class="metric-label">ACCOUNT TYPE</span><strong>Demo</strong><small>Independent from your real wallet</small></article>
     </div>
-    <section class="panel">
+    <section class="panel" id="demo-topup-form">
         <div class="panel-head"><div><span class="wallet-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-wallet"/></svg></span><span class="eyebrow">DEMO ACCOUNT</span><h2>Manage demo funds</h2></div><span class="table-status verified">ACTIVE</span></div>
         <p class="muted">Use this balance to practise fixed-time trading and simulated conversions. Demo funds have no cash value and cannot be withdrawn or transferred to your real account.</p>
-        <form id="demo-topup-form" class="form-stack wallet-topup-form">
+        <form id="wallet-demo-topup-form" class="form-stack wallet-topup-form">
             @csrf
             <label>Add demo funds (USD)<input type="number" name="amount" min="100" max="20000" step="0.01" value="1000" required></label>
             <button class="button button-primary" type="submit">Add demo funds</button>
