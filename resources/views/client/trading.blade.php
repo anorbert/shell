@@ -3,31 +3,65 @@
 @section('eyebrow', 'FIXED-TIME OPTIONS SIMULATOR')
 @section('heading', 'Trading terminal')
 @section('content')
-    <x-client-attention :title="$selectedAccount === 'real' ? 'Real trading account' : 'Demo trading account'" :tag="$selectedAccount === 'real' ? 'REAL MONEY' : 'PAPER ONLY'">
+    <x-client-attention :title="$selectedAccount === 'real' ? 'Real-money trading' : 'Demo trading account'" :tag="$selectedAccount === 'real' ? 'REAL ACCOUNT' : 'PRACTICE ACCOUNT'">
         @if ($selectedAccount === 'real')
-            <p>Real positions use your funded real wallet. Your first deposit must be confirmed and credited before trading. Approved KYC is required only when you request a withdrawal.</p>
+            <p>Trade with your own funded balance when real trading is available. Deposit verification activates your real trading eligibility; identity verification is required for withdrawals, not for trading.</p>
         @else
-            <p>Practise fixed-time UP and DOWN positions with demo credits. Demo trading is independent of deposits and KYC; all positions are settled against verified server-captured market quotes.</p>
+            <p>Practise fixed-time UP and DOWN positions with demo credits. Demo trading is independent of deposits and KYC; positions settle against server-captured market quotes.</p>
         @endif
     </x-client-attention>
 
     <nav class="account-switch" aria-label="Trading account">
         <a class="button {{ $selectedAccount === 'demo' ? 'button-primary' : 'button-secondary' }}" href="{{ route('trading.index', ['account' => 'demo']) }}">Demo account</a>
-        <a class="button {{ $selectedAccount === 'real' ? 'button-primary' : 'button-secondary' }}" href="{{ route('trading.index', ['account' => 'real']) }}">Real account</a>
-        <span class="muted">Balances and trade histories are separate.</span>
+        <a class="button {{ $selectedAccount === 'real' ? 'button-primary' : 'button-secondary' }}" href="{{ route('trading.index', ['account' => 'real']) }}">Real-money account</a>
+        <span class="muted">Separate balances · Separate trade histories</span>
     </nav>
-    @if ($selectedAccount === 'real' && ! $hasConfirmedDeposit)
-        <div class="panel" role="status">
-            <strong>Real trading is locked.</strong>
-            <p>Submit a deposit and wait until it is verified and credited to your real wallet. A pending request or transaction hash alone does not unlock trading.</p>
-            <a class="button button-primary" href="{{ route('wallet-requests.index', ['account' => 'real']) }}">Make a real deposit</a>
-        </div>
-    @endif
-    @if ($selectedAccount === 'real' && $hasConfirmedDeposit && (float) $realPayoutReserve <= 0)
-        <div class="panel" role="status">
-            <strong>Real trading is temporarily paused.</strong>
-            <p>The platform payout reserve has not been funded. Your real wallet remains available and your funds are not affected. Trading will unlock when operations records verified, segregated payout capital.</p>
-        </div>
+    @if ($selectedAccount === 'real' && (float) $realPayoutReserve <= 0)
+        <section class="real-activation real-activation-paused" role="status" aria-labelledby="real-activation-title">
+            <div class="real-activation-top">
+                <span class="real-activation-icon" aria-hidden="true">!</span>
+                <span class="real-activation-kicker">REAL-MONEY SERVICE STATUS</span>
+                <span class="real-activation-status">TEMPORARILY UNAVAILABLE</span>
+            </div>
+            <h2 id="real-activation-title">Real trading is preparing to open</h2>
+            <p class="real-activation-copy">Your real account is separate from demo. We are completing the platform's payout-liquidity setup before accepting real-money positions. You can explore the markets in demo mode in the meantime.</p>
+            <div class="real-activation-steps">
+                <div><span>01</span><strong>Explore the markets</strong><small>Practise with demo funds while real trading is unavailable.</small></div>
+                <div><span>02</span><strong>Keep your funds safe</strong><small>Do not send a deposit until real trading is officially available.</small></div>
+                <div><span>03</span><strong>Get ready to activate</strong><small>When service opens, a verified and credited deposit will qualify your account to trade.</small></div>
+            </div>
+            <a class="button button-primary" href="{{ route('trading.index', ['account' => 'demo']) }}">Explore demo trading</a>
+        </section>
+    @elseif ($selectedAccount === 'real' && ! $hasConfirmedDeposit)
+        <section class="real-activation" aria-labelledby="real-activation-title">
+            <div class="real-activation-top">
+                <span class="real-activation-icon" aria-hidden="true">↗</span>
+                <span class="real-activation-kicker">YOUR REAL ACCOUNT</span>
+                <span class="real-activation-status">READY FOR FUNDING</span>
+            </div>
+            <h2 id="real-activation-title">Fund your account. Get ready to trade.</h2>
+            <p class="real-activation-copy">You are one verified deposit away from qualifying for real-money trading. Add funds to your real wallet, then start trading once your payment has been confirmed and credited.</p>
+            <div class="real-activation-steps">
+                <div><span>01</span><strong>Make a deposit</strong><small>Choose an available payment method and follow its instructions.</small></div>
+                <div><span>02</span><strong>Payment is verified</strong><small>Our operations team verifies the transaction and credits your real wallet.</small></div>
+                <div><span>03</span><strong>Start real trading</strong><small>Once credited, use your available real balance to open positions.</small></div>
+            </div>
+            <div class="real-activation-footer">
+                <a class="button button-primary" href="{{ route('wallet-requests.index', ['account' => 'real']) }}">Deposit to real wallet <span aria-hidden="true">→</span></a>
+                <span class="real-activation-note">KYC is only required when you request a withdrawal.</span>
+            </div>
+            <p class="real-activation-disclaimer">Deposits are subject to verification. A submitted request or transaction hash is not a confirmed deposit. Trading involves risk; you can lose the full amount staked.</p>
+        </section>
+    @elseif ($selectedAccount === 'real')
+        <section class="real-activation real-activation-funded" role="status" aria-labelledby="real-activation-title">
+            <div class="real-activation-top">
+                <span class="real-activation-icon" aria-hidden="true">✓</span>
+                <span class="real-activation-kicker">REAL ACCOUNT STATUS</span>
+                <span class="real-activation-status">DEPOSIT VERIFIED</span>
+            </div>
+            <h2 id="real-activation-title">Your real account is funded</h2>
+            <p class="real-activation-copy">Your deposit has been verified and credited. You can place real-money positions using your available real-wallet balance. Approved KYC is required only when you request a withdrawal.</p>
+        </section>
     @endif
 
     <div class="trading-layout">
@@ -225,6 +259,153 @@
 
 @push('styles')
     <style>
+        .real-activation {
+            position: relative;
+            overflow: hidden;
+            margin: 18px 0 22px;
+            padding: clamp(20px, 3vw, 30px);
+            border: 1px solid rgba(201, 169, 106, .32);
+            border-radius: 14px;
+            background: linear-gradient(125deg, rgba(24, 39, 59, .98), rgba(11, 20, 34, .98));
+            box-shadow: 0 14px 34px rgba(0, 0, 0, .16)
+        }
+        .real-activation:before {
+            content: "";
+            position: absolute;
+            top: -90px;
+            right: -55px;
+            width: 230px;
+            height: 230px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(201, 169, 106, .13), transparent 68%);
+            pointer-events: none
+        }
+        .real-activation-top {
+            position: relative;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 17px
+        }
+        .real-activation-icon {
+            display: inline-grid;
+            place-items: center;
+            width: 32px;
+            height: 32px;
+            border: 1px solid rgba(201, 169, 106, .45);
+            border-radius: 9px;
+            color: #e4c27e;
+            background: rgba(201, 169, 106, .1);
+            font-weight: 900
+        }
+        .real-activation-kicker {
+            color: #d9c18d;
+            font-size: 10px;
+            font-weight: 850;
+            letter-spacing: .13em
+        }
+        .real-activation-status {
+            margin-left: auto;
+            padding: 6px 9px;
+            border: 1px solid rgba(201, 169, 106, .32);
+            border-radius: 999px;
+            color: #e7c985;
+            background: rgba(201, 169, 106, .09);
+            font-size: 9px;
+            font-weight: 850;
+            letter-spacing: .07em
+        }
+        .real-activation h2 {
+            position: relative;
+            margin: 0 0 9px;
+            color: #f2f5fa;
+            font-size: clamp(21px, 2.5vw, 28px);
+            letter-spacing: -.035em
+        }
+        .real-activation-copy {
+            position: relative;
+            max-width: 760px;
+            margin: 0;
+            color: #aebbd0;
+            font-size: 13px;
+            line-height: 1.75
+        }
+        .real-activation-steps {
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin: 22px 0
+        }
+        .real-activation-steps>div {
+            display: grid;
+            align-content: start;
+            gap: 7px;
+            min-width: 0;
+            padding: 14px;
+            border: 1px solid rgba(160, 178, 202, .14);
+            border-radius: 10px;
+            background: rgba(5, 12, 23, .28)
+        }
+        .real-activation-steps>div>span {
+            color: #d5b777;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: .1em
+        }
+        .real-activation-steps strong {
+            color: #edf2f8;
+            font-size: 12px
+        }
+        .real-activation-steps small {
+            color: #93a3b9;
+            font-size: 11px;
+            line-height: 1.55
+        }
+        .real-activation-footer {
+            position: relative;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 13px
+        }
+        .real-activation-footer .button {
+            min-height: 43px;
+            padding-inline: 18px
+        }
+        .real-activation-note {
+            color: #aebbd0;
+            font-size: 11px
+        }
+        .real-activation-disclaimer {
+            position: relative;
+            margin: 16px 0 0;
+            color: #8292a8;
+            font-size: 10px;
+            line-height: 1.6
+        }
+        .real-activation-funded {
+            border-color: rgba(70, 190, 143, .3)
+        }
+        .real-activation-funded .real-activation-icon,
+        .real-activation-funded .real-activation-status {
+            color: #6be0ad;
+            border-color: rgba(70, 190, 143, .35);
+            background: rgba(70, 190, 143, .09)
+        }
+        .real-activation-paused {
+            border-color: rgba(223, 164, 91, .34)
+        }
+        @media (max-width: 760px) {
+            .real-activation { padding: 19px 16px; margin: 14px 0 18px }
+            .real-activation-steps { grid-template-columns: 1fr; gap: 8px; margin: 17px 0 }
+            .real-activation-steps>div { grid-template-columns: 30px minmax(0, 1fr); column-gap: 8px; padding: 11px }
+            .real-activation-steps>div>span { grid-row: span 2; padding-top: 2px }
+            .real-activation-steps small { grid-column: 2 }
+            .real-activation-status { margin-left: 0 }
+        }
+
         .trading-chart-panel {
             min-width: 0;
             overflow: hidden
