@@ -4,7 +4,7 @@
 <div class="marketing-shell shell-home">
     <header class="marketing-nav">
         <a class="brand" href="{{ route('home') }}" aria-label="SHELL home"><span class="brand-mark">S</span><span>SHELL<span class="brand-sub">MARKET & TRADING PLATFORM</span></span></a>
-        <nav aria-label="Main navigation"><a href="#markets">Markets</a><a href="#how-it-works">How it works</a><a href="#platform">Platform</a><a href="#faq">FAQs</a></nav>
+        <nav aria-label="Main navigation"><a href="#how-it-works">How it works</a><a href="#platform">Platform</a><a href="#faq">FAQs</a></nav>
         <div class="nav-actions"><a class="button button-quiet" href="{{ route('login') }}">Sign in</a><a class="button button-primary" href="{{ route('register') }}">Get started <span>↗</span></a></div>
     </header>
 
@@ -15,8 +15,6 @@
                 <h1>Explore crypto markets.<br><em>Trade with intention.</em></h1>
                 <p class="shell-hero-lead">Discover market movements, analyse price charts and experience fixed-time UP or DOWN trading in one focused platform. Start by exploring the demo environment before deciding whether real-money trading is appropriate for you.</p>
                 <div class="hero-actions"><a class="button button-primary button-large" href="{{ route('register') }}">Create your free account <span>↗</span></a><a class="button button-quiet button-large" href="#how-it-works">See how SHELL works</a></div>
-                <div class="shell-proof-points"><span><b>20</b> configured crypto pairs</span><span><b>6</b> chart timeframes</span><span><b>4</b> trade durations</span></div>
-                <p class="shell-hero-caption">Explore the platform at your pace. Trading involves risk; profits are never guaranteed.</p>
             </div>
             <div class="shell-hero-art">
                 <div class="shell-terminal">
@@ -38,16 +36,6 @@
                 </div>
                 <div class="shell-float-note"><b>01</b><span>ANALYSE THE MARKET</span></div>
             </div>
-        </section>
-
-        <section class="shell-market-band" id="markets">
-            <div class="shell-section-kicker"><span>EXPLORE THE MARKETS</span><span>20 CONFIGURED CRYPTO SPOT PAIRS</span></div>
-            <div class="shell-asset-grid">
-                @foreach (['BTC/USDT','ETH/USDT','BNB/USDT','SOL/USDT','XRP/USDT','ADA/USDT','DOGE/USDT','AVAX/USDT','DOT/USDT','LTC/USDT','LINK/USDT','UNI/USDT','ATOM/USDT','XLM/USDT','ALGO/USDT','NEAR/USDT','AAVE/USDT','TRX/USDT','ETC/USDT','BCH/USDT'] as $asset)
-                    <span class="shell-asset-chip"><i></i>{{ $asset }}</span>
-                @endforeach
-            </div>
-            <p class="shell-market-footnote">These are configured market instruments, not a live price board. Current quotes and chart data are shown inside the authenticated platform when available.</p>
         </section>
 
         <section class="shell-how-section" id="how-it-works">
@@ -81,7 +69,7 @@
         <section class="shell-faq-section" id="faq">
             <div class="shell-section-heading"><span class="eyebrow">GOOD QUESTIONS. CLEAR ANSWERS.</span><h2>Before you get started.</h2></div>
             <div class="shell-faq-grid">
-                <article><h3>What can I trade on SHELL?</h3><p>SHELL currently configures 20 cryptocurrency spot pairs quoted against USDT. The available instruments are listed in the markets section above.</p></article>
+                <article><h3>What can I trade on SHELL?</h3><p>SHELL provides a cryptocurrency-focused trading workspace. Sign in to review the instruments and market information available to your account.</p></article>
                 <article><h3>Can I practise before using real money?</h3><p>Yes. The demo environment uses simulation credits so you can learn the interface and trade lifecycle. Demo credits and demo profits are not withdrawable.</p></article>
                 <article><h3>How does a fixed-time trade work?</h3><p>You select a supported market, choose UP or DOWN, enter a stake and select an expiry duration. The position is evaluated at expiry using the platform's server-side market data and settlement rules.</p></article>
                 <article><h3>Are returns guaranteed?</h3><p>No. A trade can lose the full stake. Market prices can move unexpectedly, and a past or demo result does not predict future performance.</p></article>
@@ -92,9 +80,22 @@
 
         <section class="shell-final-cta"><div><span class="eyebrow">TAKE THE FIRST STEP</span><h2>Get to know the platform<br><em>before you commit capital.</em></h2><p>Create an account, explore the markets and understand the tools available to you.</p></div><a class="button button-primary button-large" href="{{ route('register') }}">Create your SHELL account <span>↗</span></a></section>
 
-        <section class="shell-risk-section" id="risk"><div class="shell-risk-icon">!</div><div><span class="eyebrow">IMPORTANT RISK INFORMATION</span><h2>Trading involves significant risk.</h2><p>Fixed-time and binary-style options are high-risk financial products. You may lose all the money committed to a position. These products may not be suitable for every investor and may be restricted or prohibited in some jurisdictions. Do not trade with money you cannot afford to lose. Understand the product, its payout structure, fees and settlement rules, and seek independent financial and legal advice where appropriate. SHELL does not promise profits or guaranteed income.</p></div></section>
     </main>
 
-    <footer class="shell-home-footer"><a class="brand" href="{{ route('home') }}"><span class="brand-mark">S</span><span>SHELL<span class="brand-sub">MARKET & TRADING PLATFORM</span></span></a><p>© {{ date('Y') }} SHELL. All rights reserved. Trading involves risk.</p><div><a href="{{ route('login') }}">Sign in</a><a href="{{ route('register') }}">Create account</a></div></footer>
+    <footer class="shell-home-footer">
+        <section class="shell-risk-section" id="risk" aria-labelledby="shell-risk-title">
+            <div class="shell-risk-icon">!</div>
+            <div>
+                <span class="eyebrow">IMPORTANT RISK INFORMATION</span>
+                <h2 id="shell-risk-title">Trading involves significant risk.</h2>
+                <p>Fixed-time and binary-style options are high-risk financial products. You may lose all the money committed to a position. These products may not be suitable for every investor and may be restricted or prohibited in some jurisdictions. Do not trade with money you cannot afford to lose. Understand the product, its payout structure, fees and settlement rules, and seek independent financial and legal advice where appropriate. SHELL does not promise profits or guaranteed income.</p>
+            </div>
+        </section>
+        <div class="shell-home-footer-bottom">
+            <a class="brand" href="{{ route('home') }}"><span class="brand-mark">S</span><span>SHELL<span class="brand-sub">MARKET & TRADING PLATFORM</span></span></a>
+            <p>© {{ date('Y') }} SHELL. All rights reserved.</p>
+            <div><a href="{{ route('login') }}">Sign in</a><a href="{{ route('register') }}">Create account</a></div>
+        </div>
+    </footer>
 </div>
 @endsection
