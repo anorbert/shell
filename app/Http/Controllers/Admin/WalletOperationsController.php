@@ -40,7 +40,7 @@ class WalletOperationsController extends Controller
     public function fundPayoutReserve(Request $request, LedgerService $ledger)
     {
         $data = $request->validate([
-            'amount_usd' => ['required', 'regex:/^(?:[1-9][0-9]{0,7})(?:\\.[0-9]{1,8})?$/'],
+            'amount_usd' => ['required', 'numeric', 'gt:0', 'max:99999999', 'regex:/^(?:[0-9]{1,8})(?:\\.[0-9]{1,2})?$/'],
             'external_reference' => ['required', 'string', 'min:12', 'max:255'],
             'admin_note' => ['required', 'string', 'min:10', 'max:2000'],
         ]);
@@ -146,7 +146,7 @@ class WalletOperationsController extends Controller
     public function confirmDeposit(Request $request, int $walletRequest, ManualWalletService $wallets)
     {
         $data = $request->validate([
-            'amount_usd' => ['required', 'numeric', 'gt:0', 'max:99999999', 'regex:/^(?:[0-9]{1,8})(?:\\.[0-9]{1,8})?$/'],
+            'amount_usd' => ['required', 'numeric', 'gt:0', 'max:99999999', 'regex:/^(?:[0-9]{1,8})(?:\\.[0-9]{1,2})?$/'],
             'chain_verified' => ['required', 'accepted'],
             'admin_note' => ['required', 'string', 'min:10', 'max:2000'],
         ], [
@@ -182,7 +182,7 @@ class WalletOperationsController extends Controller
         $data = $request->validate([
             'transaction_hash' => ['required', 'string', 'min:12', 'max:255'],
             'settlement_amount' => ['required', 'numeric', 'gt:0', 'max:1000000000000000', 'regex:/^(?:[0-9]+)(?:\\.[0-9]{1,12})?$/'],
-            'fee_usd' => ['nullable', 'numeric', 'min:0', 'max:100000000'],
+            'fee_usd' => ['nullable', 'numeric', 'min:0', 'max:100000000', 'regex:/^(?:[0-9]+)(?:\\.[0-9]{1,2})?$/'],
             'admin_note' => ['required', 'string', 'min:3', 'max:2000'],
         ]);
         try {
