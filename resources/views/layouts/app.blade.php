@@ -70,6 +70,9 @@
                     <div class="profile-dropdown">
                         <div class="profile-dropdown-head"><strong>{{ auth()->user()->name }}</strong><small>{{ auth()->user()->email }}</small></div>
                         <a href="{{ route('profile.edit') }}"><svg class="nav-icon"><use href="#i-user"/></svg>Profile & account details</a>
+                        @if(auth()->user()->role==='client')
+                            <a href="{{ route('kyc.index') }}" class="{{ request()->routeIs('kyc.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-shield"/></svg>Identity verification (KYC)</a>
+                        @endif
                         <a href="{{ route('password.edit') }}"><svg class="nav-icon"><use href="#i-shield"/></svg>Change password</a>
                         @if(auth()->user()->role==='client')
                             <a href="{{ route('security.index') }}" class="{{ request()->routeIs('security.*')?'active':'' }}"><svg class="nav-icon"><use href="#i-settings"/></svg>Security & sessions</a>
