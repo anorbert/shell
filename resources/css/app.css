@@ -963,3 +963,60 @@ input,select,textarea{accent-color:var(--gold)}
   .topbar-wallet-menu>.topbar-wallet-balance{min-width:102px;padding:5px 6px}
   .wallet-switch-dropdown{top:calc(100% + 7px);right:-4px;width:min(280px,calc(100vw - 16px))}
 }
+
+
+/* Collapsible real-account funding guidance */
+.real-activation-collapsible {
+    padding: 0;
+    overflow: hidden;
+}
+.real-activation-summary {
+    display: block;
+    position: relative;
+    padding: 1.35rem 1.5rem;
+    cursor: pointer;
+    list-style: none;
+}
+.real-activation-summary::-webkit-details-marker { display: none; }
+.real-activation-summary::marker { content: ""; }
+.real-activation-summary h2 { margin: .85rem 0 .35rem; }
+.real-activation-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    color: var(--muted, #8b98ad);
+    font-size: .82rem;
+    font-weight: 600;
+}
+.real-activation-toggle {
+    position: absolute;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    width: 1.8rem;
+    height: 1.8rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--border, rgba(148,163,184,.25));
+    border-radius: 50%;
+}
+.real-activation-toggle::before {
+    content: "+";
+    font-size: 1.2rem;
+    line-height: 1;
+}
+.real-activation-collapsible[open] .real-activation-toggle::before { content: "−"; }
+.real-activation-details {
+    padding: 0 1.5rem 1.5rem;
+    border-top: 1px solid var(--border, rgba(148,163,184,.18));
+}
+.real-activation-details .real-activation-copy { margin-top: 1.1rem; }
+.real-activation-summary:focus-visible {
+    outline: 2px solid var(--accent, #d4a843);
+    outline-offset: -3px;
+}
+@media (max-width: 640px) {
+    .real-activation-summary { padding: 1.1rem; }
+    .real-activation-details { padding: 0 1.1rem 1.1rem; }
+    .real-activation-toggle { right: 1.1rem; bottom: 1.1rem; }
+    .real-activation-status { max-width: calc(100% - 2.5rem); }
+}
