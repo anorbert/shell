@@ -31,7 +31,6 @@
                         </svg>
                     </div>
                 </div>
-                <div class="shell-float-note"><b>01</b><span>ANALYSE THE MARKET</span></div>
             </div>
         </section>
 
