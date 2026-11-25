@@ -124,8 +124,8 @@ test('conversion preview refreshes the requested market pair from the provider',
     $client = User::factory()->create();
     $client->markEmailAsVerified();
 
-    Illuminate\\Support\\Facades\\Http::fake([
-        'api.binance.com/api/v3/ticker/price*' => Illuminate\\Support\\Facades\\Http::response([
+    Illuminate\Support\Facades\Http::fake([
+        'api.binance.com/api/v3/ticker/price*' => Illuminate\Support\Facades\Http::response([
             'symbol' => 'BTCUSDT',
             'price' => '60000.000000000000',
         ], 200),
