@@ -87,6 +87,7 @@
     </section>
 @else
     <x-client-attention title="Real wallet" tag="REAL ACCOUNT"><p>Deposit and withdrawal requests are recorded here. Deposits are credited after transaction verification. Withdrawals are processed after identity approval and operations review.</p></x-client-attention>
+    <div class="page-action-row"><a class="button button-secondary" href="{{ route('kyc.index') }}"><svg class="nav-icon"><use href="#i-shield"/></svg> Open identity verification</a></div>
     <div class="metric-grid wallet-detail-metrics">
         <article class="metric-card"><span class="metric-label">AVAILABLE REAL BALANCE</span><strong>@money($selectedBalance)</strong><small>{{ $currency }} · real wallet</small></article>
         <article class="metric-card"><span class="metric-label">ACCOUNT TYPE</span><strong>Real</strong><small>Independent from demo trading</small></article>
@@ -106,24 +107,6 @@
                     <label>Transaction hash / TxID<input name="transaction_hash" maxlength="255" required></label>
                     <label>Note (optional)<textarea name="client_note" maxlength="1000"></textarea></label>
                     <button class="button button-primary" type="submit">Submit deposit for confirmation</button>
-                </form>
-            @endif
-        </section>
-        <section class="panel" id="kyc-form">
-            <div class="panel-head"><div><span class="wallet-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-shield"/></svg></span><span class="eyebrow">IDENTITY VERIFICATION</span><h2>Know Your Customer (KYC)</h2></div><span class="table-status {{ $kycVerified ? 'verified' : (($kyc?->status ?? '') === 'pending' ? 'pending' : 'rejected') }}">{{ $kycVerified ? 'VERIFIED' : strtoupper($kyc?->status ?? 'NOT SUBMITTED') }}</span></div>
-            @if($kycVerified)
-                <p class="muted">Your identity is verified. You are eligible to request withdrawals, subject to balance and operations review.</p>
-            @elseif(($kyc?->status ?? '') === 'pending')
-                <p class="muted">Your documents are under review. You cannot request withdrawals until an administrator approves your identity. Do not submit another application while this one is pending.</p>
-            @else
-                <p class="muted">KYC is available to every account at any time. You do not need to deposit money first. Complete verification now; withdrawals stay locked until an administrator approves your documents.</p>
-                @if($kyc?->review_note)<p class="muted">Admin review note: {{ $kyc->review_note }}</p>@endif
-                <form method="POST" action="{{ route('wallet-requests.kyc') }}" enctype="multipart/form-data" class="form-stack">@csrf
-                    <label>Document type<select name="document_type" required><option value="national_id">National ID</option><option value="passport">Passport</option><option value="driving_licence">Driving licence</option></select></label>
-                    <label>Document number<input name="document_number" maxlength="120" required></label>
-                    <label>Identity document (JPG, PNG or PDF; max 10 MB)<input type="file" name="document" accept=".jpg,.jpeg,.png,.pdf" required></label>
-                    <label>Selfie (JPG or PNG; max 5 MB)<input type="file" name="selfie" accept=".jpg,.jpeg,.png" required></label>
-                    <button class="button button-primary" type="submit">Submit identity verification</button>
                 </form>
             @endif
         </section>
