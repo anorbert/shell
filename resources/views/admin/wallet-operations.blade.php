@@ -94,7 +94,12 @@
                 <td>
                     @if($item->status==='pending')
                         <div class="wo-actions">
-                        @if($item->type==='deposit')
+                        @if($item->type==='deposit' && !filled($item->transaction_hash))
+                            <div class="wo-footnote" style="border-color:rgba(239,68,68,.22);background:rgba(239,68,68,.07);color:var(--wo-ink)">
+                                <strong style="display:block;color:#f28b8b;margin-bottom:5px">Missing transaction hash</strong>
+                                This request has no blockchain transaction reference. Wallet credit is disabled. Reject this incomplete request and ask the client to submit a new deposit with the correct hash.
+                            </div>
+                        @elseif($item->type==='deposit')
                             <form method="POST" action="{{ route('admin.wallet-operations.deposit.confirm',$item->id) }}" class="wo-form">@csrf
                                 <label>Verified amount (USD)<input name="amount_usd" type="number" min="0.01" max="99999999" step="0.01" value="{{ number_format((float) $item->amount_usd, 2, '.', '') }}" required></label>
                                 <label>Verification audit note<textarea name="admin_note" minlength="10" maxlength="2000" placeholder="Explorer reference, token contract, received amount and confirmation count." required></textarea></label>
