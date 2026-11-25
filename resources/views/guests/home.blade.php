@@ -19,7 +19,7 @@
             <div class="shell-hero-art">
                 <div class="shell-terminal">
                     <div class="shell-terminal-top"><div><span class="eyebrow">SHELL / MARKET TERMINAL</span><strong>One view. Market movement.</strong></div><span class="terminal-live-label"><i></i> MARKET DATA</span></div>
-                    <div class="shell-terminal-pair"><div><span class="coin-symbol">₿</span><div><strong>Crypto markets</strong><small>Spot market references</small></div></div><span class="pair-count">20 PAIRS</span></div>
+                    <div class="shell-terminal-pair"><div><span class="coin-symbol">₿</span><div><strong>Crypto markets</strong><small>Spot market references</small></div></div></div>
                     <div class="shell-chart">
                         <div class="shell-chart-grid"></div>
                         <svg viewBox="0 0 620 220" preserveAspectRatio="none" role="img" aria-label="Illustrative crypto price chart">
@@ -30,7 +30,7 @@
                         </svg>
                         <span class="chart-illustration-note">ILLUSTRATIVE CHART · NOT A LIVE QUOTE</span>
                     </div>
-                    <div class="shell-chart-legend"><span><i class="legend-dot legend-cyan"></i> Price analysis</span><span>1m · 5m · 15m · 1h · 4h · 1d</span></div>
+                    <div class="shell-chart-legend"><span><i class="legend-dot legend-cyan"></i> Price analysis</span><span>Chart intervals</span></div>
                     <div class="shell-direction-preview"><div><span>↗</span><strong>UP</strong><small>Price moves higher</small></div><div><span>↘</span><strong>DOWN</strong><small>Price moves lower</small></div></div>
                     <div class="shell-terminal-bottom"><span>Fixed-time trading interface</span><span>Demo & real account modes</span></div>
                 </div>
@@ -42,7 +42,7 @@
             <div class="shell-section-heading"><span class="eyebrow">GET STARTED IN THREE STEPS</span><h2>A clear path from market discovery<br><em>to trade review.</em></h2><p>Understand the workflow before risking capital. You stay in control of whether and when you place a position.</p></div>
             <div class="shell-steps-grid">
                 <article><span class="shell-step-number">01</span><div class="shell-step-icon">⌕</div><h3>Create your account</h3><p>Register to access your personal workspace, explore supported markets and use the demo account to learn the trading flow.</p><span class="shell-step-foot">ACCOUNT ACCESS</span></article>
-                <article><span class="shell-step-number">02</span><div class="shell-step-icon">⌁</div><h3>Analyse and choose</h3><p>Review price charts across six timeframes. Select a supported pair, choose UP or DOWN, set your stake and select an expiry.</p><span class="shell-step-foot">MARKET & POSITION</span></article>
+                <article><span class="shell-step-number">02</span><div class="shell-step-icon">⌁</div><h3>Analyse and choose</h3><p>Review price charts using the available chart intervals. Select a supported market, choose UP or DOWN, set your stake and select an expiry.</p><span class="shell-step-foot">MARKET & POSITION</span></article>
                 <article><span class="shell-step-number">03</span><div class="shell-step-icon">↗</div><h3>Track every outcome</h3><p>Follow open positions through expiry, then review the recorded result, account balance and activity history.</p><span class="shell-step-foot">SETTLEMENT & HISTORY</span></article>
             </div>
         </section>
@@ -50,8 +50,8 @@
         <section class="shell-platform-section" id="platform">
             <div class="shell-platform-intro"><span class="eyebrow">MADE FOR INFORMED DECISIONS</span><h2>Your trading tools,<br><em>in one workspace.</em></h2><p>SHELL brings market discovery, fixed-time trading and account records together without dressing up simulated data as real performance.</p><a class="shell-text-link" href="{{ route('register') }}">Explore SHELL <span>→</span></a></div>
             <div class="shell-feature-list">
-                <article><span class="shell-feature-icon">⌁</span><div><h3>Charts and market watchlists</h3><p>Explore 20 configured crypto spot pairs, view candlestick data and save markets to your personal watchlist.</p></div><b>01</b></article>
-                <article><span class="shell-feature-icon">◷</span><div><h3>Flexible chart and expiry intervals</h3><p>Review charts at 1m, 5m, 15m, 1h, 4h and 1d intervals. Fixed-time positions offer 1, 5, 15 and 60-minute durations.</p></div><b>02</b></article>
+                <article><span class="shell-feature-icon">⌁</span><div><h3>Charts and market watchlists</h3><p>Explore supported crypto markets, view candlestick data and save instruments to your personal watchlist.</p></div><b>01</b></article>
+                <article><span class="shell-feature-icon">◷</span><div><h3>Flexible chart and expiry intervals</h3><p>Choose from the chart intervals and fixed-time expiry options available on the platform.</p></div><b>02</b></article>
                 <article><span class="shell-feature-icon">⇄</span><div><h3>Separate demo and real accounts</h3><p>Demo credits are for practice and cannot be withdrawn. Real-wallet funds are maintained separately from demo balances.</p></div><b>03</b></article>
                 <article><span class="shell-feature-icon">▤</span><div><h3>Portfolio and transaction records</h3><p>Review positions, account activity and wallet statements to understand what happened to your funds and trades.</p></div><b>04</b></article>
                 <article><span class="shell-feature-icon">◎</span><div><h3>Account controls and support</h3><p>Manage account security, identity verification and support requests from your authenticated workspace.</p></div><b>05</b></article>
