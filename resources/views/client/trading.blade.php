@@ -16,7 +16,7 @@
     </x-client-attention>
 
 
-    @if ($selectedAccount === 'real' && (float) $realPayoutReserve <= 0)
+    @if ($selectedAccount === 'real' && ! $hasConfirmedDeposit && (float) $realPayoutReserve <= 0)
         <details class="real-activation real-activation-collapsible">
             <summary class="real-activation-summary">
                 <div class="real-activation-top">
