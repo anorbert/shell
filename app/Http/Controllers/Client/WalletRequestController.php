@@ -8,6 +8,7 @@ use App\Services\LedgerService;
 use App\Support\Decimal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
 use RuntimeException;
 
 class WalletRequestController extends Controller
