@@ -117,7 +117,7 @@ class GoogleAuthController extends Controller
                 } while (DB::table('users')->where('referral_code', $referralCode)->exists());
 
                 $updates = ['referral_code' => $referralCode];
-                $incomingCode = strtoupper(trim((string) $request->session()->get('referral_code', '')));
+                $incomingCode = strtoupper(trim((string) $request->session()->pull('referral_code', '')));
                 if ($incomingCode !== '') {
                     $referrerId = DB::table('users')->where('referral_code', $incomingCode)
                         ->where('role', 'client')->value('id');
