@@ -10,6 +10,7 @@
 <section class="referral-hero">
 <span class="eyebrow">INVITE · EARN · GROW</span><h2 style="margin:8px 0 4px">Invite people to SHELL</h2>
 <p>Share your personal referral link. When someone registers through it and makes a qualifying real-money deposit, you earn a commission based on the current referral rates.</p>
+@if($settings && $settings->enabled)<p><strong>Current rates:</strong> {{ number_format((float) $settings->first_deposit_percent, 2) }}% on the first confirmed deposit and {{ number_format((float) $settings->recurring_deposit_percent, 2) }}% on subsequent confirmed deposits. Minimum qualifying deposit: &#36;{{ number_format((float) $settings->minimum_deposit_usd, 2) }}.</p>@endif
 @if($settings && $settings->enabled)
 <label for="referral-url" style="display:block;color:#b9c7d8;font-size:12px;font-weight:700;margin-top:18px">YOUR PERSONAL REFERRAL LINK</label>
 <div class="referral-link"><input id="referral-url" readonly value="{{ $referralUrl }}"><button type="button" class="button button-primary" id="copy-referral-link">Copy link</button></div><small id="referral-copy-feedback" style="display:block;color:#8ddab4;margin-top:8px" aria-live="polite"></small>
