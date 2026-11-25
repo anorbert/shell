@@ -1,7 +1,7 @@
 @extends('layouts.guest')
 @section('title', 'SHELL · Crypto Markets & Fixed-Time Trading')
 @section('content')
-<div class="marketing-shell shell-home">
+<div class="marketing-shell shell-home" id="top">
     <header class="marketing-nav">
         <a class="brand" href="{{ route('home') }}" aria-label="SHELL home"><span class="brand-mark">S</span><span>SHELL<span class="brand-sub">MARKET & TRADING PLATFORM</span></span></a>
         <nav aria-label="Main navigation"><a href="#how-it-works">How it works</a><a href="#platform">Platform</a><a href="#faq">FAQs</a></nav>
@@ -82,19 +82,50 @@
 
     </main>
 
-    <footer class="shell-home-footer">
+    <footer class="shell-home-footer" aria-label="SHELL site footer">
         <section class="shell-risk-section" id="risk" aria-labelledby="shell-risk-title">
-            <div class="shell-risk-icon">!</div>
+            <div class="shell-risk-icon" aria-hidden="true">!</div>
             <div>
                 <span class="eyebrow">IMPORTANT RISK INFORMATION</span>
                 <h2 id="shell-risk-title">Trading involves significant risk.</h2>
                 <p>Fixed-time and binary-style options are high-risk financial products. You may lose all the money committed to a position. These products may not be suitable for every investor and may be restricted or prohibited in some jurisdictions. Do not trade with money you cannot afford to lose. Understand the product, its payout structure, fees and settlement rules, and seek independent financial and legal advice where appropriate. SHELL does not promise profits or guaranteed income.</p>
             </div>
         </section>
+
+        <div class="shell-footer-main">
+            <div class="shell-footer-brand">
+                <a class="brand" href="{{ route('home') }}" aria-label="SHELL home"><span class="brand-mark">S</span><span>SHELL<span class="brand-sub">MARKET & TRADING PLATFORM</span></span></a>
+                <p>A focused workspace to explore supported markets, understand fixed-time trading and review account activity. Explore the demo environment before deciding whether real-money trading is right for you.</p>
+                <span class="shell-footer-note"><i aria-hidden="true"></i> Trade thoughtfully. Understand the risk.</span>
+            </div>
+
+            <nav class="shell-footer-column" aria-label="Explore SHELL">
+                <h3>Explore</h3>
+                <a href="#platform">Platform features</a>
+                <a href="#how-it-works">How it works</a>
+                <a href="#faq">Frequently asked questions</a>
+                <a href="#risk">Risk information</a>
+            </nav>
+
+            <nav class="shell-footer-column" aria-label="Account links">
+                <h3>Your account</h3>
+                <a href="{{ route('login') }}">Sign in</a>
+                <a href="{{ route('register') }}">Create an account</a>
+                <a href="{{ route('register') }}">Explore demo access</a>
+            </nav>
+
+            <div class="shell-footer-column shell-footer-support">
+                <h3>Need assistance?</h3>
+                <p>Questions about your account, trading workflow or platform access? Contact the SHELL support team.</p>
+                <button type="button" class="shell-footer-support-link" id="shellFooterOpenChat"><span aria-hidden="true">↗</span> Chat with support</button>
+                <span class="shell-footer-response">Support conversations are saved in the SHELL help desk.</span>
+            </div>
+        </div>
+
         <div class="shell-home-footer-bottom">
-            <a class="brand" href="{{ route('home') }}"><span class="brand-mark">S</span><span>SHELL<span class="brand-sub">MARKET & TRADING PLATFORM</span></span></a>
             <p>© {{ date('Y') }} SHELL. All rights reserved.</p>
-            <div><a href="{{ route('login') }}">Sign in</a><a href="{{ route('register') }}">Create account</a></div>
+            <div class="shell-footer-legal"><span>Market access may be restricted by local law.</span><a href="#risk">Risk disclosure</a><a href="#faq">Help & FAQs</a></div>
+            <a class="shell-footer-backtop" href="#top">Back to top <span aria-hidden="true">↑</span></a>
         </div>
     </footer>
 </div>
