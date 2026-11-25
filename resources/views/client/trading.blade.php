@@ -174,9 +174,18 @@
             <div class="position-market-line"><strong id="position-symbol">—</strong><span
                     id="position-direction">—</span></div>
             <div class="position-result-hero" id="position-result-hero" hidden><div class="position-result-icon" id="position-result-icon" aria-hidden="true">✓</div><div><span id="position-result-kicker">POSITION SETTLED</span><strong id="position-result-title">Result confirmed</strong></div></div>
-            <div class="position-live-price"><span id="position-price-label">LIVE MARKET PRICE</span><span class="position-feed-badge" id="position-feed-badge">Reconnecting…</span><strong
-                    id="position-current-price">Connecting to live market…</strong><small id="position-price-move">Loading
-                    your position details</small></div>
+            <div class="position-live-strip">
+                <div class="position-live-price">
+                    <div class="position-live-price-heading"><span id="position-price-label">LIVE MARKET PRICE</span><span class="position-feed-badge" id="position-feed-badge">Reconnecting…</span></div>
+                    <strong id="position-current-price">Connecting to live market…</strong>
+                    <small id="position-price-move">Loading your position details</small>
+                </div>
+                <div class="position-live-outcome">
+                    <span>LIVE INDICATIVE RESULT</span>
+                    <strong id="position-live-outcome">Waiting for market price…</strong>
+                    <small id="position-potential-payout">Potential payout: —</small>
+                </div>
+            </div>
             <div class="position-details-grid">
                 <div><span>Stake</span><strong id="position-stake">—</strong></div>
                 <div><span>Opening price</span><strong id="position-opening-price">—</strong></div>
@@ -185,12 +194,8 @@
                 <div><span>Confirmed closing price</span><strong id="position-closing-price">—</strong></div>
                 <div><span>Total payout</span><strong id="position-final-payout">—</strong></div>
                 <div><span>Net result</span><strong id="position-final-profit">—</strong></div>
-                <div class="position-live-outcome"><span>LIVE INDICATIVE RESULT</span><strong
-                        id="position-live-outcome">Waiting for market price…</strong><small
-                        id="position-potential-payout">Potential payout: —</small></div>
             </div>
-            <div class="position-result" id="position-result" aria-live="polite">Your position is being loaded. The
-                displayed live result is indicative until the server confirms settlement.</div>
+            <div class="position-result" id="position-result" aria-live="polite"></div>
             <button type="button" class="button button-primary position-close" id="position-close" disabled>Waiting for
                 result…</button>
         </section>
@@ -585,16 +590,34 @@
             color: #ff8996
         }
 
+        .position-live-strip {
+            display: grid;
+            grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
+            align-items: stretch;
+            gap: 10px;
+            margin-bottom: 12px
+        }
+
         .position-live-price {
+            min-width: 0;
             padding: 16px;
             border-radius: 10px;
             background: #0a1422;
             border: 1px solid #29384d;
             display: grid;
+            align-content: center;
+            gap: 8px
+        }
+
+        .position-live-price-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
             gap: 6px
         }
 
-        .position-live-price>span,
+        .position-live-price-heading>span:first-child,
         .position-details-grid span {
             font-size: 10px;
             color: #91a0b4;
@@ -616,9 +639,12 @@
         }
 
         .position-live-outcome {
-            grid-column: 1/-1;
+            min-width: 0;
             display: grid;
-            gap: 6px;
+            align-content: center;
+            justify-items: end;
+            text-align: right;
+            gap: 7px;
             padding: 14px 16px;
             border: 1px solid #34445a;
             border-radius: 10px;
@@ -682,30 +708,49 @@
                 grid-template-columns: repeat(2, minmax(0, 1fr))
             }
 
+            .position-live-strip {
+                grid-template-columns: 1fr
+            }
+
             .position-live-outcome {
-                grid-column: 1/-1
+                justify-items: start;
+                text-align: left
             }
         }
 
         .position-details-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin: 13px 0
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0 18px;
+            margin: 0 0 12px;
+            padding: 5px 16px;
+            border: 1px solid #29384d;
+            border-radius: 10px;
+            background: #0b1625
         }
 
         .position-details-grid>div {
-            display: grid;
-            gap: 6px;
-            padding: 12px;
-            border: 1px solid #29384d;
-            border-radius: 8px
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(53, 68, 90, .55)
+        }
+
+        .position-details-grid>div:nth-last-child(-n+2) {
+            border-bottom: 0
         }
 
         .position-details-grid strong {
             font-size: 13px;
             font-variant-numeric: tabular-nums;
             overflow-wrap: anywhere
+        }
+
+        .position-result:empty {
+            display: none
         }
 
         .position-result {
@@ -2036,7 +2081,7 @@
                 document.getElementById('position-close').disabled = false;
                 document.getElementById('position-modal-x').disabled = false;
                 stopPositionPricePolling();
-                setPositionText('position-result', 'LIVE POSITION · Indicative prices update from the live feed or server quote. Final outcome is determined by the server-captured closing quote at expiry.');
+                setPositionText('position-result', '');
                 setPositionText('position-close', 'Hide modal · trade continues');
                 try {
                     const data = initialTrade ? { trade: initialTrade } : await requestJson(@json(url('/trading/paper')) + '/' + id, {
