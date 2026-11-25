@@ -30,7 +30,6 @@
                 <a class="button button-primary" href="{{ route('wallet-requests.index', ['account' => 'real']) }}">Make your first deposit <span aria-hidden="true">→</span></a>
                 <span class="real-activation-note">Only deposit through the payment methods shown in your wallet center.</span>
             </div>
-            <p class="real-activation-disclaimer">Deposits are subject to verification. A submitted request or transaction hash is not a confirmed deposit. Trading involves risk; you can lose the full amount staked.</p>
         </section>
     @elseif ($selectedAccount === 'real' && ! $hasConfirmedDeposit)
         <section class="real-activation" aria-labelledby="real-activation-title">
