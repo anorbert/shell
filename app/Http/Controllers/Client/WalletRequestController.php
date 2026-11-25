@@ -23,11 +23,8 @@ class WalletRequestController extends Controller
         $realBalance = Decimal::fromUnits($ledger->balanceUnits($wallets['real']));
         $methods = DB::table('crypto_payment_methods')->orderBy('asset')->orderBy('network')->get();
         $requests = DB::table('wallet_requests')->where('user_id', $user->id)->latest()->paginate(15);
-        $kyc = DB::table('kyc_submissions')->where('user_id', $user->id)->latest()->first();
-        $walletService = app(ManualWalletService::class);
-        $kycVerified = $walletService->hasApprovedKyc($user);
-        $hasSuccessfulDeposit = $walletService->hasSuccessfulDeposit($user);
-        return view('client.wallet-requests', compact('methods', 'requests', 'kyc', 'kycVerified', 'hasSuccessfulDeposit', 'selectedAccount', 'selectedBalance', 'demoBalance', 'realBalance', 'currency'));
+        $kycVerified = app(ManualWalletService::class)->hasApprovedKyc($user);
+        return view('client.wallet-requests', compact('methods', 'requests', 'kycVerified', 'selectedAccount', 'selectedBalance', 'demoBalance', 'realBalance', 'currency'));
     }
 
     public function deposit(Request $request, ManualWalletService $wallets)
