@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class WalletOperationsController extends Controller
@@ -167,7 +168,7 @@ class WalletOperationsController extends Controller
             return back()->withErrors(['wallet_request' => 'A blockchain transaction hash is required for blockchain verification. Choose manual approval only if you are explicitly authorizing an off-chain credit.']);
         }
 
-        $internalReference = $manual ? 'SHELL-MANUAL-DEP-'.strtoupper(\\Illuminate\\Support\\Str::random(12)) : null;
+        $internalReference = $manual ? 'SHELL-MANUAL-DEP-'.strtoupper(Str::random(12)) : null;
 
         try {
             $wallets->confirmDeposit($walletRequest, $request->user(), $data['amount_usd'], $data['admin_note'], $manual, $internalReference);
