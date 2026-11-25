@@ -3,14 +3,57 @@
 @section('eyebrow','WALLET CENTER')
 @section('heading','My wallet')
 @section('content')
+<style>
+.wallet-page{--wallet-accent:#69b8e6}.wallet-page .wallet-account-switch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.wallet-page .wallet-account-option{position:relative;display:flex;flex-direction:column;gap:7px;padding:18px 20px;border:1px solid var(--line,#26364a);border-radius:16px;background:var(--panel,#101b2b);text-decoration:none;transition:border-color .2s,transform .2s,background .2s}
+.wallet-page .wallet-account-option:hover{transform:translateY(-2px);border-color:#5386aa}
+.wallet-page .wallet-account-option.active{border-color:#4e9dcc;background:linear-gradient(135deg,rgba(40,115,159,.19),rgba(16,27,43,.98));box-shadow:inset 0 0 0 1px rgba(89,170,216,.12)}
+.wallet-page .wallet-account-name{display:flex;align-items:center;gap:8px;color:var(--muted,#91a0b5);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.wallet-page .wallet-account-name:before{content:"";width:8px;height:8px;border-radius:50%;background:#7891a8}
+.wallet-page .wallet-account-option.active .wallet-account-name:before{background:#6ed5a4;box-shadow:0 0 0 4px rgba(110,213,164,.1)}
+.wallet-page .wallet-account-option>strong{font-size:clamp(21px,3vw,28px);font-variant-numeric:tabular-nums}
+.wallet-page .wallet-account-option>strong small{font-size:12px;color:var(--muted,#91a0b5)}
+.wallet-page .wallet-account-hint{font-size:12px;color:var(--muted,#91a0b5)}
+.wallet-page .page-action-row{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 18px}
+.wallet-page .button svg{width:17px;height:17px;vertical-align:middle;margin-right:7px}
+.wallet-page .metric-grid{gap:14px}
+.wallet-page .metric-card,.wallet-page .panel{border-radius:15px}
+.wallet-page .metric-card{position:relative;overflow:hidden;padding:19px;border:1px solid var(--line,#26364a)}
+.wallet-page .metric-card:before{content:"";position:absolute;right:17px;top:17px;width:34px;height:34px;border-radius:11px;background:rgba(91,170,215,.12)}
+.wallet-page .metric-card:after{content:"$";position:absolute;right:28px;top:22px;color:#78bfe5;font-size:17px;font-weight:800}
+.wallet-page .metric-card .metric-label{font-size:10px;letter-spacing:.09em}
+.wallet-page .metric-card>strong{font-size:clamp(22px,3vw,29px);font-variant-numeric:tabular-nums}
+.wallet-page .panel{overflow:hidden}
+.wallet-page .panel-head{padding:18px 20px;border-bottom:1px solid var(--line,#26364a);margin-bottom:16px}
+.wallet-page .panel-head h2{font-size:17px;margin-top:3px}
+.wallet-page .form-stack{gap:14px}
+.wallet-page .form-stack label{font-size:12px;font-weight:700;color:var(--muted,#a1afc0)}
+.wallet-page .form-stack input,.wallet-page .form-stack select,.wallet-page .form-stack textarea{margin-top:7px;border-radius:10px}
+.wallet-page .form-stack .button{min-height:44px}
+.wallet-page .muted{line-height:1.65}
+.wallet-page .content-grid{gap:16px;align-items:start}
+.wallet-page .notice-banner{border-radius:12px}
+.wallet-page .table-wrap{overflow-x:auto}
+.wallet-page .data-table{min-width:760px}
+.wallet-page .data-table th{font-size:10px;letter-spacing:.07em}
+.wallet-page .data-table td{font-size:12px}
+.wallet-page .table-status{white-space:nowrap}
+.wallet-page .wallet-section-icon{display:inline-grid;place-items:center;width:34px;height:34px;margin-right:9px;border-radius:10px;background:rgba(79,151,197,.13);color:#78bfe5;vertical-align:middle}
+.wallet-page .wallet-section-icon svg{width:18px;height:18px}
+.wallet-page .wallet-empty{padding:25px!important;text-align:center;color:var(--muted,#91a0b5)}
+.wallet-page .wallet-empty svg{display:block;width:28px;height:28px;margin:0 auto 8px;color:#78bfe5}
+@media(max-width:700px){.wallet-page .wallet-account-switch{grid-template-columns:1fr}.wallet-page .wallet-account-option{padding:16px}.wallet-page .content-grid{grid-template-columns:1fr}.wallet-page .panel-head{padding:16px}.wallet-page .metric-card{padding:16px}}
+</style>
+<div class="wallet-page">
+
 <div class="wallet-account-switch">
     <a href="{{ route('wallet-requests.index', ['account' => 'real']) }}" class="wallet-account-option {{ $selectedAccount === 'real' ? 'active' : '' }}" aria-current="{{ $selectedAccount === 'real' ? 'page' : 'false' }}">
-        <span class="wallet-account-name">Real account</span>
+        <span class="wallet-account-name"><span class="wallet-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-wallet"/></svg></span>Real account</span>
         <strong>@money($realBalance) <small>{{ $currency }}</small></strong>
         <span class="wallet-account-hint">Deposits and withdrawals</span>
     </a>
     <a href="{{ route('wallet-requests.index', ['account' => 'demo']) }}" class="wallet-account-option {{ $selectedAccount === 'demo' ? 'active' : '' }}" aria-current="{{ $selectedAccount === 'demo' ? 'page' : 'false' }}">
-        <span class="wallet-account-name">Demo account</span>
+        <span class="wallet-account-name"><span class="wallet-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-chart"/></svg></span>Demo account</span>
         <strong>@money($demoBalance) <small>{{ $currency }}</small></strong>
         <span class="wallet-account-hint">Simulation funds and demo trading</span>
     </a>
@@ -27,7 +70,7 @@
         <article class="metric-card"><span class="metric-label">ACCOUNT TYPE</span><strong>Demo</strong><small>Independent from your real wallet</small></article>
     </div>
     <section class="panel">
-        <div class="panel-head"><div><span class="eyebrow">DEMO ACCOUNT</span><h2>Manage demo funds</h2></div><span class="table-status verified">ACTIVE</span></div>
+        <div class="panel-head"><div><span class="wallet-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-wallet"/></svg></span><span class="eyebrow">DEMO ACCOUNT</span><h2>Manage demo funds</h2></div><span class="table-status verified">ACTIVE</span></div>
         <p class="muted">Use this balance to practise fixed-time trading and simulated conversions. Demo funds have no cash value and cannot be withdrawn or transferred to your real account.</p>
         <form id="wallet-demo-topup-form" class="form-stack wallet-topup-form">
             @csrf
@@ -45,7 +88,7 @@
     </div>
     <div class="content-grid">
         <section class="panel" id="deposit-form">
-            <div class="panel-head"><div><span class="eyebrow">ADD REAL FUNDS</span><h2>Deposit crypto</h2></div></div>
+            <div class="panel-head"><div><span class="wallet-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrow"/></svg></span><span class="eyebrow">ADD REAL FUNDS</span><h2>Deposit crypto</h2></div></div>
             <p class="muted">Choose the correct asset and network, send funds to the displayed address, then submit the transaction hash. Your real wallet is credited after operations verifies the transaction.</p>
             @if($methods->where('deposits_enabled', true)->isEmpty())
                 <p class="muted">Available deposit networks will appear here. Always use the asset, network and wallet address displayed in your account before sending funds.</p>
@@ -62,7 +105,7 @@
             @endif
         </section>
         <section class="panel">
-            <div class="panel-head"><div><span class="eyebrow">PAYOUT</span><h2>Withdraw real funds</h2></div></div>
+            <div class="panel-head"><div><span class="wallet-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-wallet"/></svg></span><span class="eyebrow">PAYOUT</span><h2>Withdraw real funds</h2></div></div>
             @if(!$hasSuccessfulDeposit)
                 <p class="muted">Withdrawals and identity verification become available after your first real-money deposit has been confirmed by our operations team. Demo funds do not qualify.</p>
                 <a class="button button-secondary" href="#deposit-form">Make your first real deposit</a>
@@ -95,10 +138,11 @@
             @endif
         </section>
     </div>
-    <section class="panel"><div class="panel-head"><div><span class="eyebrow">REAL WALLET</span><h2>Deposit and withdrawal history</h2></div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>REQUEST</th><th>TYPE</th><th>AMOUNT</th><th>ASSET / NETWORK</th><th>STATUS</th><th>CREATED</th><th>ADMIN NOTE</th></tr></thead><tbody>
+    <section class="panel"><div class="panel-head"><div><span class="wallet-section-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-receipt"/></svg></span><span class="eyebrow">REAL WALLET</span><h2>Deposit and withdrawal history</h2></div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>REQUEST</th><th>TYPE</th><th>AMOUNT</th><th>ASSET / NETWORK</th><th>STATUS</th><th>CREATED</th><th>ADMIN NOTE</th></tr></thead><tbody>
     @forelse($requests as $item)<tr><td>#{{ $item->id }}</td><td>{{ strtoupper($item->type) }}</td><td>@money($item->amount_usd) USD</td><td>{{ $item->asset }} · {{ $item->network }}</td><td><span class="table-status {{ in_array($item->status,['confirmed','paid']) ? 'verified' : 'pending' }}">{{ strtoupper($item->status) }}</span></td><td>{{ $item->created_at }}</td><td>{{ $item->admin_note ?: '—' }}</td></tr>@empty<tr><td colspan="7" class="table-empty">No requests submitted.</td></tr>@endforelse
     </tbody></table></div><div class="pagination-wrap">{{ $requests->links() }}</div></section>
 @endif
+</div>
 @endsection
 @push('scripts')
 <script>
