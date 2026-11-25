@@ -881,3 +881,42 @@ input,select,textarea{accent-color:var(--gold)}
     text-overflow: ellipsis;
   }
 }
+
+
+/* Trading-terminal account balance switcher */
+.topbar-wallet-menu{position:relative;flex:0 0 auto}
+.topbar-wallet-menu>.topbar-wallet-balance{list-style:none;cursor:pointer;min-width:154px;position:relative;padding:8px 12px 8px 13px;gap:4px}
+.topbar-wallet-menu>.topbar-wallet-balance::-webkit-details-marker{display:none}
+.topbar-wallet-menu>.topbar-wallet-balance::marker{content:""}
+.topbar-wallet-menu[open]>.topbar-wallet-balance{border-color:#c8a96a;background:#1a2a3d}
+.topbar-wallet-meta{justify-content:space-between}
+.wallet-switch-chevron{font-size:13px;line-height:9px;color:#9eacbf;transition:transform .18s}
+.topbar-wallet-menu[open] .wallet-switch-chevron{transform:rotate(180deg)}
+.wallet-switch-dropdown{position:absolute;z-index:1000;top:calc(100% + 10px);right:0;width:310px;padding:12px;border:1px solid #34465c;border-radius:12px;background:#101b2a;box-shadow:0 20px 55px #0009}
+.wallet-switch-heading{padding:5px 7px 12px;border-bottom:1px solid #29384c;margin-bottom:7px}
+.wallet-switch-heading>span{display:block;color:#e6c681;font-size:9px;font-weight:800;letter-spacing:.14em}
+.wallet-switch-heading>small{display:block;color:#8796aa;font-size:10px;margin-top:5px}
+.wallet-switch-dropdown form{margin:0}
+.wallet-switch-option{display:flex;width:100%;align-items:center;gap:10px;padding:11px 8px;border:1px solid transparent;border-radius:8px;background:transparent;color:#e9edf5;text-align:left;cursor:pointer}
+.wallet-switch-option:hover{background:#18273a;border-color:#34465c}
+.wallet-switch-option.is-active{background:#1a2a3b;border-color:#665638}
+.wallet-switch-icon{width:32px;height:32px;display:grid;place-items:center;border-radius:8px;background:#243246;color:#aab8ca;flex:0 0 auto}
+.wallet-switch-icon.real{background:#30291d;color:#e2c98e}
+.wallet-switch-icon .nav-icon{width:16px;height:16px}
+.wallet-switch-copy{display:grid;gap:3px;min-width:0;flex:1}
+.wallet-switch-copy strong{font-size:11px;font-weight:700}
+.wallet-switch-copy small{font-size:9px;color:#8291a6;white-space:nowrap}
+.wallet-switch-amount{display:grid;gap:3px;text-align:right}
+.wallet-switch-amount strong{font-size:11px;font-variant-numeric:tabular-nums;color:#f0d99f;white-space:nowrap}
+.wallet-switch-amount small{font-size:8px;color:#8493a8;text-align:right}
+.wallet-switch-check{color:#70c9a0;font-size:13px;font-weight:800;padding-left:2px}
+.wallet-switch-manage{display:flex;justify-content:space-between;align-items:center;margin-top:7px;padding:11px 8px 3px;border-top:1px solid #29384c;color:#d7bd86;font-size:10px;font-weight:700}
+.wallet-switch-manage span{font-size:13px}
+@media(max-width:720px){
+ .topbar-wallet-menu>.topbar-wallet-balance{min-width:112px;padding:6px 8px}
+ .wallet-switch-dropdown{position:fixed;top:68px;right:10px;width:min(310px,calc(100vw - 20px))}
+}
+@media(max-width:380px){
+ .topbar-wallet-menu>.topbar-wallet-balance{min-width:100px;padding:5px 6px}
+ .wallet-switch-dropdown{top:62px}
+}
