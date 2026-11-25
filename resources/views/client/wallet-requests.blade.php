@@ -42,7 +42,41 @@
 .wallet-page .wallet-section-icon svg{width:18px;height:18px}
 .wallet-page .wallet-empty{padding:25px!important;text-align:center;color:var(--muted,#91a0b5)}
 .wallet-page .wallet-empty svg{display:block;width:28px;height:28px;margin:0 auto 8px;color:#78bfe5}
-@media(max-width:700px){.wallet-page .wallet-account-switch{grid-template-columns:1fr}.wallet-page .wallet-account-option{padding:16px}.wallet-page .content-grid{grid-template-columns:1fr}.wallet-page .panel-head{padding:16px}.wallet-page .metric-card{padding:16px}}
+/* Keep every wallet section on the same alignment grid. */
+.wallet-page .wallet-detail-metrics{grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch}
+.wallet-page .metric-card{min-width:0;min-height:132px}
+.wallet-page .metric-card:after{content:none}
+.wallet-page .content-grid{grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:18px}
+.wallet-page .content-grid>.panel{display:flex;flex-direction:column;min-width:0;height:100%;padding:0}
+.wallet-page .panel{padding:0}
+.wallet-page .panel>.panel-head{display:flex;align-items:center;justify-content:space-between;min-height:76px;margin:0;padding:17px 20px;border-bottom:1px solid var(--line,#26364a)}
+.wallet-page .panel-head>div{display:grid;grid-template-columns:36px minmax(0,1fr);grid-template-rows:auto auto;align-items:center;column-gap:10px;min-width:0}
+.wallet-page .panel-head .wallet-section-icon{grid-column:1;grid-row:1/3;margin:0}
+.wallet-page .panel-head .eyebrow{grid-column:2;grid-row:1;min-width:0}
+.wallet-page .panel-head h2{grid-column:2;grid-row:2;margin:3px 0 0;line-height:1.3}
+.wallet-page .panel>.muted{margin:18px 20px 0}
+.wallet-page .panel>.form-stack{width:auto;margin:18px 20px 20px;gap:15px}
+.wallet-page .panel>.page-action-row{margin:16px 20px 20px}
+.wallet-page .panel>.table-wrap{width:100%;min-width:0}
+.wallet-page .panel>.pagination-wrap{margin:0 20px 18px}
+.wallet-page .panel .form-stack label{display:grid;gap:7px;min-width:0}
+.wallet-page .panel .form-stack input,.wallet-page .panel .form-stack select,.wallet-page .panel .form-stack textarea{box-sizing:border-box;width:100%;min-width:0;min-height:44px;margin:0;padding:11px 12px;border:1px solid #35445a;border-radius:10px;background:#0b1421;color:#f1f4f8}
+.wallet-page .panel .form-stack textarea{min-height:88px;resize:vertical}
+.wallet-page .panel .form-stack input:focus,.wallet-page .panel .form-stack select:focus,.wallet-page .panel .form-stack textarea:focus{outline:0;border-color:#69b8e6;box-shadow:0 0 0 3px rgba(105,184,230,.12)}
+.wallet-page .panel .form-stack .notice-banner{align-items:flex-start;min-width:0;margin:0;overflow-wrap:anywhere}
+.wallet-page .panel .form-stack .notice-banner>div{min-width:0;flex:1}
+.wallet-page .panel .form-stack .notice-banner button{flex:0 0 auto}
+.wallet-page .panel>.muted+.form-stack{margin-top:16px}
+.wallet-page .panel>.muted+.button{align-self:flex-start;margin:18px 20px 20px}
+.wallet-page .panel .form-stack>.muted{margin:0}
+.wallet-page .panel>.table-wrap .data-table{min-width:850px}
+.wallet-page .table-wrap{width:100%;max-width:100%}
+.wallet-page .wallet-account-option{min-width:0}
+.wallet-page .wallet-account-option>strong{overflow-wrap:anywhere}
+.wallet-page .page-action-row{align-items:center}
+@media(max-width:900px){.wallet-page .content-grid{grid-template-columns:1fr}.wallet-page .content-grid>.panel{height:auto}}
+@media(max-width:700px){.wallet-page .wallet-account-switch{grid-template-columns:1fr}.wallet-page .wallet-account-option{padding:16px}.wallet-page .wallet-detail-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.wallet-page .panel>.panel-head{padding:15px 16px}.wallet-page .panel>.muted{margin-left:16px;margin-right:16px}.wallet-page .panel>.form-stack{margin-left:16px;margin-right:16px}.wallet-page .panel>.page-action-row{margin-left:16px;margin-right:16px}.wallet-page .panel>.muted+.button{margin-left:16px}.wallet-page .metric-card{padding:16px;min-height:120px}}
+@media(max-width:440px){.wallet-page .wallet-detail-metrics{grid-template-columns:1fr}.wallet-page .page-action-row{align-items:stretch}.wallet-page .page-action-row .button{width:100%}.wallet-page .panel>.panel-head{gap:8px}.wallet-page .panel-head h2{font-size:15px}}
 </style>
 <div class="wallet-page">
 
