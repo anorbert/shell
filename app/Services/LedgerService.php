@@ -133,13 +133,16 @@ class LedgerService
                     }
                 }
 
-                // The real payout reserve is a debit-normal asset account. Locking
-                // exposure must be atomic with the ledger posting so concurrent
-                // positions cannot promise more profit than the funded reserve.
-                if ($account->code === 'REAL_PAYOUT_RESERVE' && $account->normal_side === 'credit') {
+                // Real stake escrow, payout escrow and the available reserve are
+                // credit-normal liabilities. Their balances may never become negative.
+                // Account locks make exposure reservation safe under concurrent opens.
+                if (in_array($account->code, ['REAL_TRADE_ESCROW', 'REAL_PAYOUT_ESCROW', 'REAL_PAYOUT_RESERVE'], true)
+                    && $account->normal_side === 'credit') {
                     $current = $this->balanceUnits((int) $account->id);
                     if ($current + $netChange < 0) {
-                        throw new RuntimeException('Real trading is temporarily unavailable because the funded payout reserve is insufficient for this position.');
+                        throw new RuntimeException($account->code === 'REAL_PAYOUT_RESERVE'
+                            ? 'Real trading is temporarily unavailable because the funded payout reserve is insufficient for this position.'
+                            : 'Real trade settlement is blocked because its reserved escrow balance is insufficient.');
                     }
                 }
             }
