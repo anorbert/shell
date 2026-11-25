@@ -2297,7 +2297,7 @@
                 if (expiredSettlementInFlight) return;
                 expiredSettlementInFlight = true;
                 try {
-                    const response = await requestJson(@json(url('/trading/settle-expired')), {
+                    const response = await requestJson(@json(route('trading.settle-expired', ['account' => $selectedAccount])), {
                         method: 'POST',
                         timeoutMs: 40000, retries: 2
                     });
