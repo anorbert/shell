@@ -63,6 +63,17 @@ class LedgerService
         return $this->account('SYSTEM', $code, $currency, $normal);
     }
 
+    public function normalBalanceUnits(int $accountId): int
+    {
+        $account = DB::table('ledger_accounts')->where('id', $accountId)->first();
+        if (!$account) {
+            throw new RuntimeException('Ledger account missing.');
+        }
+
+        $balance = $this->balanceUnits($accountId);
+        return $account->normal_side === 'debit' ? -$balance : $balance;
+    }
+
     public function balanceUnits(int $accountId): int
     {
         $sum = 0;
