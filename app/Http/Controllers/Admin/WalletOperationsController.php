@@ -147,10 +147,13 @@ class WalletOperationsController extends Controller
     {
         $data = $request->validate([
             'amount_usd' => ['required', 'numeric', 'gt:0', 'max:99999999', 'regex:/^(?:[0-9]{1,8})(?:\\.[0-9]{1,2})?$/'],
-            'chain_verified' => ['required', 'accepted'],
+            'approval_mode' => ['required', 'in:blockchain,manual'],
+            'chain_verified' => ['required_if:approval_mode,blockchain', 'accepted'],
+            'manual_approval_confirmed' => ['required_if:approval_mode,manual', 'accepted'],
             'admin_note' => ['required', 'string', 'min:10', 'max:2000'],
         ], [
             'chain_verified.accepted' => 'Confirm that you independently verified the transaction on the correct blockchain.',
+            'manual_approval_confirmed.accepted' => 'Confirm that you authorize a manual wallet credit without a blockchain transaction hash.',
         ]);
 
         $deposit = DB::table('wallet_requests')->where('id', $walletRequest)
@@ -159,13 +162,18 @@ class WalletOperationsController extends Controller
             return back()->withErrors(['wallet_request' => 'This deposit is no longer pending review. Refresh the wallet operations queue.']);
         }
 
-        if (!filled($deposit->transaction_hash)) {
-            return back()->withErrors(['wallet_request' => 'This deposit has no submitted transaction hash. It cannot be credited. Reject this incomplete request and ask the client to submit a new deposit with the correct transaction hash.']);
+        $manual = $data['approval_mode'] === 'manual';
+        if (!$manual && !filled($deposit->transaction_hash)) {
+            return back()->withErrors(['wallet_request' => 'A blockchain transaction hash is required for blockchain verification. Choose manual approval only if you are explicitly authorizing an off-chain credit.']);
         }
 
+        $internalReference = $manual ? 'SHELL-MANUAL-DEP-'.strtoupper(\\Illuminate\\Support\\Str::random(12)) : null;
+
         try {
-            $wallets->confirmDeposit($walletRequest, $request->user(), $data['amount_usd'], $data['admin_note']);
-            return back()->with('status', 'Deposit verified and credited to the client real wallet.');
+            $wallets->confirmDeposit($walletRequest, $request->user(), $data['amount_usd'], $data['admin_note'], $manual, $internalReference);
+            return back()->with('status', $manual
+                ? 'Manual deposit credit approved. Internal reference: '.$internalReference.'. No blockchain transaction hash was recorded.'
+                : 'Deposit verified and credited to the client real wallet.');
         } catch (RuntimeException $exception) {
             return back()->withErrors(['wallet_request' => $exception->getMessage()]);
         }
