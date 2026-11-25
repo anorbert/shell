@@ -49,10 +49,10 @@ function fundRealTradingWallet(User $user, LedgerService $ledger, string $amount
 {
     $wallet = $ledger->realWallet($user, 'USD');
     $capital = $ledger->system('TEST_REAL_WALLET_CAPITAL', 'USD', 'debit');
-    $ledger->post('test-real-wallet-fund:'.$user->id, 'Test real wallet funding', [
+    $ledger->post('test-trading-deposit-ledger:'.$user->id, 'Test confirmed real deposit credit', [
         ['account_id' => $capital, 'side' => 'debit', 'amount' => $amount],
         ['account_id' => $wallet, 'side' => 'credit', 'amount' => $amount],
-    ], ['user_id' => $user->id, 'test_funding' => true]);
+    ], ['user_id' => $user->id, 'wallet_request_id' => null, 'type' => 'manual_deposit_test']);
 }
 
 function fundRealPayoutReserveForTest(LedgerService $ledger, string $amount = '1000.00000000'): void
