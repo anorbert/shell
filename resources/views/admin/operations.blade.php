@@ -18,11 +18,11 @@
 </tbody></table></div></section>
 <section class="panel"><div class="panel-head"><div><span class="eyebrow">SETTLEMENT QUEUE</span><h2>Open trading positions</h2></div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>CLIENT</th><th>ACCOUNT</th><th>PAIR</th><th>DIRECTION</th><th>STAKE</th><th>OPENED</th><th>EXPIRES</th></tr></thead><tbody>
 @forelse($openTrades as $trade)<tr><td><strong>{{ $trade->client_name }}</strong><small>{{ $trade->client_email }}</small></td><td>{{ strtoupper($trade->account_type ?? "demo") }}</td><td>{{ $trade->symbol }}</td><td>{{ $trade->direction }}</td><td>@money($trade->stake) {{ $trade->wallet_currency ?? config('shell.paper.currency','USD') }}</td><td>{{ $trade->opened_at }}</td><td>{{ $trade->expires_at }}</td></tr>
-@empty<tr><td colspan="6" class="table-empty">There are no open paper trades.</td></tr>@endforelse
+@empty<tr><td colspan="7" class="table-empty">There are no open positions.</td></tr>@endforelse
 </tbody></table></div><div class="pagination-wrap">{{ $openTrades->links() }}</div></section>
 <section class="panel"><div class="panel-head"><div><span class="eyebrow">SETTLEMENT RECORDS</span><h2>Recent settlements</h2></div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>CLIENT</th><th>ACCOUNT</th><th>PAIR</th><th>OPEN</th><th>CLOSE</th><th>STAKE</th><th>OUTCOME</th><th>SETTLED AT</th></tr></thead><tbody>
 @forelse($recentSettlements as $trade)<tr><td>{{ $trade->client_name }}</td><td>{{ strtoupper($trade->account_type ?? "demo") }}</td><td>{{ $trade->symbol }}</td><td>@decimal($trade->opening_price)</td><td>@decimal($trade->closing_price)</td><td>@money($trade->stake) {{ $trade->wallet_currency ?? config('shell.paper.currency','USD') }}</td><td><span class="table-status verified">{{ strtoupper($trade->status) }}</span></td><td>{{ $trade->settled_at }}</td></tr>
-@empty<tr><td colspan="7" class="table-empty">No settlements recorded yet.</td></tr>@endforelse
+@empty<tr><td colspan="8" class="table-empty">No settlements recorded yet.</td></tr>@endforelse
 </tbody></table></div></section>
 <section class="panel"><div class="panel-head"><div><span class="eyebrow">PAPER CONVERSIONS</span><h2>Recent simulated conversions</h2></div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>CLIENT</th><th>FROM</th><th>TO</th><th>RATE</th><th>DATE</th></tr></thead><tbody>
 @forelse($recentConversions as $conversion)<tr><td>{{ $conversion->client_name }}</td><td>@decimal($conversion->amount_in) {{ $conversion->from_currency }}</td><td>@decimal($conversion->amount_out) {{ $conversion->to_currency }}</td><td>@decimal($conversion->source_price) / @decimal($conversion->target_price)</td><td>{{ $conversion->created_at }}</td></tr>
