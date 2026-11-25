@@ -167,7 +167,6 @@
     const grid = document.getElementById('dash-market-grid');
     if (!grid) return;
     const endpoint = @json($candlesUrl);
-    const money = value => new Intl.NumberFormat(undefined, {maximumFractionDigits: 8}).format(value);
     const formatPrice = value => new Intl.NumberFormat(undefined, {maximumFractionDigits: 8, minimumFractionDigits: 2}).format(value);
     function draw(canvas, values, trend) {
         const ctx = canvas.getContext('2d'); if (!ctx || values.length < 2) return;
