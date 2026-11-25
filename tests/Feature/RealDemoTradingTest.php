@@ -11,6 +11,7 @@ function configureTradingQuoteForEnvironmentTests(): void
 {
     config([
         'shell.paper.enabled' => true,
+        'shell.paper.real_enabled' => true,
         'shell.paper.currency' => 'USD',
         'shell.paper.max_stake' => '1000.00000000',
         'shell.paper.durations' => [60],
@@ -100,6 +101,25 @@ test('pending deposit or transaction hash does not unlock real trading', functio
     expect(fn () => app(PaperTradingService::class)->open(
         $user, 'BTCUSDT', 'UP', '10.00000000', 60, 'pending-real-trade', 'real'
     ))->toThrow(RuntimeException::class, 'Real trading unlocks after your first deposit has been verified and credited to your real wallet.');
+});
+
+test('real-money trading is disabled by default even when the account is funded', function () {
+    configureTradingQuoteForEnvironmentTests();
+    config(['shell.paper.real_enabled' => false]);
+
+    $user = User::factory()->create();
+    createConfirmedTradingDeposit($user);
+    $ledger = app(LedgerService::class);
+    $ledger->provisionClientWallets($user, 'USD');
+    fundRealTradingWallet($user, $ledger);
+    fundRealPayoutReserveForTest($ledger);
+
+    expect(fn () => app(PaperTradingService::class)->open(
+        $user, 'BTCUSDT', 'UP', '10.00000000', 60, 'real-trading-disabled-by-default', 'real'
+    ))->toThrow(RuntimeException::class, 'Real-money trading is not enabled. Demo trading remains available.');
+
+    expect(DB::table('paper_trades')->count())->toBe(0)
+        ->and($ledger->balanceUnits($ledger->realWallet($user, 'USD')))->toBe(10000000000);
 });
 
 test('confirmed deposit and funded reserve enable real trading without KYC', function () {
