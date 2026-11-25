@@ -3,10 +3,26 @@
 @section('eyebrow', 'FIXED-TIME OPTIONS SIMULATOR')
 @section('heading', 'Trading terminal')
 @section('content')
-    <x-client-attention title="Demo trading is ready" tag="PAPER ONLY">
-        <p>Practise fixed-time UP and DOWN positions with demo credits. Market charts provide visual context, while the
-            platform validates server-captured quotes for trade opening and settlement.</p>
+    <x-client-attention :title="$selectedAccount === 'real' ? 'Real trading account' : 'Demo trading account'" :tag="$selectedAccount === 'real' ? 'REAL MONEY' : 'PAPER ONLY'">
+        @if ($selectedAccount === 'real')
+            <p>Real positions use your funded real wallet. Your first deposit must be confirmed and credited before trading. Approved KYC is required only when you request a withdrawal.</p>
+        @else
+            <p>Practise fixed-time UP and DOWN positions with demo credits. Demo trading is independent of deposits and KYC; all positions are settled against verified server-captured market quotes.</p>
+        @endif
     </x-client-attention>
+
+    <nav class="account-switch" aria-label="Trading account">
+        <a class="button {{ $selectedAccount === 'demo' ? 'button-primary' : 'button-secondary' }}" href="{{ route('trading.index', ['account' => 'demo']) }}">Demo account</a>
+        <a class="button {{ $selectedAccount === 'real' ? 'button-primary' : 'button-secondary' }}" href="{{ route('trading.index', ['account' => 'real']) }}">Real account</a>
+        <span class="muted">Balances and trade histories are separate.</span>
+    </nav>
+    @if ($selectedAccount === 'real' && ! $hasConfirmedDeposit)
+        <div class="panel" role="status">
+            <strong>Real trading is locked.</strong>
+            <p>Submit a deposit and wait until it is verified and credited to your real wallet. A pending request or transaction hash alone does not unlock trading.</p>
+            <a class="button button-primary" href="{{ route('wallet-requests.index', ['account' => 'real']) }}">Make a real deposit</a>
+        </div>
+    @endif
 
     <div class="trading-layout">
         <section class="panel trading-chart-panel">
@@ -56,11 +72,12 @@
             <div class="panel-head">
                 <div><span class="eyebrow">NEW POSITION</span>
                     <h2>Trade ticket</h2>
-                </div><span class="table-status verified">DEMO</span>
+                </div><span class="table-status verified">{{ strtoupper($selectedAccount) }}</span>
             </div>
-            <div class="wallet-summary"><span>AVAILABLE DEMO BALANCE</span><strong id="demo-wallet-balance" aria-live="polite">@decimal($balance)
+            <div class="wallet-summary"><span>AVAILABLE {{ strtoupper($selectedAccount) }} BALANCE</span><strong id="wallet-balance" aria-live="polite">@decimal($balance)
                     {{ $currency }}</strong></div>
             <form id="paper-trade-form" class="form-stack">
+                <input type="hidden" name="account_type" value="{{ $selectedAccount }}">
                 <input type="hidden" name="request_key" value="{{ \Illuminate\Support\Str::uuid() }}">
                 <label>Market pair<select name="symbol" id="trade-symbol" required>
                         @foreach ($symbols as $symbol)
@@ -89,14 +106,14 @@
                     <ol>
                         <li>Choose the market, stake and expiry.</li>
                         <li>Select UP if you expect the price to rise, or DOWN if you expect it to fall.</li>
-                        <li>We verify a fresh server price and reserve the stake from your demo wallet.</li>
+                        <li>We verify a fresh server price and reserve the stake from your selected account wallet.</li>
                         <li>At expiry, the position settles against the next eligible server-captured quote. Your result
                             appears in Trade history.</li>
                     </ol>
                 </details>
-                <div class="direction-buttons"><button class="direction-up" type="submit" data-direction="UP">↗ UP
+                <div class="direction-buttons"><button class="direction-up" type="submit" data-direction="UP" {{ $selectedAccount === 'real' && ! $hasConfirmedDeposit ? 'disabled' : '' }}>↗ UP
                         <small>Price rises</small></button><button class="direction-down" type="submit"
-                        data-direction="DOWN">↘ DOWN <small>Price falls</small></button></div>
+                        data-direction="DOWN" {{ $selectedAccount === 'real' && ! $hasConfirmedDeposit ? 'disabled' : '' }}>↘ DOWN <small>Price falls</small></button></div>
                 <input type="hidden" name="direction" id="trade-direction" value="UP">
                 <p class="muted" id="trade-feedback" role="status" aria-live="polite"></p>
             </form>
@@ -151,7 +168,7 @@
                                     class="table-status trade-result-badge {{ $trade->status === 'open' ? 'pending' : ($trade->status === 'won' ? 'verified trade-result-win' : ($trade->status === 'lost' ? 'rejected trade-result-loss' : 'pending')) }}">{{ $trade->status === 'won' ? 'WIN' : ($trade->status === 'lost' ? 'LOSS' : ($trade->status === 'void' ? 'TIE' : 'OPEN')) }}</span>
                             </td>
                     </tr>@empty<tr>
-                            <td colspan="8" class="table-empty">No paper trades yet. Your first position will appear
+                            <td colspan="8" class="table-empty">No trades yet. Your first position will appear
                                 here.</td>
                         </tr>
                     @endforelse
@@ -166,7 +183,7 @@
         <section class="position-modal-card" id="position-modal-card">
             <button type="button" class="position-modal-x" id="position-modal-x" aria-label="Close position result" disabled>×</button>
             <div class="position-modal-head">
-                <div><span class="eyebrow">LIVE DEMO POSITION</span>
+                <div><span class="eyebrow">LIVE {{ strtoupper($selectedAccount) }} POSITION</span>
                     <h2 id="position-modal-title">Trade opened</h2>
                 </div><span class="table-status pending" id="position-status">OPEN</span>
             </div>
@@ -2033,7 +2050,7 @@
                 setPositionText('position-live-outcome', (settledNet > 0 ? '+' : settledNet < 0 ? '−' : '') +
                     money(Math.abs(settledNet)) + ' ' + trade.currency);
                 if (trade.wallet_balance !== undefined && trade.wallet_balance !== null) {
-                    setText('demo-wallet-balance', money(trade.wallet_balance) + ' ' + trade.currency);
+                    setText('wallet-balance', money(trade.wallet_balance) + ' ' + trade.currency);
                 }
                 const historyRow = document.querySelector('[data-open-trade="' + trade.id + '"]');
                 if (historyRow) {
@@ -2052,17 +2069,17 @@
                     icon.textContent = '↗';
                     setPositionText('position-result-kicker', 'SUCCESSFUL PREDICTION');
                     setPositionText('position-result-title', 'You won ' + money(trade.profit_amount ?? (payout - Number(trade.stake))) + ' ' + trade.currency);
-                    result.textContent = 'WIN — The closing price confirmed your ' + trade.direction + ' prediction. The payout of ' + money(payout) + ' ' + trade.currency + ' has been credited to your demo wallet.';
+                    result.textContent = 'WIN — The closing price confirmed your ' + trade.direction + ' prediction. The payout of ' + money(payout) + ' ' + trade.currency + ' has been credited to your selected account wallet.';
                 } else if (status === 'LOST') {
                     icon.textContent = '↘';
                     setPositionText('position-result-kicker', 'POSITION CLOSED');
                     setPositionText('position-result-title', 'Stake result: loss');
-                    result.textContent = 'LOSS — The closing price moved against your ' + trade.direction + ' prediction. The ' + money(trade.stake) + ' ' + trade.currency + ' demo stake was settled.';
+                    result.textContent = 'LOSS — The closing price moved against your ' + trade.direction + ' prediction. The ' + money(trade.stake) + ' ' + trade.currency + ' stake was settled.';
                 } else {
                     icon.textContent = '=';
                     setPositionText('position-result-kicker', 'PRICE MATCHED');
                     setPositionText('position-result-title', 'Stake returned');
-                    result.textContent = 'TIE — The opening and closing prices matched. Your full demo stake of ' + money(trade.stake) + ' ' + trade.currency + ' has been returned.';
+                    result.textContent = 'TIE — The opening and closing prices matched. Your full stake of ' + money(trade.stake) + ' ' + trade.currency + ' has been returned.';
                 }
                 result.className = 'position-result ' + (status === 'WON' ? 'is-win' : status === 'LOST' ? 'is-loss' : 'is-tie');
                 setPositionText('position-close', 'Continue trading');
@@ -2285,7 +2302,7 @@
                         timeoutMs: 40000, retries: 2
                     });
                     if (response.wallet_balance !== undefined && response.wallet_balance !== null) {
-                        setText('demo-wallet-balance', money(response.wallet_balance) + ' {{ $currency }}');
+                        setText('wallet-balance', money(response.wallet_balance) + ' {{ $currency }}');
                     }
                     // Reconcile even when this request settled zero rows: the
                     // scheduler may already have committed the result just before us.
@@ -2338,7 +2355,7 @@
                 const buttons = form.querySelectorAll('button[type=submit]');
                 buttons.forEach(button => button.disabled = true);
                 const feedback = document.getElementById('trade-feedback');
-                feedback.textContent = 'Validating fresh market price and reserving demo stake…';
+                feedback.textContent = 'Validating fresh market price and reserving stake…';
                 try {
                     const payload = Object.fromEntries(new FormData(form).entries());
                     const result = await requestJson(@json(route('trading.store')), {
@@ -2362,7 +2379,7 @@
                             : 'trade-' + Date.now() + '-' + Math.random().toString(36).slice(2, 12);
                     }
                     if (result.wallet_balance !== undefined && result.wallet_balance !== null) {
-                        setText('demo-wallet-balance', money(result.wallet_balance) + ' {{ $currency }}');
+                        setText('wallet-balance', money(result.wallet_balance) + ' {{ $currency }}');
                     }
                     if (result.trade_id) {
                         if (result.trade) upsertTradeRow(result.trade);
