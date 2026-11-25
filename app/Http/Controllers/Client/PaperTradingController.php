@@ -53,6 +53,9 @@ class PaperTradingController extends Controller
                 ->where('expires_at', '<=', now())
                 ->exists(),
             'symbols' => config('shell.market.symbols'),
+            'selectedSymbol' => in_array(strtoupper((string) $request->query('symbol')), config('shell.market.symbols', []), true)
+                ? strtoupper((string) $request->query('symbol'))
+                : (config('shell.market.symbols')[0] ?? ''),
             'durations' => config('shell.paper.durations'),
         ]);
     }
