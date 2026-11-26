@@ -41,15 +41,11 @@ class ClientController extends Controller
                 'ledger_transactions.idempotency_key', 'ledger_entries.side', 'ledger_entries.amount',
                 'ledger_accounts.code', 'ledger_accounts.currency')
             ->latest('ledger_transactions.posted_at')->limit(50)->get();
-        $realTrades = DB::table('paper_trades')->where('user_id', $user->id)->where('account_type', 'real')->latest('opened_at')->limit(25)->get();
-        $demoTrades = DB::table('paper_trades')->where('user_id', $user->id)->where(function ($query) {
-            $query->where('account_type', 'demo')->orWhereNull('account_type');
-        })->latest('opened_at')->limit(25)->get();
         $conversions = DB::table('paper_conversions')->where('user_id', $user->id)->latest()->limit(20)->get();
         $tickets = DB::table('support_tickets')->where('user_id', $user->id)->latest('last_message_at')->limit(10)->get();
         $loginEvents = DB::table('user_login_events')->where('user_id', $user->id)->latest()->limit(15)->get();
 
-        return view('admin.client-show', compact('user', 'accounts', 'transactions', 'realTrades', 'demoTrades', 'conversions', 'tickets', 'loginEvents'));
+        return view('admin.client-show', compact('user', 'accounts', 'transactions', 'conversions', 'tickets', 'loginEvents'));
     }
 
     public function walletStatement(int $client, int $account)
