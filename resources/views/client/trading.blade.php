@@ -1713,25 +1713,15 @@
                         ctx.fillRect(left + i * step, top, step, chartHeight);
                     }
 
-                    // Crisp wick with a slightly stronger center stroke.
+                    // Keep the original candle visibility: solid bodies and clean, thin wicks.
                     ctx.strokeStyle = color;
-                    ctx.lineWidth = Math.max(1.1, Math.min(1.7, step * .16));
-                    ctx.lineCap = 'round';
+                    ctx.lineWidth = Math.max(1, Math.min(1.5, step * .13));
                     ctx.beginPath();
                     ctx.moveTo(x, y(high));
                     ctx.lineTo(x, y(low));
                     ctx.stroke();
-
-                    // Subtle candle glow keeps direction legible without clutter.
-                    ctx.save();
-                    ctx.shadowColor = color;
-                    ctx.shadowBlur = 4;
                     ctx.fillStyle = color;
-                    ctx.fillRect(x - bodyWidth / 2, bodyTop, bodyWidth, bodyHeight);
-                    ctx.restore();
-                    ctx.strokeStyle = up ? 'rgba(116, 255, 211, .28)' : 'rgba(255, 174, 184, .25)';
-                    ctx.lineWidth = .65;
-                    ctx.strokeRect(x - bodyWidth / 2 + .3, bodyTop + .3, Math.max(1, bodyWidth - .6), Math.max(1, bodyHeight - .6));
+                    ctx.fillRect(x - bodyWidth / 2, bodyTop, bodyWidth, Math.max(1.5, bodyBottom - bodyTop));
                 });
 
                 const last = candles[candles.length - 1],
