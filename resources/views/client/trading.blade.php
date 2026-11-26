@@ -2656,7 +2656,7 @@
                     const badge = document.getElementById('history-detail-status');
                     badge.textContent = status === 'WON' ? 'WON' : status === 'LOST' ? 'LOST' : status === 'VOID' ? 'TIE' : 'OPEN';
                     badge.className = 'table-status ' + (status === 'WON' ? 'verified' : status === 'LOST' ? 'rejected' : 'pending');
-                    const payout = trade.status === 'won' ? Number(trade.stake) * Number(@json((int) config('shell.paper.payout_basis_points', 18000))) / 10000
+                    const payout = trade.status === 'won' ? Number(trade.stake) * Number(trade.payout_basis_points || @json((int) config('shell.paper.payout_basis_points', 18000))) / 10000
                         : trade.status === 'void' ? Number(trade.stake) : 0;
                     const profit = trade.status === 'won' ? payout - Number(trade.stake)
                         : trade.status === 'lost' ? -Number(trade.stake) : 0;
