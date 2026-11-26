@@ -46,6 +46,15 @@
     .cp-status.active{background:rgba(59,130,246,.12);color:#60a5fa}
     .cp-audit-note{margin:0 22px 20px;padding:11px 13px;border:1px solid rgba(59,130,246,.2);border-radius:10px;background:rgba(59,130,246,.06);color:var(--cp-muted);font-size:12px}
     .cp-empty{padding:24px!important;text-align:center;color:var(--cp-muted)}
+
+    .cp-icon{width:17px;height:17px;flex:0 0 17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}
+    .cp-heading-icon{display:inline-grid;place-items:center;width:32px;height:32px;flex:0 0 32px;border-radius:9px;background:color-mix(in srgb,var(--section-accent,#64748b) 13%,transparent);color:var(--section-accent,#94a3b8);border:1px solid color-mix(in srgb,var(--section-accent,#64748b) 24%,transparent)}
+    .cp-section-title{display:flex;align-items:center;gap:10px}
+    .cp-metric-label{display:flex;align-items:center;gap:7px}
+    .cp-metric-label .cp-icon{width:14px;height:14px;opacity:.85}
+    .cp-statement-link{display:inline-flex;align-items:center;justify-content:center;gap:7px}
+    .cp-statement-link .cp-icon{width:14px;height:14px}
+
     .cp-collapsible>summary{list-style:none;cursor:pointer;user-select:none;padding:18px 20px;transition:background .18s ease}
     .cp-collapsible>summary::-webkit-details-marker{display:none}
     .cp-collapsible>summary:hover{background:rgba(6,182,212,.045)}
@@ -77,21 +86,21 @@
             <span class="cp-badge {{ $user->email_verified_at ? 'cp-good' : 'cp-warn' }}">{{ $user->email_verified_at ? 'VERIFIED' : 'ACTION REQUIRED' }}</span>
         </div>
         <div class="metric-grid client-metrics">
-            <article class="metric-card"><span class="metric-label">REGISTERED</span><strong>{{ $user->created_at->format('d M Y') }}</strong><small>Client since</small></article>
-            <article class="metric-card"><span class="metric-label">EMAIL STATUS</span><strong>{{ $user->email_verified_at ? 'Verified' : 'Unverified' }}</strong><small>{{ $user->email_verified_at ? 'Email confirmed' : 'Verification outstanding' }}</small></article>
-            <article class="metric-card"><span class="metric-label">WALLET ACCOUNTS</span><strong>{{ $accounts->count() }}</strong><small>Statements available per account</small></article>
-            <article class="metric-card"><span class="metric-label">SUPPORT TICKETS</span><strong>{{ $tickets->count() }}</strong><small>Latest 10 shown below</small></article>
+            <article class="metric-card"><span class="metric-label cp-metric-label"><svg class="cp-icon" aria-hidden="true"><use href="#i-clock"/></svg>REGISTERED</span><strong>{{ $user->created_at->format('d M Y') }}</strong><small>Client since</small></article>
+            <article class="metric-card"><span class="metric-label cp-metric-label"><svg class="cp-icon" aria-hidden="true"><use href="#i-user"/></svg>EMAIL STATUS</span><strong>{{ $user->email_verified_at ? 'Verified' : 'Unverified' }}</strong><small>{{ $user->email_verified_at ? 'Email confirmed' : 'Verification outstanding' }}</small></article>
+            <article class="metric-card"><span class="metric-label cp-metric-label"><svg class="cp-icon" aria-hidden="true"><use href="#i-wallet"/></svg>WALLET ACCOUNTS</span><strong>{{ $accounts->count() }}</strong><small>Statements available per account</small></article>
+            <article class="metric-card"><span class="metric-label cp-metric-label"><svg class="cp-icon" aria-hidden="true"><use href="#i-message"/></svg>SUPPORT TICKETS</span><strong>{{ $tickets->count() }}</strong><small>Latest 10 shown below</small></article>
         </div>
         <p class="cp-audit-note">Account inspection only. This page does not provide controls to alter wallet balances or trade outcomes.</p>
     </div>
 
-    <section class="panel cp-ledger"><div class="panel-head cp-section-head"><div><span class="eyebrow"><i class="cp-dot"></i> LEDGER ACCOUNTS</span><h2>Wallet balances</h2></div><span class="cp-badge cp-info">{{ $accounts->count() }} ACCOUNTS</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>ACCOUNT</th><th>CURRENCY</th><th>NORMAL SIDE</th><th>LEDGER BALANCE</th><th>STATEMENT</th></tr></thead><tbody>
-    @forelse($accounts as $account)<tr><td class="cp-cell-main">{{ $account->code }}</td><td>{{ $account->currency }}</td><td><span class="cp-badge cp-neutral">{{ strtoupper($account->normal_side) }}</span></td><td class="cp-amount">@money($account->balance)</td><td><a class="btn btn-secondary" href="{{ route('admin.clients.wallets.statement', ['client' => $user->id, 'account' => $account->id]) }}">View statement</a></td></tr>@empty<tr><td colspan="5" class="table-empty cp-empty">No ledger accounts provisioned.</td></tr>@endforelse
+    <section class="panel cp-ledger"><div class="panel-head cp-section-head"><div><div class="cp-section-title"><span class="cp-heading-icon"><svg class="cp-icon" aria-hidden="true"><use href="#i-wallet"/></svg></span><div><span class="eyebrow">LEDGER ACCOUNTS</span><h2>Wallet balances</h2></div></div></div><span class="cp-badge cp-info">{{ $accounts->count() }} ACCOUNTS</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>ACCOUNT</th><th>CURRENCY</th><th>NORMAL SIDE</th><th>LEDGER BALANCE</th><th>STATEMENT</th></tr></thead><tbody>
+    @forelse($accounts as $account)<tr><td class="cp-cell-main">{{ $account->code }}</td><td>{{ $account->currency }}</td><td><span class="cp-badge cp-neutral">{{ strtoupper($account->normal_side) }}</span></td><td class="cp-amount">@money($account->balance)</td><td><a class="btn btn-secondary cp-statement-link" href="{{ route('admin.clients.wallets.statement', ['client' => $user->id, 'account' => $account->id]) }}"><svg class="cp-icon" aria-hidden="true"><use href="#i-receipt"/></svg>View statement</a></td></tr>@empty<tr><td colspan="5" class="table-empty cp-empty">No ledger accounts provisioned.</td></tr>@endforelse
     </tbody></table></div></section>
 
     <details class="panel cp-finance cp-collapsible">
         <summary class="panel-head cp-section-head">
-            <div><span class="eyebrow"><i class="cp-dot"></i> FINANCIAL AUDIT</span><h2>Recent ledger entries</h2></div>
+            <div><div class="cp-section-title"><span class="cp-heading-icon"><svg class="cp-icon" aria-hidden="true"><use href="#i-receipt"/></svg></span><div><span class="eyebrow">FINANCIAL AUDIT</span><h2>Recent ledger entries</h2></div></div></div>
             <span class="cp-collapse-meta"><span class="cp-badge cp-info">LAST 50 ENTRIES</span><span class="cp-chevron" aria-hidden="true">⌄</span></span>
         </summary>
         <div class="table-wrap"><table class="data-table"><thead><tr><th>DATE</th><th>DESCRIPTION</th><th>ACCOUNT</th><th>ENTRY</th><th>AMOUNT</th><th>REFERENCE</th></tr></thead><tbody>
@@ -99,15 +108,15 @@
         </tbody></table></div>
     </details>
 
-    <section class="panel cp-convert"><div class="panel-head cp-section-head"><div><span class="eyebrow"><i class="cp-dot"></i> CONVERSION HISTORY</span><h2>Recent simulated conversions</h2></div><span class="cp-badge cp-info">LATEST {{ $conversions->count() }}</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>DATE</th><th>FROM</th><th>TO</th><th>RATE</th></tr></thead><tbody>
+    <section class="panel cp-convert"><div class="panel-head cp-section-head"><div><div class="cp-section-title"><span class="cp-heading-icon"><svg class="cp-icon" aria-hidden="true"><use href="#i-repeat"/></svg></span><div><span class="eyebrow">CONVERSION HISTORY</span><h2>Recent simulated conversions</h2></div></div></div><span class="cp-badge cp-info">LATEST {{ $conversions->count() }}</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>DATE</th><th>FROM</th><th>TO</th><th>RATE</th></tr></thead><tbody>
     @forelse($conversions as $conversion)<tr><td>{{ $conversion->created_at }}</td><td class="cp-amount">@decimal($conversion->amount_in) {{ $conversion->from_currency }}</td><td class="cp-amount cp-credit">@decimal($conversion->amount_out) {{ $conversion->to_currency }}</td><td>@decimal($conversion->source_price) / @decimal($conversion->target_price)</td></tr>@empty<tr><td colspan="4" class="table-empty cp-empty">No conversions found.</td></tr>@endforelse
     </tbody></table></div></section>
 
-    <section class="panel cp-support"><div class="panel-head cp-section-head"><div><span class="eyebrow"><i class="cp-dot"></i> CUSTOMER SUPPORT</span><h2>Recent tickets</h2></div><span class="cp-badge cp-warn">{{ $tickets->count() }} RECENT TICKETS</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>SUBJECT</th><th>CATEGORY</th><th>STATUS</th><th>LAST MESSAGE</th></tr></thead><tbody>
+    <section class="panel cp-support"><div class="panel-head cp-section-head"><div><div class="cp-section-title"><span class="cp-heading-icon"><svg class="cp-icon" aria-hidden="true"><use href="#i-message"/></svg></span><div><span class="eyebrow">CUSTOMER SUPPORT</span><h2>Recent tickets</h2></div></div></div><span class="cp-badge cp-warn">{{ $tickets->count() }} RECENT TICKETS</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>SUBJECT</th><th>CATEGORY</th><th>STATUS</th><th>LAST MESSAGE</th></tr></thead><tbody>
     @forelse($tickets as $ticket)@php($ticketStatus = strtolower((string) $ticket->status))<tr><td class="cp-cell-main">{{ $ticket->subject }}</td><td>{{ $ticket->category }}</td><td><span class="cp-status {{ $ticketStatus }}">{{ strtoupper($ticketStatus) }}</span></td><td>{{ $ticket->last_message_at }}</td></tr>@empty<tr><td colspan="4" class="table-empty cp-empty">No support tickets found.</td></tr>@endforelse
     </tbody></table></div></section>
 
-    <section class="panel cp-security"><div class="panel-head cp-section-head"><div><span class="eyebrow"><i class="cp-dot"></i> SECURITY HISTORY</span><h2>Recent login events</h2></div><span class="cp-badge cp-danger">{{ $loginEvents->count() }} RECENT EVENTS</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>EVENT</th><th>IP ADDRESS</th><th>USER AGENT</th><th>DATE</th></tr></thead><tbody>
+    <section class="panel cp-security"><div class="panel-head cp-section-head"><div><div class="cp-section-title"><span class="cp-heading-icon"><svg class="cp-icon" aria-hidden="true"><use href="#i-shield"/></svg></span><div><span class="eyebrow">SECURITY HISTORY</span><h2>Recent login events</h2></div></div></div><span class="cp-badge cp-danger">{{ $loginEvents->count() }} RECENT EVENTS</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>EVENT</th><th>IP ADDRESS</th><th>USER AGENT</th><th>DATE</th></tr></thead><tbody>
     @forelse($loginEvents as $event)<tr><td><span class="cp-badge cp-neutral">{{ strtoupper($event->event_type ?? 'LOGIN') }}</span></td><td class="cp-cell-main">{{ $event->ip_address ?? '—' }}</td><td><small>{{ $event->user_agent ?? '—' }}</small></td><td>{{ $event->created_at }}</td></tr>@empty<tr><td colspan="4" class="table-empty cp-empty">No login events found.</td></tr>@endforelse
     </tbody></table></div></section>
 </div>
