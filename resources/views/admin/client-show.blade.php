@@ -46,6 +46,15 @@
     .cp-status.active{background:rgba(59,130,246,.12);color:#60a5fa}
     .cp-audit-note{margin:0 22px 20px;padding:11px 13px;border:1px solid rgba(59,130,246,.2);border-radius:10px;background:rgba(59,130,246,.06);color:var(--cp-muted);font-size:12px}
     .cp-empty{padding:24px!important;text-align:center;color:var(--cp-muted)}
+    .cp-collapsible>summary{list-style:none;cursor:pointer;user-select:none;padding:18px 20px;transition:background .18s ease}
+    .cp-collapsible>summary::-webkit-details-marker{display:none}
+    .cp-collapsible>summary:hover{background:rgba(6,182,212,.045)}
+    .cp-collapse-meta{display:flex;align-items:center;gap:14px}
+    .cp-chevron{display:grid;place-items:center;width:28px;height:28px;border:1px solid var(--cp-border);border-radius:8px;color:var(--cp-muted);font-size:19px;line-height:1;transition:transform .18s ease,background .18s ease}
+    .cp-collapsible[open] .cp-chevron{transform:rotate(180deg);background:rgba(6,182,212,.08)}
+    .cp-collapsible:not([open]){border-color:rgba(6,182,212,.24)}
+    .cp-collapsible .table-wrap{border-top:1px solid var(--cp-border)}
+    @media(max-width:700px){.cp-collapsible>summary{padding:15px}.cp-collapse-meta{gap:8px}.cp-collapse-meta .cp-badge{font-size:9px}}
     @media(max-width:700px){.client-hero .panel-head{padding:17px}.client-identity{gap:10px}.client-avatar{width:40px;height:40px;flex-basis:40px}.client-metrics{padding:0 14px 16px}.cp-audit-note{margin:0 14px 16px}.cp-section-head{align-items:flex-start}}
 </style>
 <div class="client-profile">
@@ -80,9 +89,15 @@
     @forelse($accounts as $account)<tr><td class="cp-cell-main">{{ $account->code }}</td><td>{{ $account->currency }}</td><td><span class="cp-badge cp-neutral">{{ strtoupper($account->normal_side) }}</span></td><td class="cp-amount">@money($account->balance)</td><td><a class="btn btn-secondary" href="{{ route('admin.clients.wallets.statement', ['client' => $user->id, 'account' => $account->id]) }}">View statement</a></td></tr>@empty<tr><td colspan="5" class="table-empty cp-empty">No ledger accounts provisioned.</td></tr>@endforelse
     </tbody></table></div></section>
 
-    <section class="panel cp-finance"><div class="panel-head cp-section-head"><div><span class="eyebrow"><i class="cp-dot"></i> FINANCIAL AUDIT</span><h2>Recent ledger entries</h2></div><span class="cp-badge cp-info">LAST 50 ENTRIES</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>DATE</th><th>DESCRIPTION</th><th>ACCOUNT</th><th>ENTRY</th><th>AMOUNT</th><th>REFERENCE</th></tr></thead><tbody>
-    @forelse($transactions as $entry)<tr><td>{{ $entry->posted_at }}</td><td class="cp-cell-main">{{ $entry->description }}</td><td>{{ $entry->code }} · {{ $entry->currency }}</td><td><span class="cp-badge {{ $entry->side === 'credit' ? 'cp-good' : 'cp-danger' }}">{{ strtoupper($entry->side) }}</span></td><td class="cp-amount {{ $entry->side === 'credit' ? 'cp-credit' : 'cp-debit' }}">@money($entry->amount)</td><td><small>{{ $entry->idempotency_key }}</small></td></tr>@empty<tr><td colspan="6" class="table-empty cp-empty">No ledger activity found.</td></tr>@endforelse
-    </tbody></table></div></section>
+    <details class="panel cp-finance cp-collapsible">
+        <summary class="panel-head cp-section-head">
+            <div><span class="eyebrow"><i class="cp-dot"></i> FINANCIAL AUDIT</span><h2>Recent ledger entries</h2></div>
+            <span class="cp-collapse-meta"><span class="cp-badge cp-info">LAST 50 ENTRIES</span><span class="cp-chevron" aria-hidden="true">⌄</span></span>
+        </summary>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>DATE</th><th>DESCRIPTION</th><th>ACCOUNT</th><th>ENTRY</th><th>AMOUNT</th><th>REFERENCE</th></tr></thead><tbody>
+        @forelse($transactions as $entry)<tr><td>{{ $entry->posted_at }}</td><td class="cp-cell-main">{{ $entry->description }}</td><td>{{ $entry->code }} · {{ $entry->currency }}</td><td><span class="cp-badge {{ $entry->side === 'credit' ? 'cp-good' : 'cp-danger' }}">{{ strtoupper($entry->side) }}</span></td><td class="cp-amount {{ $entry->side === 'credit' ? 'cp-credit' : 'cp-debit' }}">@money($entry->amount)</td><td><small>{{ $entry->idempotency_key }}</small></td></tr>@empty<tr><td colspan="6" class="table-empty cp-empty">No ledger activity found.</td></tr>@endforelse
+        </tbody></table></div>
+    </details>
 
     <section class="panel cp-convert"><div class="panel-head cp-section-head"><div><span class="eyebrow"><i class="cp-dot"></i> CONVERSION HISTORY</span><h2>Recent simulated conversions</h2></div><span class="cp-badge cp-info">LATEST {{ $conversions->count() }}</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>DATE</th><th>FROM</th><th>TO</th><th>RATE</th></tr></thead><tbody>
     @forelse($conversions as $conversion)<tr><td>{{ $conversion->created_at }}</td><td class="cp-amount">@decimal($conversion->amount_in) {{ $conversion->from_currency }}</td><td class="cp-amount cp-credit">@decimal($conversion->amount_out) {{ $conversion->to_currency }}</td><td>@decimal($conversion->source_price) / @decimal($conversion->target_price)</td></tr>@empty<tr><td colspan="4" class="table-empty cp-empty">No conversions found.</td></tr>@endforelse
