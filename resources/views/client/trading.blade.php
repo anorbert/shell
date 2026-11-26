@@ -144,7 +144,7 @@
                 <div class="stake-presets"><button type="button" data-stake="10">$10</button><button type="button"
                         data-stake="25">$25</button><button type="button" data-stake="50">$50</button><button
                         type="button" data-stake="100">$100</button></div>
-                <label>Expiry duration<select name="duration">
+                <label>Expiry duration<select name="duration" id="trade-duration">
                         @foreach ($durations as $duration)
                             <option value="{{ $duration }}">
                                 {{ $duration >= 3600 ? $duration / 3600 . ' hour' : $duration / 60 . ' minutes' }}</option>
@@ -2220,8 +2220,45 @@
             // Rows are reconciled from the settlement response and expiry event.
             // No periodic read loop is needed while the live market stream is connected.
             const stakeInput = document.getElementById('trade-stake');
+            const durationSelect = document.getElementById('trade-duration');
             const tradeForm = document.getElementById('paper-trade-form');
+            const tradingPreferencesStorageKey = 'shell.trading.preferences.v1';
             const payoutRate = {{ (int) config('shell.paper.payout_basis_points', 18000) / 10000 }};
+
+            // Restore only values that remain valid under the current server-rendered
+            // stake limits and duration options. Preferences are client-wide and
+            // intentionally survive switching between Demo and Real wallets.
+            function readTradingPreferences() {
+                try {
+                    const value = JSON.parse(window.localStorage.getItem(tradingPreferencesStorageKey) || '{}');
+                    return value && typeof value === 'object' ? value : {};
+                } catch (_) {
+                    return {};
+                }
+            }
+            function saveTradingPreferences(patch) {
+                try {
+                    const current = readTradingPreferences();
+                    window.localStorage.setItem(tradingPreferencesStorageKey, JSON.stringify({
+                        ...current,
+                        ...patch
+                    }));
+                } catch (_) {
+                    // Trading remains available if browser storage is blocked.
+                }
+            }
+            const savedTradingPreferences = readTradingPreferences();
+            const savedStake = Number(savedTradingPreferences.stake);
+            const minimumStake = Number(stakeInput.min);
+            const maximumStake = Number(stakeInput.max);
+            if (Number.isFinite(savedStake) && savedStake >= minimumStake && savedStake <= maximumStake) {
+                stakeInput.value = String(savedStake);
+            }
+            const validDurations = new Set(Array.from(durationSelect.options, option => option.value));
+            const savedDuration = String(savedTradingPreferences.duration ?? '');
+            if (validDurations.has(savedDuration)) {
+                durationSelect.value = savedDuration;
+            }
 
             function updatePayout() {
                 const stake = Math.max(0, Number(stakeInput.value) || 0);
@@ -2229,11 +2266,27 @@
                     maximumFractionDigits: 2
                 }).format(stake * payoutRate);
             }
-            stakeInput.addEventListener('input', updatePayout);
+            function rememberStake() {
+                const stake = Number(stakeInput.value);
+                if (stakeInput.value !== '' && Number.isFinite(stake) &&
+                    stake >= minimumStake && stake <= maximumStake) {
+                    saveTradingPreferences({ stake });
+                }
+            }
+            stakeInput.addEventListener('input', () => {
+                updatePayout();
+                rememberStake();
+            });
+            durationSelect.addEventListener('change', () => {
+                if (validDurations.has(durationSelect.value)) {
+                    saveTradingPreferences({ duration: durationSelect.value });
+                }
+            });
             updatePayout();
             document.querySelectorAll('[data-stake]').forEach(button => button.addEventListener('click', () => {
                 stakeInput.value = button.dataset.stake;
                 updatePayout();
+                rememberStake();
             }));
             document.querySelectorAll('[data-direction]').forEach(button => button.addEventListener('click', () => {
                 document.getElementById('trade-direction').value = button.dataset.direction;
