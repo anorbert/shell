@@ -1388,6 +1388,31 @@
             const marketSelect = document.getElementById('chart-market');
             const tradeSymbol = document.getElementById('trade-symbol');
             const loading = document.getElementById('chart-loading');
+
+            // Remember the client's last selected market across refreshes and
+            // navigation. Only restore symbols that are still offered by SHELL.
+            const selectedPairStorageKey = 'shell.trading.selected-symbol.v1';
+            const supportedSymbols = new Set(Array.from(marketSelect.options, option => option.value));
+            let savedPair = '';
+            try {
+                savedPair = window.localStorage.getItem(selectedPairStorageKey) || '';
+            } catch (_) {
+                // Storage can be unavailable in private/restricted browser contexts.
+            }
+            const requestedPair = new URLSearchParams(window.location.search).get('symbol')?.toUpperCase();
+            const restoredPair = supportedSymbols.has(requestedPair) ? requestedPair : savedPair;
+            if (supportedSymbols.has(restoredPair)) {
+                marketSelect.value = restoredPair;
+                tradeSymbol.value = restoredPair;
+            }
+            function rememberSelectedPair(symbol) {
+                if (!supportedSymbols.has(symbol)) return;
+                try {
+                    window.localStorage.setItem(selectedPairStorageKey, symbol);
+                } catch (_) {
+                    // Keep the trading terminal usable when browser storage is blocked.
+                }
+            }
             const palette = {
                 text: '#8b9ab0',
                 muted: '#65758b',
@@ -2080,11 +2105,13 @@
 
             marketSelect.addEventListener('change', () => {
                 tradeSymbol.value = marketSelect.value;
+                rememberSelectedPair(marketSelect.value);
                 candles = [];
                 loadCandles();
             });
             tradeSymbol.addEventListener('change', () => {
                 marketSelect.value = tradeSymbol.value;
+                rememberSelectedPair(tradeSymbol.value);
                 candles = [];
                 loadCandles();
             });
