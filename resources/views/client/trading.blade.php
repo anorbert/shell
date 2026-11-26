@@ -2191,10 +2191,9 @@
             canvas.addEventListener('wheel', event => {
                 if (!candles.length) return;
                 event.preventDefault();
-                const rect = canvas.getBoundingClientRect();
-                const ratio = plot ? Math.max(0, Math.min(1, (event.clientX - rect.left - plot.left) / plot.width)) : 1;
+                // Keep the newest/right edge anchored while zooming, like a trading terminal.
                 const factor = event.deltaY < 0 ? .88 : 1.14;
-                setZoom(visibleCandles * factor, ratio);
+                setZoom(visibleCandles * factor, 1);
             }, { passive: false });
             updateZoomLabel();
 
