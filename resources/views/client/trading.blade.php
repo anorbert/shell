@@ -1478,7 +1478,8 @@
                 hoveredCandleIndex = null,
                 visibleCandles = 80,
                 viewOffset = 0,
-                dragState = null;
+                dragState = null,
+                chartEntryPosition = null;
             let plot = null,
                 liveSocket = null,
                 reconnectTimer = null,
@@ -1673,7 +1674,12 @@
                 const endIndex = Math.max(0, candles.length - viewOffset);
                 const startIndex = Math.max(0, endIndex - visibleCandles);
                 const visible = candles.slice(startIndex, endIndex);
+                const entryPosition = chartEntryPosition && chartEntryPosition.status === 'open'
+                    && String(chartEntryPosition.symbol).toUpperCase() === String(marketSelect.value).toUpperCase()
+                    ? chartEntryPosition : null;
+                const entryPrice = entryPosition ? number(entryPosition.opening_price) : NaN;
                 const values = visible.flatMap(c => [number(c.high), number(c.low)]).filter(Number.isFinite);
+                if (Number.isFinite(entryPrice)) values.push(entryPrice);
                 let min = Math.min(...values),
                     max = Math.max(...values);
                 const rawRange = max - min || Math.max(Math.abs(max) * .001, 1e-8);
@@ -1744,6 +1750,33 @@
                     ctx.fillStyle = color;
                     ctx.fillRect(x - bodyWidth / 2, bodyTop, bodyWidth, Math.max(1.5, bodyBottom - bodyTop));
                 });
+
+                if (entryPosition && Number.isFinite(entryPrice)) {
+                    const entryY = y(entryPrice);
+                    ctx.save();
+                    ctx.strokeStyle = '#D4A843';
+                    ctx.lineWidth = 1.6;
+                    ctx.setLineDash([7, 4]);
+                    ctx.beginPath();
+                    ctx.moveTo(left, entryY);
+                    ctx.lineTo(right, entryY);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    const label = 'ENTRY · ' + formatAxis(entryPrice);
+                    ctx.font = 'bold 9px DM Sans, sans-serif';
+                    const labelWidth = Math.min(150, Math.max(94, ctx.measureText(label).width + 14));
+                    const labelY = Math.max(top + 10, Math.min(bottom - 10, entryY));
+                    ctx.fillStyle = 'rgba(8, 17, 30, .94)';
+                    ctx.fillRect(left + 5, labelY - 10, labelWidth, 20);
+                    ctx.strokeStyle = '#D4A843';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(left + 5, labelY - 10, labelWidth, 20);
+                    ctx.fillStyle = '#F2D58B';
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(label, left + 12, labelY);
+                    ctx.restore();
+                }
 
                 const last = visible[visible.length - 1],
                     lastPrice = number(last.close),
@@ -2650,6 +2683,8 @@
                 if (positionClockTimer) { window.clearInterval(positionClockTimer); positionClockTimer = null; }
                 if (positionSettlementRetryTimer) { window.clearTimeout(positionSettlementRetryTimer); positionSettlementRetryTimer = null; }
                 activePosition = trade;
+                chartEntryPosition = null;
+                if (candles.length) draw();
                 positionSettlementInFlight = false;
                 const status = trade.status.toUpperCase();
                 const card = document.getElementById('position-modal-card');
@@ -2764,6 +2799,8 @@
                     const trade = data.trade;
                     if (trade.status === 'open') {
                         activePosition = trade;
+                        chartEntryPosition = trade;
+                        if (candles.length) draw();
                         setPositionText('position-status', 'OPEN');
                         if (new Date(trade.expires_at).getTime() <= Date.now()) beginImmediateSettlement();
                         return;
@@ -2808,6 +2845,8 @@
                         positionRetryTimer = null;
                     }
                     activePosition = data.trade;
+                    chartEntryPosition = activePosition.status === 'open' ? activePosition : null;
+                    if (candles.length) draw();
                     const cachedPositionPrice = positionPriceCache.get(String(activePosition.id));
                     positionSettlementInFlight = false;
                     if (positionSettlementRetryTimer) { window.clearTimeout(positionSettlementRetryTimer); positionSettlementRetryTimer = null; }
@@ -2893,6 +2932,8 @@
                 if (positionClockTimer) { window.clearInterval(positionClockTimer); window.clearTimeout(positionClockTimer); positionClockTimer = null; }
                 if (positionSettlementRetryTimer) { window.clearTimeout(positionSettlementRetryTimer); positionSettlementRetryTimer = null; }
                 activePosition = null;
+                chartEntryPosition = null;
+                if (candles.length) draw();
                 positionSettlementInFlight = false;
                 // The settled trade and wallet are already reconciled in place.
             }
