@@ -2,7 +2,7 @@
 
 return [
     'market' => [
-        'base_url' => env('SHELL_MARKET_BASE_URL', 'https://api.binance.com'),
+        'base_url' => env('SHELL_MARKET_BASE_URL', 'https://data-api.binance.vision'),
         'max_age_seconds' => (int) env('SHELL_MARKET_MAX_AGE', 90),
         'symbols' => ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'AVAXUSDT', 'DOTUSDT', 'LTCUSDT', 'LINKUSDT', 'UNIUSDT', 'ATOMUSDT', 'XLMUSDT', 'ALGOUSDT', 'NEARUSDT', 'AAVEUSDT', 'TRXUSDT', 'ETCUSDT', 'BCHUSDT'],
     ],
