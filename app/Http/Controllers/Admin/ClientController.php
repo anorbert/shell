@@ -48,6 +48,39 @@ class ClientController extends Controller
         return view('admin.client-show', compact('user', 'accounts', 'transactions', 'conversions', 'tickets', 'loginEvents'));
     }
 
+    public function verifyEmail(Request $request, int $client)
+    {
+        $user = User::query()->where('role', 'client')->findOrFail($client);
+
+        if ($user->email_verified_at) {
+            return back()->with('status', 'This client email address is already verified.');
+        }
+
+        DB::transaction(function () use ($request, $user) {
+            $lockedUser = User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail();
+
+            if ($lockedUser->email_verified_at) {
+                return;
+            }
+
+            $verifiedAt = now();
+            $lockedUser->forceFill(['email_verified_at' => $verifiedAt])->save();
+
+            DB::table('admin_audit_logs')->insert([
+                'actor_user_id' => $request->user()->id,
+                'action' => 'client.email_verified_manually',
+                'method' => $request->method(),
+                'path' => $request->path(),
+                'ip_address' => $request->ip(),
+                'user_agent' => substr((string) $request->userAgent(), 0, 65535),
+                'created_at' => $verifiedAt,
+            ]);
+        }, 3);
+
+        return redirect()->route('admin.clients.show', $user->id)
+            ->with('status', 'Client email address manually verified by an administrator.');
+    }
+
     public function walletStatement(int $client, int $account)
     {
         $user = User::query()->where('role', 'client')->findOrFail($client);
