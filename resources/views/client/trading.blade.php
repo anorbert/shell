@@ -1476,7 +1476,9 @@
                 failed = false,
                 crosshair = null,
                 hoveredCandleIndex = null,
-                visibleCandles = 80;
+                visibleCandles = 80,
+                viewOffset = 0,
+                dragState = null;
             let plot = null,
                 liveSocket = null,
                 reconnectTimer = null,
@@ -1668,7 +1670,9 @@
                     return;
                 }
 
-                const visible = candles.slice(-visibleCandles);
+                const endIndex = Math.max(0, candles.length - viewOffset);
+                const startIndex = Math.max(0, endIndex - visibleCandles);
+                const visible = candles.slice(startIndex, endIndex);
                 const values = visible.flatMap(c => [number(c.high), number(c.low)]).filter(Number.isFinite);
                 let min = Math.min(...values),
                     max = Math.max(...values);
@@ -1741,7 +1745,7 @@
                     ctx.fillRect(x - bodyWidth / 2, bodyTop, bodyWidth, Math.max(1.5, bodyBottom - bodyTop));
                 });
 
-                const last = candles[candles.length - 1],
+                const last = visible[visible.length - 1],
                     lastPrice = number(last.close),
                     priceY = y(lastPrice);
                 // Current price guide and value marker.
@@ -1843,8 +1847,9 @@
                 if (last && candle.time < last.time) return;
                 if (last && candle.time === last.time) candles[candles.length - 1] = candle;
                 else {
+                    if (viewOffset > 0) viewOffset++;
                     candles.push(candle);
-                    if (candles.length > 200) candles.shift();
+                    if (candles.length > 1000) candles.shift();
                 }
                 failed = false;
                 updateSummary();
@@ -1873,6 +1878,7 @@
                 const last = candles[candles.length - 1];
 
                 if (!last || bucket > last.time) {
+                    if (viewOffset > 0) viewOffset++;
                     candles.push({
                         time: bucket, open: value, high: value, low: value,
                         close: value, volume: String(trade.q || '0')
@@ -1886,7 +1892,7 @@
                     return;
                 }
 
-                if (candles.length > 200) candles.shift();
+                if (candles.length > 1000) candles.shift();
                 failed = false;
                 updateSummary();
                 draw();
@@ -2154,24 +2160,42 @@
                 }
             }
 
+            function clampViewOffset() {
+                viewOffset = Math.max(0, Math.min(viewOffset, Math.max(0, candles.length - visibleCandles)));
+            }
             function updateZoomLabel() {
                 setText('chart-zoom-level', visibleCandles + ' candles');
             }
-            document.getElementById('chart-zoom-in').addEventListener('click', () => {
-                visibleCandles = Math.max(20, visibleCandles - 10);
+            function setZoom(nextCount, anchorRatio = 1) {
+                const previousCount = visibleCandles;
+                const next = Math.max(20, Math.min(200, Math.round(nextCount)));
+                if (next === previousCount) return;
+                const endIndex = candles.length - viewOffset;
+                const anchorIndex = endIndex - previousCount + Math.round(anchorRatio * (previousCount - 1));
+                visibleCandles = next;
+                const nextEndIndex = anchorIndex - Math.round(anchorRatio * (next - 1)) + 1;
+                viewOffset = candles.length - nextEndIndex;
+                clampViewOffset();
+                hoveredCandleIndex = null;
                 updateZoomLabel();
                 draw();
-            });
-            document.getElementById('chart-zoom-out').addEventListener('click', () => {
-                visibleCandles = Math.min(200, visibleCandles + 10);
-                updateZoomLabel();
-                draw();
-            });
+            }
+            document.getElementById('chart-zoom-in').addEventListener('click', () => setZoom(visibleCandles - 10));
+            document.getElementById('chart-zoom-out').addEventListener('click', () => setZoom(visibleCandles + 10));
             document.getElementById('chart-zoom-reset').addEventListener('click', () => {
                 visibleCandles = 80;
+                viewOffset = 0;
                 updateZoomLabel();
                 draw();
             });
+            canvas.addEventListener('wheel', event => {
+                if (!candles.length) return;
+                event.preventDefault();
+                const rect = canvas.getBoundingClientRect();
+                const ratio = plot ? Math.max(0, Math.min(1, (event.clientX - rect.left - plot.left) / plot.width)) : 1;
+                const factor = event.deltaY < 0 ? .88 : 1.14;
+                setZoom(visibleCandles * factor, ratio);
+            }, { passive: false });
             updateZoomLabel();
 
             marketSelect.addEventListener('change', () => {
@@ -2204,6 +2228,27 @@
                 loadCandles();
             }));
             const candleInspector = document.getElementById('chart-candle-inspector');
+            canvas.style.touchAction = 'none';
+            canvas.style.cursor = 'grab';
+            canvas.addEventListener('pointerdown', event => {
+                if (!plot || !candles.length || event.button !== 0) return;
+                const rect = canvas.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                if (x < plot.left || x > plot.right) return;
+                dragState = { pointerId: event.pointerId, startX: event.clientX, lastX: event.clientX, startOffset: viewOffset };
+                canvas.setPointerCapture(event.pointerId);
+                canvas.style.cursor = 'grabbing';
+                crosshair = null;
+            });
+            const finishChartDrag = event => {
+                if (!dragState || (event && event.pointerId !== dragState.pointerId)) return;
+                dragState = null;
+                canvas.style.cursor = 'grab';
+                draw();
+            };
+            canvas.addEventListener('pointerup', finishChartDrag);
+            canvas.addEventListener('pointercancel', finishChartDrag);
+            canvas.addEventListener('lostpointercapture', finishChartDrag);
             function showCandleInspector(candle, hovering) {
                 if (!candle || !candleInspector) return;
                 setText('inspector-time', formatTime(candle.time));
@@ -2217,12 +2262,24 @@
             }
             canvas.addEventListener('pointermove', event => {
                 if (!plot) return;
+                if (dragState && event.pointerId === dragState.pointerId) {
+                    const step = plot.width / visibleCandles;
+                    const delta = event.clientX - dragState.lastX;
+                    if (Math.abs(delta) >= 1) {
+                        viewOffset = dragState.startOffset + Math.round((event.clientX - dragState.startX) / Math.max(1, step));
+                        clampViewOffset();
+                        hoveredCandleIndex = null;
+                        draw();
+                    }
+                    return;
+                }
                 const rect = canvas.getBoundingClientRect();
                 crosshair = {
                     x: event.clientX - rect.left,
                     y: event.clientY - rect.top
                 };
-                const visible = candles.slice(-visibleCandles);
+                const endIndex = Math.max(0, candles.length - viewOffset);
+                const visible = candles.slice(Math.max(0, endIndex - visibleCandles), endIndex);
                 if (visible.length && crosshair.x >= plot.left && crosshair.x <= plot.right &&
                     crosshair.y >= plot.top && crosshair.y <= plot.bottom) {
                     const step = plot.width / visible.length;
