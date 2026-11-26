@@ -4,9 +4,7 @@
 <div class="auth-shell">
     <a class="brand auth-brand" href="{{ route('home') }}"><span class="brand-mark">S</span><span>SHELL<span class="brand-sub">FINANCIAL TERMINAL</span></span></a>
     <div class="auth-card auth-card-international">
-        <span class="eyebrow">GLOBAL CLIENT REGISTRATION</span>
         <h1>Create your account</h1>
-        <p class="muted">Register from your country and use your international phone number.</p>
         @if(session('referral_error'))<div class="alert alert-error">{{ session('referral_error') }}</div>@endif
         @if(session('referral_code'))<div class="notice-banner"><div><strong>You were invited to SHELL</strong><p>Your registration will be linked to the person who shared this referral invitation.</p></div></div>@endif
         @if($errors->any())<div class="alert alert-error">{{ $errors->first() }}</div>@endif
@@ -27,7 +25,7 @@
             </div>
             <div class="international-field">
                 <label for="phone_number">Mobile phone number</label>
-                <div class="phone-input-wrap"><span class="phone-prefix" id="phone-prefix">+250</span><input id="phone_number" type="tel" name="phone_number" value="{{ old('phone_number') }}" required autocomplete="tel-national" inputmode="tel" placeholder="788 000 000" maxlength="25" aria-describedby="phone-help"></div>
+                <div class="phone-input-wrap"><span class="phone-prefix" id="phone-prefix">{{ config('phone-countries')[old('country_code', 'US')] ?? '+1' }}</span><input id="phone_number" type="tel" name="phone_number" value="{{ old('phone_number') }}" required autocomplete="tel-national" inputmode="tel" placeholder="202 555 0100" maxlength="25" aria-describedby="phone-help"></div>
                 <small class="field-hint" id="phone-help">Enter your phone number without the country calling code.</small>
             </div>
             <label>Password<input type="password" name="password" required autocomplete="new-password"></label>
@@ -36,7 +34,6 @@
         </form>
         <div class="auth-bottom">Already registered? <a href="{{ route('login') }}">Sign in</a></div>
     </div>
-    <p class="auth-disclaimer">Country and phone details help prepare your account for international services. Phone ownership is not verified by this registration step.</p>
 </div>
 @endsection
 @push('scripts')
