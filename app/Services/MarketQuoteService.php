@@ -214,6 +214,7 @@ class MarketQuoteService
         $isFresh = $quote && Carbon::parse((string) $quote->captured_at, 'UTC')
             ->betweenIncluded($now->copy()->subSeconds(2), $now);
 
+        $refreshFailed = false;
         if (!$isFresh) {
             try {
                 // Concurrent opens for the same symbol share one refresh instead
@@ -229,8 +230,9 @@ class MarketQuoteService
                     }
                 });
             } catch (\Throwable $exception) {
-                // A failed refresh may fall back only to a server snapshot within
-                // the strict execution freshness window checked below.
+                // A failed refresh may fall back only to a very recent server
+                // snapshot; do not turn an outage into acceptance of stale prices.
+                $refreshFailed = true;
                 report($exception);
             }
 
@@ -244,7 +246,8 @@ class MarketQuoteService
         }
 
         $capturedAt = Carbon::parse((string) $quote->captured_at, 'UTC');
-        if ($capturedAt->greaterThan(now('UTC')) || $capturedAt->lessThan(now('UTC')->subSeconds(10))) {
+        $maximumAge = $refreshFailed ? 5 : 10;
+        if ($capturedAt->greaterThan(now('UTC')) || $capturedAt->lessThan(now('UTC')->subSeconds($maximumAge))) {
             throw new RuntimeException(
                 'A fresh verified market quote is unavailable for ' . $symbol . '. Your stake has not been deducted. Please retry when the market feed is restored.'
             );
