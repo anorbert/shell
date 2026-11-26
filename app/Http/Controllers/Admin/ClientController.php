@@ -41,11 +41,37 @@ class ClientController extends Controller
                 'ledger_transactions.idempotency_key', 'ledger_entries.side', 'ledger_entries.amount',
                 'ledger_accounts.code', 'ledger_accounts.currency')
             ->latest('ledger_transactions.posted_at')->limit(50)->get();
-        $trades = DB::table('paper_trades')->where('user_id', $user->id)->latest('opened_at')->limit(25)->get();
+        $realTrades = DB::table('paper_trades')->where('user_id', $user->id)->where('account_type', 'real')->latest('opened_at')->limit(25)->get();
+        $demoTrades = DB::table('paper_trades')->where('user_id', $user->id)->where(function ($query) {
+            $query->where('account_type', 'demo')->orWhereNull('account_type');
+        })->latest('opened_at')->limit(25)->get();
         $conversions = DB::table('paper_conversions')->where('user_id', $user->id)->latest()->limit(20)->get();
         $tickets = DB::table('support_tickets')->where('user_id', $user->id)->latest('last_message_at')->limit(10)->get();
         $loginEvents = DB::table('user_login_events')->where('user_id', $user->id)->latest()->limit(15)->get();
 
-        return view('admin.client-show', compact('user', 'accounts', 'transactions', 'trades', 'conversions', 'tickets', 'loginEvents'));
+        return view('admin.client-show', compact('user', 'accounts', 'transactions', 'realTrades', 'demoTrades', 'conversions', 'tickets', 'loginEvents'));
     }
+
+    public function walletStatement(int $client, int $account)
+    {
+        $user = User::query()->where('role', 'client')->findOrFail($client);
+        $wallet = DB::table('ledger_accounts')->where('id', $account)
+            ->where('owner_key', 'USER:'.$user->id)->first();
+        abort_unless($wallet, 404);
+
+        $wallet->balance = DB::table('ledger_entries')->where('ledger_account_id', $wallet->id)
+            ->selectRaw("COALESCE(SUM(CASE WHEN side = 'credit' THEN amount ELSE -amount END), 0) as balance")
+            ->value('balance');
+
+        $entries = DB::table('ledger_entries')
+            ->join('ledger_transactions', 'ledger_transactions.id', '=', 'ledger_entries.ledger_transaction_id')
+            ->where('ledger_entries.ledger_account_id', $wallet->id)
+            ->select('ledger_entries.id', 'ledger_entries.side', 'ledger_entries.amount',
+                'ledger_transactions.description', 'ledger_transactions.posted_at', 'ledger_transactions.idempotency_key')
+            ->orderByDesc('ledger_transactions.posted_at')->orderByDesc('ledger_entries.id')
+            ->paginate(50)->withQueryString();
+
+        return view('admin.client-wallet-statement', compact('user', 'wallet', 'entries'));
+    }
+
 }
