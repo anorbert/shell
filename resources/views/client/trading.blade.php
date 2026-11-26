@@ -200,7 +200,7 @@
                 </thead>
                 <tbody>
                     @forelse($trades as $trade)
-                        <tr class="{{ $trade->status === 'won' ? 'trade-row-win' : ($trade->status === 'lost' ? 'trade-row-loss' : '') }}" @if ($trade->status === 'open') data-open-trade="{{ $trade->id }}" @endif>
+                        <tr class="trade-history-row {{ $trade->status === 'won' ? 'trade-row-win' : ($trade->status === 'lost' ? 'trade-row-loss' : '') }}" data-trade-id="{{ $trade->id }}" tabindex="0" role="button" aria-label="View details for {{ $trade->symbol }} {{ strtolower($trade->direction) }} trade">
                             <td><strong>{{ $trade->symbol }}</strong></td>
                             <td>{{ $trade->direction }}</td>
                             <td>@money($trade->stake) {{ $trade->wallet_currency ?? $currency }}</td>
@@ -236,7 +236,7 @@
         <section class="position-modal-card" id="position-modal-card">
             <button type="button" class="position-modal-x" id="position-modal-x" aria-label="Close position result" disabled>×</button>
             <div class="position-modal-head">
-                <div><span class="eyebrow">LIVE {{ strtoupper($selectedAccount) }} POSITION</span>
+                <div><span class="eyebrow">TRADE DETAILS · {{ strtoupper($selectedAccount) }}</span>
                     <h2 id="position-modal-title">Trade opened</h2>
                 </div><span class="table-status pending" id="position-status">OPEN</span>
             </div>
@@ -2542,12 +2542,22 @@
             document.getElementById('position-close').addEventListener('click', closeSettledPosition);
             document.getElementById('position-modal-x').addEventListener('click', closeSettledPosition);
 
-            // A hidden position monitor can be reopened directly from its open
-            // history row without refreshing the terminal.
-            document.querySelector('.data-table tbody')?.addEventListener('click', event => {
-                const row = event.target.closest('tr[data-open-trade]');
+            // Every history row opens its persisted trade details in the same modal.
+            // This includes settled positions; the server remains authoritative for the result.
+            const tradeHistoryBody = document.querySelector('.data-table tbody');
+            function openHistoryTrade(row) {
                 if (!row) return;
-                openPositionModal(Number(row.dataset.openTrade));
+                openPositionModal(Number(row.dataset.tradeId));
+            }
+            tradeHistoryBody?.addEventListener('click', event => {
+                openHistoryTrade(event.target.closest('tr[data-trade-id]'));
+            });
+            tradeHistoryBody?.addEventListener('keydown', event => {
+                if (event.key !== 'Enter' && event.key !== ' ') return;
+                const row = event.target.closest('tr[data-trade-id]');
+                if (!row) return;
+                event.preventDefault();
+                openHistoryTrade(row);
             });
 
             // Resume an active trade, or reopen the latest expired position directly
