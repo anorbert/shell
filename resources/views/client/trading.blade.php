@@ -232,28 +232,41 @@
 
     <div class="history-detail-modal" id="history-detail-modal" role="dialog" aria-modal="true" aria-labelledby="history-detail-title" aria-hidden="true">
         <div class="history-detail-backdrop" data-close-history-detail></div>
-        <section class="history-detail-card">
-            <button type="button" class="history-detail-close" data-close-history-detail aria-label="Close trade details">×</button>
-            <div class="history-detail-heading">
-                <span class="eyebrow">TRADE HISTORY · {{ strtoupper($selectedAccount) }} ACCOUNT</span>
-                <h2 id="history-detail-title">Position details</h2>
-                <span id="history-detail-status" class="table-status pending">LOADING</span>
+        <section class="history-detail-card" id="history-detail-card">
+            <button type="button" class="history-detail-close" data-close-history-detail aria-label="Close trade details">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+            </button>
+            <div class="history-detail-topline">
+                <span class="history-detail-brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 17 9 7l3 6 3-6 5 10M5 20h14"/></svg></span>
+                <div><span class="history-detail-kicker">TRADE HISTORY · {{ strtoupper($selectedAccount) }} ACCOUNT</span><h2 id="history-detail-title">Position details</h2></div>
+                <span id="history-detail-status" class="history-detail-status is-pending">LOADING</span>
             </div>
-            <div class="history-detail-instrument"><strong id="history-detail-symbol">—</strong><span id="history-detail-direction">—</span></div>
+            <div class="history-result-hero is-pending" id="history-result-hero">
+                <div class="history-result-emblem" id="history-result-emblem" aria-hidden="true">
+                    <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="20"/><path d="m15 24 6 6 13-14"/></svg>
+                </div>
+                <div class="history-result-copy"><span id="history-result-kicker">POSITION STATUS</span><strong id="history-result-title">Loading trade result</strong><small id="history-result-subtitle">Confirming the recorded outcome…</small></div>
+                <div class="history-result-net"><span>NET RESULT</span><strong id="history-detail-profit">—</strong></div>
+            </div>
+            <div class="history-detail-market">
+                <div class="history-market-symbol"><span class="history-coin-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2v20m5-16H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span><div><strong id="history-detail-symbol">—</strong><small id="history-detail-account">DEMO</small></div></div>
+                <span class="history-direction-chip" id="history-detail-direction">—</span>
+            </div>
+            <div class="history-detail-section-title"><span>POSITION SUMMARY</span><span id="history-detail-id">TRADE #—</span></div>
             <div class="history-detail-grid">
-                <div><span>Trade reference</span><strong id="history-detail-id">—</strong></div>
-                <div><span>Account</span><strong id="history-detail-account">—</strong></div>
-                <div><span>Stake</span><strong id="history-detail-stake">—</strong></div>
-                <div><span>Duration</span><strong id="history-detail-duration">—</strong></div>
-                <div><span>Opening price</span><strong id="history-detail-opening">—</strong></div>
-                <div><span>Closing price</span><strong id="history-detail-closing">—</strong></div>
-                <div><span>Opened at</span><strong id="history-detail-opened">—</strong></div>
-                <div><span>Expiry time</span><strong id="history-detail-expiry">—</strong></div>
-                <div><span>Settled at</span><strong id="history-detail-settled">—</strong></div>
-                <div><span>Total payout</span><strong id="history-detail-payout">—</strong></div>
-                <div class="history-detail-profit"><span>Net result</span><strong id="history-detail-profit">—</strong></div>
+                <div class="history-detail-item"><span><svg viewBox="0 0 24 24"><path d="M12 2v20m5-16H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Stake</span><strong id="history-detail-stake">—</strong></div>
+                <div class="history-detail-item"><span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Duration</span><strong id="history-detail-duration">—</strong></div>
+                <div class="history-detail-item"><span><svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M7 15l4-4 3 2 5-6"/></svg>Opening price</span><strong id="history-detail-opening">—</strong></div>
+                <div class="history-detail-item"><span><svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16m-13-4 4-4 3 2 5-6"/></svg>Closing price</span><strong id="history-detail-closing">—</strong></div>
             </div>
-            <p class="history-detail-note" id="history-detail-note">Trade details are retrieved from the recorded position.</p>
+            <div class="history-detail-section-title history-timeline-title"><span>TRADE TIMELINE</span><span>RECORDED TIMES</span></div>
+            <div class="history-trade-timeline">
+                <div><i class="history-timeline-dot is-start"></i><span>Opened at</span><strong id="history-detail-opened">—</strong></div>
+                <div><i class="history-timeline-dot is-expiry"></i><span>Expiry time</span><strong id="history-detail-expiry">—</strong></div>
+                <div><i class="history-timeline-dot is-settled"></i><span>Settled at</span><strong id="history-detail-settled">—</strong></div>
+            </div>
+            <div class="history-payout-row"><div><span class="history-payout-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 7h18v13H3zM3 10h18M7 4h10M12 13v4m-2-2h4"/></svg></span><div><strong>Total payout</strong><small>Stake returned plus profit, if won</small></div></div><strong id="history-detail-payout">—</strong></div>
+            <p class="history-detail-note" id="history-detail-note">Final position details as recorded by the trading system.</p>
         </section>
     </div>
 
@@ -534,30 +547,72 @@
         .position-feed-badge.is-server { color: #e6bd70; border-color: rgba(230,189,112,.4); }
         .position-feed-badge.is-reconnecting { color: #ffadad; border-color: rgba(255,137,150,.4); }
 
-        .history-detail-modal {
-            position: fixed; inset: 0; z-index: 1200; display: none;
-            align-items: center; justify-content: center; padding: 22px;
-        }
-        .history-detail-modal.is-visible { display: flex; }
-        .history-detail-backdrop { position: absolute; inset: 0; background: rgba(3, 9, 20, .78); backdrop-filter: blur(5px); }
-        .history-detail-card {
-            position: relative; z-index: 1; width: min(680px, 100%); max-height: min(88vh, 820px);
-            overflow-y: auto; padding: 28px; border: 1px solid rgba(212,168,67,.28);
-            border-radius: 20px; background: #0b1730; color: #edf3fb; box-shadow: 0 24px 80px rgba(0,0,0,.48);
-        }
-        .history-detail-close { position: absolute; top: 14px; right: 16px; border: 0; background: transparent; color: #c8d3e2; font-size: 30px; cursor: pointer; }
-        .history-detail-heading { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding-right: 28px; }
-        .history-detail-heading h2 { flex: 1 0 100%; margin: 4px 0 0; font-size: 24px; }
-        .history-detail-instrument { display: flex; align-items: center; gap: 14px; margin: 22px 0; padding: 16px; border-radius: 12px; background: rgba(255,255,255,.045); }
-        .history-detail-instrument strong { font-size: 21px; }
-        .history-detail-instrument span { color: #d4a843; font-weight: 800; }
-        .history-detail-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
-        .history-detail-grid > div { min-width: 0; padding: 13px 14px; border: 1px solid rgba(166,185,211,.13); border-radius: 10px; background: rgba(255,255,255,.025); }
-        .history-detail-grid span { display: block; margin-bottom: 7px; color: #91a3bb; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
-        .history-detail-grid strong { display: block; overflow-wrap: anywhere; font-size: 14px; }
-        .history-detail-grid .history-detail-profit { grid-column: 1 / -1; border-color: rgba(212,168,67,.3); }
-        .history-detail-note { margin: 18px 0 0; color: #91a3bb; font-size: 12px; line-height: 1.5; }
-        @media(max-width:520px) { .history-detail-card { padding: 22px 16px; } .history-detail-grid { grid-template-columns: 1fr; } .history-detail-grid .history-detail-profit { grid-column: auto; } }
+        .history-detail-modal{position:fixed;inset:0;z-index:1200;display:none;align-items:center;justify-content:center;padding:20px}
+        .history-detail-modal.is-visible{display:flex}
+        .history-detail-backdrop{position:absolute;inset:0;background:rgba(2,8,19,.84);backdrop-filter:blur(9px)}
+        .history-detail-card{position:relative;z-index:1;width:min(690px,100%);max-height:min(91vh,900px);overflow-y:auto;padding:30px;border:1px solid rgba(148,170,199,.18);border-radius:24px;background:radial-gradient(ellipse at 8% 0%,rgba(44,91,130,.2),transparent 42%),linear-gradient(155deg,#101f38 0%,#0a1427 72%);color:#edf4fc;box-shadow:0 30px 100px rgba(0,0,0,.62);scrollbar-width:thin;scrollbar-color:#344761 transparent}
+        .history-detail-close{position:absolute;top:18px;right:18px;display:grid;place-items:center;width:36px;height:36px;border:1px solid rgba(164,183,207,.18);border-radius:11px;background:rgba(255,255,255,.045);color:#aebdd0;cursor:pointer;transition:.2s}
+        .history-detail-close:hover{background:rgba(255,255,255,.1);color:#fff}
+        .history-detail-close svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+        .history-detail-topline{display:flex;align-items:center;gap:12px;padding-right:42px}
+        .history-detail-brand-mark{display:grid;place-items:center;flex:0 0 42px;height:42px;border:1px solid rgba(212,168,67,.25);border-radius:13px;background:rgba(212,168,67,.09);color:#d9b65f}
+        .history-detail-brand-mark svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+        .history-detail-kicker{display:block;color:#879bb5;font-size:9px;font-weight:850;letter-spacing:.14em}
+        .history-detail-topline h2{margin:4px 0 0;font-size:21px;letter-spacing:-.025em}
+        .history-detail-status{margin-left:auto;padding:7px 11px;border:1px solid rgba(155,174,199,.2);border-radius:8px;color:#c4d1e1;font-size:9px;font-weight:900;letter-spacing:.1em}
+        .history-detail-status.is-win{color:#5be0ae;border-color:rgba(66,211,154,.32);background:rgba(39,171,119,.1)}
+        .history-detail-status.is-loss{color:#ff8793;border-color:rgba(255,103,119,.3);background:rgba(216,67,83,.1)}
+        .history-detail-status.is-tie{color:#e7c77f;border-color:rgba(215,180,99,.3);background:rgba(191,148,56,.1)}
+        .history-detail-status.is-pending{color:#c4d1e1}
+        .history-result-hero{display:flex;align-items:center;gap:16px;margin:25px 0 18px;padding:20px;border:1px solid rgba(150,171,197,.15);border-radius:17px;background:rgba(255,255,255,.035)}
+        .history-result-emblem{display:grid;place-items:center;flex:0 0 62px;height:62px;border:1px solid rgba(154,177,205,.22);border-radius:50%;background:rgba(150,170,198,.08);color:#b8c8dc}
+        .history-result-emblem svg{width:38px;height:38px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+        .history-result-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:4px}
+        .history-result-copy span,.history-result-net span{color:#8fa2bb;font-size:9px;font-weight:850;letter-spacing:.12em}
+        .history-result-copy strong{font-size:21px;letter-spacing:-.025em}
+        .history-result-copy small{color:#91a4bd;font-size:11px}
+        .history-result-net{display:flex;flex-direction:column;align-items:flex-end;gap:5px;text-align:right}
+        .history-result-net strong{font-size:18px;font-weight:850;font-variant-numeric:tabular-nums}
+        .history-result-hero.is-win{border-color:rgba(66,211,154,.26);background:linear-gradient(110deg,rgba(27,143,99,.18),rgba(19,72,61,.09))}
+        .history-result-hero.is-win .history-result-emblem{border-color:rgba(76,224,164,.42);background:radial-gradient(circle,rgba(62,212,151,.22),rgba(29,126,91,.08));color:#58e0a9;box-shadow:0 0 28px rgba(50,205,142,.12)}
+        .history-result-hero.is-win .history-result-emblem svg{filter:drop-shadow(0 0 5px rgba(75,226,164,.3))}
+        .history-result-hero.is-win .history-result-copy strong,.history-result-hero.is-win .history-result-net strong{color:#5be0ae}
+        .history-result-hero.is-loss{border-color:rgba(255,103,119,.27);background:linear-gradient(110deg,rgba(157,48,64,.2),rgba(83,28,42,.1))}
+        .history-result-hero.is-loss .history-result-emblem{border-color:rgba(255,119,133,.42);background:rgba(218,64,83,.13);color:#ff8290}
+        .history-result-hero.is-loss .history-result-emblem svg{transform:rotate(180deg)}
+        .history-result-hero.is-loss .history-result-copy strong,.history-result-hero.is-loss .history-result-net strong{color:#ff8996}
+        .history-result-hero.is-tie{border-color:rgba(215,180,99,.25);background:linear-gradient(110deg,rgba(157,119,45,.16),rgba(83,67,35,.08))}
+        .history-result-hero.is-tie .history-result-emblem{border-color:rgba(215,180,99,.4);background:rgba(191,148,56,.1);color:#e7c77f}
+        .history-detail-market{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 23px;padding:14px 16px;border:1px solid rgba(151,174,202,.12);border-radius:14px;background:rgba(5,13,27,.45)}
+        .history-market-symbol{display:flex;align-items:center;gap:11px}
+        .history-coin-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:rgba(212,168,67,.11);color:#e2bd66}
+        .history-coin-icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round}
+        .history-market-symbol div{display:flex;flex-direction:column;gap:3px}
+        .history-market-symbol strong{font-size:16px;letter-spacing:.015em}
+        .history-market-symbol small{color:#8297b1;font-size:9px;font-weight:800;letter-spacing:.1em}
+        .history-direction-chip{padding:7px 11px;border:1px solid rgba(58,203,145,.25);border-radius:8px;background:rgba(40,166,119,.09);color:#5bdcab;font-size:10px;font-weight:900;letter-spacing:.07em}
+        .history-direction-chip.is-down{border-color:rgba(255,117,132,.25);background:rgba(206,63,80,.09);color:#ff8996}
+        .history-detail-section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;color:#a7b7ca;font-size:9px;font-weight:900;letter-spacing:.12em}
+        .history-detail-section-title span+span{color:#70849f;font-size:8px}
+        .history-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+        .history-detail-item{min-width:0;padding:13px 14px;border:1px solid rgba(151,174,202,.12);border-radius:12px;background:rgba(255,255,255,.025)}
+        .history-detail-item>span{display:flex;align-items:center;gap:7px;margin-bottom:9px;color:#91a4bd;font-size:10px}
+        .history-detail-item svg{width:14px;height:14px;fill:none;stroke:#8298b4;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+        .history-detail-item strong{display:block;overflow-wrap:anywhere;color:#e8eff8;font-size:14px;font-weight:750;font-variant-numeric:tabular-nums}
+        .history-timeline-title{margin-top:23px}
+        .history-trade-timeline{position:relative;display:grid;gap:0;padding:2px 0}
+        .history-trade-timeline:before{position:absolute;top:15px;bottom:18px;left:5px;width:1px;background:rgba(135,157,184,.23);content:""}
+        .history-trade-timeline>div{position:relative;display:grid;grid-template-columns:15px 105px minmax(0,1fr);align-items:center;gap:10px;min-height:34px}
+        .history-timeline-dot{z-index:1;width:9px;height:9px;border:2px solid #8ca1bc;border-radius:50%;background:#101e34}
+        .history-timeline-dot.is-start{border-color:#55d9a7}.history-timeline-dot.is-expiry{border-color:#d8b45e}.history-timeline-dot.is-settled{border-color:#7e9fca}
+        .history-trade-timeline span{color:#91a4bd;font-size:10px}.history-trade-timeline strong{overflow-wrap:anywhere;color:#dce6f2;font-size:11px;font-weight:650;font-variant-numeric:tabular-nums}
+        .history-payout-row{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:20px;padding:15px;border:1px solid rgba(212,168,67,.2);border-radius:13px;background:linear-gradient(100deg,rgba(212,168,67,.075),rgba(255,255,255,.02))}
+        .history-payout-row>div{display:flex;align-items:center;gap:11px}.history-payout-icon{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:rgba(212,168,67,.12);color:#dfbd70}
+        .history-payout-icon svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+        .history-payout-row>div div{display:flex;flex-direction:column;gap:3px}.history-payout-row>div strong{font-size:12px}.history-payout-row small{color:#8297b1;font-size:9px}.history-payout-row>strong{color:#e7c77f;font-size:16px;font-weight:850;font-variant-numeric:tabular-nums}
+        .history-detail-note{margin:16px 0 0;color:#8297b1;font-size:10px;line-height:1.55}
+        @media(max-width:560px){.history-detail-modal{padding:9px}.history-detail-card{padding:21px 16px;border-radius:18px}.history-detail-topline{gap:9px;padding-right:34px}.history-detail-brand-mark{flex-basis:36px;height:36px}.history-detail-topline h2{font-size:18px}.history-detail-status{padding:6px 8px;font-size:8px}.history-result-hero{gap:10px;padding:14px}.history-result-emblem{flex-basis:48px;height:48px}.history-result-emblem svg{width:30px;height:30px}.history-result-copy strong{font-size:16px}.history-result-copy small{font-size:9px}.history-result-net strong{font-size:14px}.history-detail-grid{gap:7px}.history-detail-item{padding:11px}.history-detail-item strong{font-size:12px}}
+        @media(max-width:380px){.history-result-hero{flex-wrap:wrap}.history-result-net{margin-left:58px;align-items:flex-start;text-align:left}.history-trade-timeline>div{grid-template-columns:15px 86px minmax(0,1fr)}}
 
         .data-table tbody tr.trade-history-row {
             cursor: pointer;
@@ -2652,20 +2707,45 @@
                             : value ?? '—';
                         document.getElementById(elementId).textContent = formatted;
                     });
-                    const status = String(trade.status || 'open').toUpperCase();
+                    const normalizedStatus = String(trade.status || 'open').toLowerCase();
+                    const status = normalizedStatus.toUpperCase();
+                    const won = normalizedStatus === 'won';
+                    const lost = normalizedStatus === 'lost';
+                    const tied = normalizedStatus === 'void' || normalizedStatus === 'tie';
                     const badge = document.getElementById('history-detail-status');
-                    badge.textContent = status === 'WON' ? 'WON' : status === 'LOST' ? 'LOST' : status === 'VOID' ? 'TIE' : 'OPEN';
-                    badge.className = 'table-status ' + (status === 'WON' ? 'verified' : status === 'LOST' ? 'rejected' : 'pending');
-                    const payout = trade.status === 'won' ? Number(trade.stake) * Number(trade.payout_basis_points || @json((int) config('shell.paper.payout_basis_points', 18000))) / 10000
-                        : trade.status === 'void' ? Number(trade.stake) : 0;
-                    const profit = trade.status === 'won' ? payout - Number(trade.stake)
-                        : trade.status === 'lost' ? -Number(trade.stake) : 0;
-                    document.getElementById('history-detail-payout').textContent = trade.status === 'open' ? 'Pending' : money(payout) + ' ' + trade.currency;
+                    badge.textContent = won ? 'WON' : lost ? 'LOST' : tied ? 'TIE' : 'OPEN';
+                    badge.className = 'history-detail-status ' + (won ? 'is-win' : lost ? 'is-loss' : tied ? 'is-tie' : 'is-pending');
+                    const hero = document.getElementById('history-result-hero');
+                    hero.className = 'history-result-hero ' + (won ? 'is-win' : lost ? 'is-loss' : tied ? 'is-tie' : 'is-pending');
+                    const resultIcon = document.getElementById('history-result-emblem');
+                    resultIcon.innerHTML = won
+                        ? '<svg viewBox="0 0 48 48"><path d="M15 7h18v9a9 9 0 0 1-18 0V7Z"/><path d="M15 11H8v4a8 8 0 0 0 8 8M33 11h7v4a8 8 0 0 1-8 8M24 25v9m-8 7h16m-13-7h10l3 7H16l3-7Z"/><path d="m20 15 3 3 6-7"/></svg>'
+                        : lost
+                            ? '<svg viewBox="0 0 48 48"><path d="M24 5 40 11v11c0 10-7 17-16 21C15 39 8 32 8 22V11l16-6Z"/><path d="m17 18 14 14m0-14L17 32"/></svg>'
+                            : tied
+                                ? '<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="19"/><path d="M15 20h18M15 28h18"/></svg>'
+                                : '<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="19"/><path d="M24 13v12l8 5"/></svg>';
+                    document.getElementById('history-result-kicker').textContent = won ? 'SUCCESSFUL POSITION' : lost ? 'POSITION CLOSED' : tied ? 'STAKE RETURNED' : 'POSITION STATUS';
+                    document.getElementById('history-result-title').textContent = won ? 'You won this trade' : lost ? 'This trade was lost' : tied ? 'Trade ended in a tie' : 'Position is still open';
+                    const payout = won ? Number(trade.stake) * Number(trade.payout_basis_points || @json((int) config('shell.paper.payout_basis_points', 18000))) / 10000
+                        : tied ? Number(trade.stake) : 0;
+                    const profit = won ? payout - Number(trade.stake) : lost ? -Number(trade.stake) : 0;
+                    document.getElementById('history-result-subtitle').textContent = won
+                        ? 'Your position settled in the predicted direction.'
+                        : lost ? 'The market settled against your selected direction.'
+                        : tied ? 'Your original stake was returned to your wallet.'
+                        : 'The expiry and settlement process is still in progress.';
+                    document.getElementById('history-detail-payout').textContent = normalizedStatus === 'open' ? 'Pending' : money(payout) + ' ' + trade.currency;
                     const profitEl = document.getElementById('history-detail-profit');
-                    profitEl.textContent = trade.status === 'open' ? 'Pending' : (profit > 0 ? '+' : '') + money(profit) + ' ' + trade.currency;
-                    profitEl.style.color = profit > 0 ? '#55e0ad' : profit < 0 ? '#ff8996' : '';
-                    document.getElementById('history-detail-note').textContent = trade.status === 'open'
-                        ? 'This position is still open. Its expiry and settlement continue independently; this details window will remain open until you close it.'
+                    profitEl.textContent = normalizedStatus === 'open' ? 'Pending' : (profit > 0 ? '+' : profit < 0 ? '−' : '') + money(Math.abs(profit)) + ' ' + trade.currency;
+                    profitEl.style.color = won ? '#5be0ae' : lost ? '#ff8996' : tied ? '#e7c77f' : '#c4d1e1';
+                    const directionEl = document.getElementById('history-detail-direction');
+                    directionEl.textContent = (trade.direction || '—') + (trade.direction === 'UP' ? '  ↗' : trade.direction === 'DOWN' ? '  ↘' : '');
+                    directionEl.classList.toggle('is-down', trade.direction === 'DOWN');
+                    document.getElementById('history-detail-id').textContent = 'TRADE #' + trade.id;
+                    document.getElementById('history-detail-title').textContent = 'Position details';
+                    document.getElementById('history-detail-note').textContent = normalizedStatus === 'open'
+                        ? 'This position is still open. Expiry and settlement continue independently. This details window will remain open until you close it.'
                         : 'Final position details as recorded by the trading system. This window will remain open until you close it.';
                 } catch (error) {
                     if (requestId !== historyDetailRequest) return;
