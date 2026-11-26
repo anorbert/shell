@@ -70,7 +70,7 @@
         <div class="metric-grid client-metrics">
             <article class="metric-card"><span class="metric-label">REGISTERED</span><strong>{{ $user->created_at->format('d M Y') }}</strong><small>Client since</small></article>
             <article class="metric-card"><span class="metric-label">EMAIL STATUS</span><strong>{{ $user->email_verified_at ? 'Verified' : 'Unverified' }}</strong><small>{{ $user->email_verified_at ? 'Email confirmed' : 'Verification outstanding' }}</small></article>
-            <article class="metric-card"><span class="metric-label">TRADING HISTORY</span><strong>{{ $realTrades->count() + $demoTrades->count() }}</strong><small>Real and demo separated below</small></article>
+            <article class="metric-card"><span class="metric-label">WALLET ACCOUNTS</span><strong>{{ $accounts->count() }}</strong><small>Statements available per account</small></article>
             <article class="metric-card"><span class="metric-label">SUPPORT TICKETS</span><strong>{{ $tickets->count() }}</strong><small>Latest 10 shown below</small></article>
         </div>
         <p class="cp-audit-note">Account inspection only. This page does not provide controls to alter wallet balances or trade outcomes.</p>
