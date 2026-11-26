@@ -79,7 +79,14 @@
                     <div class="client-flags">
                         <span class="cp-badge {{ $user->email_verified_at ? 'cp-good' : 'cp-warn' }}">{{ $user->email_verified_at ? '✓ EMAIL VERIFIED' : '! EMAIL UNVERIFIED' }}</span>
                         <span class="cp-badge {{ $user->phone_verified_at ? 'cp-good' : 'cp-warn' }}">{{ $user->phone_verified_at ? '✓ PHONE VERIFIED' : '! PHONE NOT VERIFIED' }}</span>
-                        <span class="cp-badge cp-info">READ-ONLY PROFILE</span>
+                        @if(!$user->email_verified_at)
+                            <form method="POST" action="{{ route('admin.clients.verify-email', $user->id) }}" onsubmit="return confirm('Manually verify this client email address? Only proceed if you have independently confirmed the account owner controls this email.');">
+                                @csrf
+                                <button type="submit" class="btn btn-secondary">Verify email manually</button>
+                            </form>
+                        @else
+                            <span class="cp-badge cp-info">EMAIL VERIFIED</span>
+                        @endif
                     </div>
                 </div>
             </div>
