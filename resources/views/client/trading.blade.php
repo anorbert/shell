@@ -2689,7 +2689,13 @@
                 historyDetailModal.classList.add('is-visible');
                 historyDetailModal.setAttribute('aria-hidden', 'false');
                 document.getElementById('history-detail-title').textContent = 'Position details';
-                document.getElementById('history-detail-status').textContent = 'LOADING';
+                const loadingBadge = document.getElementById('history-detail-status');
+                loadingBadge.textContent = 'LOADING';
+                loadingBadge.className = 'history-detail-status is-pending';
+                document.getElementById('history-result-hero').className = 'history-result-hero is-pending';
+                document.getElementById('history-result-kicker').textContent = 'POSITION STATUS';
+                document.getElementById('history-result-title').textContent = 'Loading trade result';
+                document.getElementById('history-result-subtitle').textContent = 'Confirming the recorded outcome…';
                 document.getElementById('history-detail-note').textContent = 'Loading the recorded trade details…';
                 try {
                     const response = await requestJson(@json(url('/trading/paper')) + '/' + Number(row.dataset.tradeId), {
@@ -2749,7 +2755,13 @@
                         : 'Final position details as recorded by the trading system. This window will remain open until you close it.';
                 } catch (error) {
                     if (requestId !== historyDetailRequest) return;
-                    document.getElementById('history-detail-status').textContent = 'UNAVAILABLE';
+                    const unavailableBadge = document.getElementById('history-detail-status');
+                    unavailableBadge.textContent = 'UNAVAILABLE';
+                    unavailableBadge.className = 'history-detail-status is-loss';
+                    document.getElementById('history-result-hero').className = 'history-result-hero is-pending';
+                    document.getElementById('history-result-kicker').textContent = 'DETAILS UNAVAILABLE';
+                    document.getElementById('history-result-title').textContent = 'Could not load this trade';
+                    document.getElementById('history-result-subtitle').textContent = 'Please close this window and try again.';
                     document.getElementById('history-detail-note').textContent = error.message || 'Unable to load this trade. Please try again.';
                 }
             }
