@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Carbon;
 use RuntimeException;
@@ -206,21 +207,46 @@ class MarketQuoteService
             throw new RuntimeException('Unsupported market pair.');
         }
 
-        try {
-            $quote = $this->refreshSymbolQuote($symbol);
-        } catch (\Throwable $exception) {
-            report($exception);
+        // Prefer a recent server-captured quote so every click does not need
+        // another provider round-trip. The browser chart is never authoritative.
+        $quote = DB::table('market_quotes')->where('symbol', $symbol)->first();
+        $now = now('UTC');
+        $isFresh = $quote && Carbon::parse((string) $quote->captured_at, 'UTC')
+            ->betweenIncluded($now->copy()->subSeconds(2), $now);
+
+        if (!$isFresh) {
+            try {
+                // Concurrent opens for the same symbol share one refresh instead
+                // of flooding the provider while the market is moving.
+                Cache::lock('market-execution-quote:' . $symbol, 15)->block(12, function () use ($symbol) {
+                    $latest = DB::table('market_quotes')->where('symbol', $symbol)->first();
+                    $latestAt = $latest
+                        ? Carbon::parse((string) $latest->captured_at, 'UTC')
+                        : null;
+
+                    if (!$latestAt || !$latestAt->betweenIncluded(now('UTC')->subSeconds(2), now('UTC'))) {
+                        $this->refreshSymbolQuote($symbol);
+                    }
+                });
+            } catch (\\Throwable $exception) {
+                // A failed refresh may fall back only to a server snapshot within
+                // the strict execution freshness window checked below.
+                report($exception);
+            }
+
+            $quote = DB::table('market_quotes')->where('symbol', $symbol)->first();
+        }
+
+        if (!$quote) {
             throw new RuntimeException(
-                'A fresh verified market quote is unavailable for ' . $symbol . '. Your demo stake has not been deducted. Please retry when the market feed is restored.',
-                0,
-                $exception
+                'A fresh verified market quote is unavailable for ' . $symbol . '. Your stake has not been deducted. Please retry when the market feed is restored.'
             );
         }
 
-        $capturedAt = \Illuminate\Support\Carbon::parse((string) $quote->captured_at, 'UTC');
+        $capturedAt = Carbon::parse((string) $quote->captured_at, 'UTC');
         if ($capturedAt->greaterThan(now('UTC')) || $capturedAt->lessThan(now('UTC')->subSeconds(10))) {
             throw new RuntimeException(
-                'The market quote for ' . $symbol . ' is stale or has an invalid timestamp. Your demo stake has not been deducted.'
+                'A fresh verified market quote is unavailable for ' . $symbol . '. Your stake has not been deducted. Please retry when the market feed is restored.'
             );
         }
 
