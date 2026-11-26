@@ -198,8 +198,8 @@ class MarketQuoteService
     }
 
     /**
-     * Execution quotes must come from a successful provider response in this
-     * request. Cached display/conversion quotes are never accepted for a trade.
+     * Execution quotes use only server-captured prices no older than ten seconds.
+     * A fresh cached snapshot may be reused; browser-supplied prices are never accepted.
      */
     public function freshExecutionQuote(string $symbol): object
     {
@@ -228,7 +228,7 @@ class MarketQuoteService
                         $this->refreshSymbolQuote($symbol);
                     }
                 });
-            } catch (\\Throwable $exception) {
+            } catch (\Throwable $exception) {
                 // A failed refresh may fall back only to a server snapshot within
                 // the strict execution freshness window checked below.
                 report($exception);
