@@ -200,7 +200,7 @@
                 </thead>
                 <tbody>
                     @forelse($trades as $trade)
-                        <tr class="trade-history-row {{ $trade->status === 'won' ? 'trade-row-win' : ($trade->status === 'lost' ? 'trade-row-loss' : '') }}" data-trade-id="{{ $trade->id }}" tabindex="0" role="button" aria-label="View details for {{ $trade->symbol }} {{ strtolower($trade->direction) }} trade">
+                        <tr class="trade-history-row {{ $trade->status === 'won' ? 'trade-row-win' : ($trade->status === 'lost' ? 'trade-row-loss' : '') }}" data-trade-id="{{ $trade->id }}" @if ($trade->status === 'open') data-open-trade="{{ $trade->id }}" @endif tabindex="0" role="button" aria-label="View details for {{ $trade->symbol }} {{ strtolower($trade->direction) }} trade">
                             <td><strong>{{ $trade->symbol }}</strong></td>
                             <td>{{ $trade->direction }}</td>
                             <td>@money($trade->stake) {{ $trade->wallet_currency ?? $currency }}</td>
@@ -507,8 +507,14 @@
         .position-feed-badge.is-server { color: #e6bd70; border-color: rgba(230,189,112,.4); }
         .position-feed-badge.is-reconnecting { color: #ffadad; border-color: rgba(255,137,150,.4); }
 
-        .data-table tbody tr[data-open-trade] {
-            cursor: pointer
+        .data-table tbody tr.trade-history-row {
+            cursor: pointer;
+            transition: background-color .15s ease
+        }
+
+        .data-table tbody tr.trade-history-row:focus-visible {
+            outline: 2px solid var(--accent, #d4a843);
+            outline-offset: -2px
         }
 
         .data-table tbody tr.trade-row-win {
@@ -551,8 +557,8 @@
             border: 1px solid rgba(255, 137, 150, .35)
         }
 
-        .data-table tbody tr[data-open-trade]:hover {
-            background: rgba(255, 255, 255, .035)
+        .data-table tbody tr.trade-history-row:hover {
+            background: rgba(255, 255, 255, .055)
         }
 
         .trading-chart-heading {
@@ -2133,7 +2139,12 @@
 
                 body.querySelector('.table-empty')?.closest('tr')?.remove();
                 row = document.createElement('tr');
+                row.className = 'trade-history-row';
+                row.setAttribute('data-trade-id', String(trade.id));
                 row.setAttribute('data-open-trade', String(trade.id));
+                row.tabIndex = 0;
+                row.setAttribute('role', 'button');
+                row.setAttribute('aria-label', 'View details for ' + trade.symbol + ' ' + trade.direction.toLowerCase() + ' trade');
                 const values = [
                     trade.symbol,
                     trade.direction,
