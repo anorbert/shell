@@ -213,6 +213,7 @@ class PaperTradingController extends Controller
                 'status' => $position->status,
                 'closing_price' => $position->closing_price !== null ? (string) $position->closing_price : null,
                 'settled_at' => $position->settled_at !== null ? Carbon::parse((string) $position->settled_at, 'UTC')->toIso8601String() : null,
+                'payout_basis_points' => (int) ($position->payout_basis_points ?? config('shell.paper.payout_basis_points', 18000)),
             ],
         ]);
     }
