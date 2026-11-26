@@ -99,6 +99,13 @@
             <div class="market-chart-wrap">
                 <canvas id="market-candles"
                     aria-label="Interactive candlestick market chart with price and time scales"></canvas>
+                <div class="chart-candle-inspector" id="chart-candle-inspector" aria-live="polite">
+                    <span class="inspector-time" id="inspector-time">Latest candle</span>
+                    <span>O <strong id="inspector-open">—</strong></span>
+                    <span>H <strong id="inspector-high">—</strong></span>
+                    <span>L <strong id="inspector-low">—</strong></span>
+                    <span>C <strong id="inspector-close">—</strong></span>
+                </div>
                 <div class="chart-loading" id="chart-loading">Loading market data…</div>
             </div>
             <div class="chart-foot"><span id="chart-last-price">Price scale · USDT</span><span id="chart-updated">Waiting
@@ -797,13 +804,41 @@
         }
 
         .market-chart-wrap {
-            height: 390px;
+            height: 410px;
             position: relative;
             min-width: 0;
-            background: #0b1421;
-            border-top: 1px solid #202d40;
-            border-bottom: 1px solid #202d40
+            overflow: hidden;
+            background: radial-gradient(ellipse at 50% 0%, rgba(30, 56, 79, .24), transparent 66%), #091321;
+            border-top: 1px solid rgba(117, 143, 174, .13);
+            border-bottom: 1px solid rgba(117, 143, 174, .13)
         }
+
+        .chart-candle-inspector {
+            position: absolute;
+            z-index: 2;
+            top: 12px;
+            left: 14px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 7px 13px;
+            max-width: calc(100% - 112px);
+            padding: 8px 11px;
+            border: 1px solid rgba(133, 157, 187, .16);
+            border-radius: 8px;
+            background: rgba(7, 17, 31, .84);
+            color: #9aabc0;
+            font-size: 10px;
+            font-variant-numeric: tabular-nums;
+            pointer-events: none;
+            backdrop-filter: blur(8px);
+            transition: border-color .18s ease, background .18s ease
+        }
+        .chart-candle-inspector strong { color: #e5edf7; font-weight: 750 }
+        .chart-candle-inspector .inspector-time { color: #c7d3e2; font-weight: 700 }
+        .chart-candle-inspector.is-hovering { border-color: rgba(212, 168, 67, .35); background: rgba(7, 17, 31, .94) }
+        .chart-candle-inspector .inspector-up { color: #36c99b }
+        .chart-candle-inspector .inspector-down { color: #f07886 }
 
         .market-chart-wrap canvas {
             display: block;
@@ -904,7 +939,7 @@
 
         @media(max-width:720px) {
             .market-chart-wrap {
-                height: 330px
+                height: 350px
             }
 
             .chart-market-summary {
@@ -1428,6 +1463,7 @@
                 loadingRequest = false,
                 failed = false,
                 crosshair = null,
+                hoveredCandleIndex = null,
                 visibleCandles = 80;
             let plot = null,
                 liveSocket = null,
@@ -1581,13 +1617,16 @@
                     height
                 } = dimensions();
                 ctx.clearRect(0, 0, width, height);
-                ctx.fillStyle = palette.panel;
+                const background = ctx.createLinearGradient(0, 0, 0, height);
+                background.addColorStop(0, '#0b1728');
+                background.addColorStop(1, '#08111e');
+                ctx.fillStyle = background;
                 ctx.fillRect(0, 0, width, height);
                 const margin = {
-                    top: 17,
-                    right: 88,
-                    bottom: 31,
-                    left: 12
+                    top: 18,
+                    right: 96,
+                    bottom: 34,
+                    left: 14
                 };
                 const chartWidth = Math.max(30, width - margin.left - margin.right);
                 const chartHeight = Math.max(30, height - margin.top - margin.bottom);
@@ -1632,7 +1671,7 @@
                 for (let i = 0; i <= 5; i++) {
                     const value = max - (range * i / 5),
                         py = top + (chartHeight * i / 5);
-                    ctx.strokeStyle = palette.grid;
+                    ctx.strokeStyle = 'rgba(139, 160, 187, .12)';
                     ctx.lineWidth = 1;
                     ctx.beginPath();
                     ctx.moveTo(left, py + .5);
@@ -1648,7 +1687,7 @@
                 for (let i = 0; i < timeCount; i++) {
                     const index = Math.round(i * (visible.length - 1) / Math.max(1, timeCount - 1));
                     const x = left + index * step + step / 2;
-                    ctx.strokeStyle = palette.grid;
+                    ctx.strokeStyle = 'rgba(139, 160, 187, .075)';
                     ctx.beginPath();
                     ctx.moveTo(x, top);
                     ctx.lineTo(x, bottom);
@@ -1664,17 +1703,35 @@
                         low = number(c.low);
                     const x = left + i * step + step / 2,
                         up = close >= open,
-                        color = up ? palette.up : palette.down;
+                        color = up ? palette.up : palette.down,
+                        bodyTop = y(Math.max(open, close)),
+                        bodyBottom = y(Math.min(open, close)),
+                        bodyHeight = Math.max(2, bodyBottom - bodyTop);
+
+                    if (hoveredCandleIndex === i) {
+                        ctx.fillStyle = 'rgba(212, 168, 67, .055)';
+                        ctx.fillRect(left + i * step, top, step, chartHeight);
+                    }
+
+                    // Crisp wick with a slightly stronger center stroke.
                     ctx.strokeStyle = color;
-                    ctx.lineWidth = Math.max(1, Math.min(1.5, step * .13));
+                    ctx.lineWidth = Math.max(1.1, Math.min(1.7, step * .16));
+                    ctx.lineCap = 'round';
                     ctx.beginPath();
                     ctx.moveTo(x, y(high));
                     ctx.lineTo(x, y(low));
                     ctx.stroke();
-                    const bodyTop = y(Math.max(open, close)),
-                        bodyBottom = y(Math.min(open, close));
+
+                    // Subtle candle glow keeps direction legible without clutter.
+                    ctx.save();
+                    ctx.shadowColor = color;
+                    ctx.shadowBlur = 4;
                     ctx.fillStyle = color;
-                    ctx.fillRect(x - bodyWidth / 2, bodyTop, bodyWidth, Math.max(1.5, bodyBottom - bodyTop));
+                    ctx.fillRect(x - bodyWidth / 2, bodyTop, bodyWidth, bodyHeight);
+                    ctx.restore();
+                    ctx.strokeStyle = up ? 'rgba(116, 255, 211, .28)' : 'rgba(255, 174, 184, .25)';
+                    ctx.lineWidth = .65;
+                    ctx.strokeRect(x - bodyWidth / 2 + .3, bodyTop + .3, Math.max(1, bodyWidth - .6), Math.max(1, bodyHeight - .6));
                 });
 
                 const last = candles[candles.length - 1],
@@ -1682,21 +1739,24 @@
                     priceY = y(lastPrice);
                 // Current price guide and value marker.
                 ctx.save();
-                ctx.setLineDash([4, 4]);
-                ctx.strokeStyle = last.close >= last.open ? palette.up : palette.down;
-                ctx.lineWidth = 1;
+                ctx.setLineDash([5, 4]);
+                ctx.strokeStyle = last.close >= last.open ? 'rgba(48, 211, 160, .72)' : 'rgba(242, 111, 128, .72)';
+                ctx.lineWidth = 1.15;
                 ctx.beginPath();
                 ctx.moveTo(left, priceY);
                 ctx.lineTo(right, priceY);
                 ctx.stroke();
                 ctx.restore();
+                const markerY = Math.max(top + 10, Math.min(bottom - 10, priceY));
                 ctx.fillStyle = last.close >= last.open ? palette.up : palette.down;
-                ctx.fillRect(right + 3, priceY - 10, 82, 20);
+                ctx.beginPath();
+                ctx.roundRect(right + 4, markerY - 10, 86, 20, 4);
+                ctx.fill();
                 ctx.fillStyle = '#07131b';
                 ctx.font = 'bold 10px DM Sans, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(formatAxis(lastPrice), right + 44, priceY);
+                ctx.fillText(formatAxis(lastPrice), right + 47, markerY);
 
                 // Crosshair follows pointer without affecting chart data.
                 if (crosshair && crosshair.x >= left && crosshair.x <= right && crosshair.y >= top && crosshair.y <=
@@ -1713,13 +1773,16 @@
                     ctx.stroke();
                     ctx.restore();
                     const value = max - ((crosshair.y - top) / chartHeight) * range;
+                    const crossY = Math.max(top + 9, Math.min(bottom - 9, crosshair.y));
                     ctx.fillStyle = '#34465d';
-                    ctx.fillRect(right + 3, crosshair.y - 9, 82, 18);
+                    ctx.beginPath();
+                    ctx.roundRect(right + 4, crossY - 9, 86, 18, 4);
+                    ctx.fill();
                     ctx.fillStyle = '#f1f4f8';
                     ctx.font = '10px DM Sans, sans-serif';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.fillText(formatAxis(value), right + 44, crosshair.y);
+                    ctx.fillText(formatAxis(value), right + 47, crossY);
                 }
             }
 
@@ -1735,6 +1798,7 @@
                 changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '% · ' + interval;
                 changeEl.style.color = change >= 0 ? palette.up : palette.down;
                 setText('chart-last-price', 'Last price ' + formatPrice(last.close) + ' USDT');
+                if (hoveredCandleIndex === null) showCandleInspector(last, false);
             }
 
             function closeLiveStream() {
@@ -2125,6 +2189,18 @@
                 candles = [];
                 loadCandles();
             }));
+            const candleInspector = document.getElementById('chart-candle-inspector');
+            function showCandleInspector(candle, hovering) {
+                if (!candle || !candleInspector) return;
+                setText('inspector-time', formatTime(candle.time));
+                setText('inspector-open', formatPrice(candle.open));
+                setText('inspector-high', formatPrice(candle.high));
+                setText('inspector-low', formatPrice(candle.low));
+                setText('inspector-close', formatPrice(candle.close));
+                candleInspector.classList.toggle('is-hovering', hovering);
+                const closeEl = document.getElementById('inspector-close');
+                if (closeEl) closeEl.className = number(candle.close) >= number(candle.open) ? 'inspector-up' : 'inspector-down';
+            }
             canvas.addEventListener('pointermove', event => {
                 if (!plot) return;
                 const rect = canvas.getBoundingClientRect();
@@ -2132,10 +2208,23 @@
                     x: event.clientX - rect.left,
                     y: event.clientY - rect.top
                 };
+                const visible = candles.slice(-visibleCandles);
+                if (visible.length && crosshair.x >= plot.left && crosshair.x <= plot.right &&
+                    crosshair.y >= plot.top && crosshair.y <= plot.bottom) {
+                    const step = plot.width / visible.length;
+                    hoveredCandleIndex = Math.max(0, Math.min(visible.length - 1,
+                        Math.floor((crosshair.x - plot.left) / step)));
+                    showCandleInspector(visible[hoveredCandleIndex], true);
+                } else {
+                    hoveredCandleIndex = null;
+                    if (candles.length) showCandleInspector(candles[candles.length - 1], false);
+                }
                 draw();
             });
             canvas.addEventListener('pointerleave', () => {
                 crosshair = null;
+                hoveredCandleIndex = null;
+                if (candles.length) showCandleInspector(candles[candles.length - 1], false);
                 draw();
             });
             if ('ResizeObserver' in window) {
