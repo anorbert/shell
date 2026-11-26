@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin', 'verified'])->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
     Route::get('/clients', [ClientController::class, 'index'])->name('clients');
+    Route::get('/clients/{client}/wallets/{account}/statement', [ClientController::class, 'walletStatement'])->whereNumber('client')->whereNumber('account')->name('clients.wallets.statement');
     Route::get('/clients/{client}', [ClientController::class, 'show'])->whereNumber('client')->name('clients.show');
     Route::get('/operations', OperationsController::class)->name('operations');
     Route::get('/referrals', [ReferralAdminController::class, 'index'])->name('referrals.index');
