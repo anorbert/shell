@@ -17,18 +17,18 @@
             <label>Full name<input type="text" name="name" value="{{ old('name') }}" required autocomplete="name" maxlength="255"></label>
             <label>Email address<input type="email" name="email" value="{{ old('email') }}" required autocomplete="email" maxlength="255"></label>
             <div class="international-field">
-                <label for="country_code">Country / region</label>
+                <label for="country_code">Country</label>
                 <select id="country_code" name="country_code" required autocomplete="country">
                     @foreach(config('phone-countries', []) as $code => $dial)
-                        <option value="{{ $code }}" data-dial="{{ $dial }}" @selected(old('country_code', 'RW') === $code)>{{ $code }} ({{ $dial }})</option>
+                        <option value="{{ $code }}" data-dial="{{ $dial }}" @selected(old('country_code', 'US') === $code)>{{ $code }} ({{ $dial }})</option>
                     @endforeach
                 </select>
-                <small class="field-hint">Choose the country where your phone number is registered.</small>
+                <small class="field-hint">Select your country calling code.</small>
             </div>
             <div class="international-field">
                 <label for="phone_number">Mobile phone number</label>
                 <div class="phone-input-wrap"><span class="phone-prefix" id="phone-prefix">+250</span><input id="phone_number" type="tel" name="phone_number" value="{{ old('phone_number') }}" required autocomplete="tel-national" inputmode="tel" placeholder="788 000 000" maxlength="25" aria-describedby="phone-help"></div>
-                <small class="field-hint" id="phone-help">Enter the national number without the country calling code. We save it in international format.</small>
+                <small class="field-hint" id="phone-help">Enter your phone number without the country calling code.</small>
             </div>
             <label>Password<input type="password" name="password" required autocomplete="new-password"></label>
             <label>Confirm password<input type="password" name="password_confirmation" required autocomplete="new-password"></label>
