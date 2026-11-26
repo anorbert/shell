@@ -1448,6 +1448,18 @@
                     // Keep the trading terminal usable when browser storage is blocked.
                 }
             }
+            // Restore the last chart timeframe, but only if it is still an available option.
+            const intervalStorageKey = 'shell.trading.selected-interval.v1';
+            const intervalButtons = Array.from(document.querySelectorAll('[data-interval]'));
+            const supportedIntervals = new Set(intervalButtons.map(button => button.dataset.interval));
+            let savedInterval = '';
+            try {
+                savedInterval = window.localStorage.getItem(intervalStorageKey) || '';
+            } catch (_) {
+                // The chart remains usable when browser storage is unavailable.
+            }
+            const restoredInterval = supportedIntervals.has(savedInterval) ? savedInterval : '15m';
+
             const palette = {
                 text: '#8b9ab0',
                 muted: '#65758b',
@@ -1458,7 +1470,7 @@
                 crosshair: 'rgba(190,204,222,.55)',
                 panel: '#0b1421'
             };
-            let interval = '15m',
+            let interval = restoredInterval,
                 candles = [],
                 loadingRequest = false,
                 failed = false,
@@ -1472,6 +1484,11 @@
                 reconnectAttempts = 0,
                 streamGeneration = 0,
                 tickerFallbackBusy = false;
+            intervalButtons.forEach(button => {
+                const active = button.dataset.interval === interval;
+                button.classList.toggle('active', active);
+                button.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
 
             const requestJson = async (url, options = {}) => {
                 const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
@@ -2169,13 +2186,20 @@
                 candles = [];
                 loadCandles();
             });
-            document.querySelectorAll('[data-interval]').forEach(button => button.addEventListener('click', () => {
-                interval = button.dataset.interval;
-                document.querySelectorAll('[data-interval]').forEach(item => {
+            intervalButtons.forEach(button => button.addEventListener('click', () => {
+                const selectedInterval = button.dataset.interval;
+                if (!supportedIntervals.has(selectedInterval)) return;
+                interval = selectedInterval;
+                intervalButtons.forEach(item => {
                     const active = item === button;
                     item.classList.toggle('active', active);
                     item.setAttribute('aria-pressed', active ? 'true' : 'false');
                 });
+                try {
+                    window.localStorage.setItem(intervalStorageKey, interval);
+                } catch (_) {
+                    // Keep timeframe switching functional if storage is blocked.
+                }
                 candles = [];
                 loadCandles();
             }));
