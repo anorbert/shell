@@ -57,51 +57,57 @@ class SupportController extends Controller
     public function reply(Request $request, int $ticket)
     {
         $data = $request->validate([
-            'message' => ['required', 'string', 'min:2', 'max:5000'],
-            'status' => ['required', 'in:open,pending,closed'],
+            'message' => ['required', 'string', 'min:1', 'max:5000'],
+            'message_type' => ['required', 'in:reply,note'],
+            'status' => ['nullable', 'in:open,pending,closed'],
         ]);
 
         $record = DB::table('support_tickets')->where('id', $ticket)->first();
         abort_unless($record, 404);
 
-        DB::transaction(function () use ($request, $data, $record) {
+        $isNote = $data['message_type'] === 'note';
+        DB::transaction(function () use ($request, $data, $record, $isNote) {
             $now = now();
             DB::table('support_messages')->insert([
                 'support_ticket_id' => $record->id,
                 'user_id' => $request->user()->id,
-                'sender_role' => 'admin',
+                'sender_role' => $isNote ? 'note' : 'admin',
                 'message' => trim($data['message']),
                 'created_at' => $now,
                 'updated_at' => $now,
             ]);
 
-            DB::table('support_tickets')->where('id', $record->id)->update([
-                'status' => $data['status'],
-                'closed_at' => $data['status'] === 'closed' ? $now : null,
-                'last_message_at' => $now,
-                'updated_at' => $now,
-            ]);
-
-            if ($record->user_id) {
-                $messageId = DB::table('support_messages')->where('support_ticket_id', $record->id)->max('id');
-                DB::table('user_notifications')->insertOrIgnore([
-                    'user_id' => $record->user_id,
-                    'event_key' => 'support-reply:'.$record->id.':'.$messageId,
-                    'type' => 'support_reply',
-                    'title' => 'Support replied to your ticket',
-                    'body' => 'An administrator replied to support ticket #'.$record->id.'.',
-                    'data' => json_encode(['ticket_id' => $record->id]),
-                    'created_at' => $now,
+            if (!$isNote) {
+                $status = $data['status'] ?? ($record->status === 'closed' ? 'open' : $record->status);
+                DB::table('support_tickets')->where('id', $record->id)->update([
+                    'status' => $status,
+                    'closed_at' => $status === 'closed' ? $now : null,
+                    'last_message_at' => $now,
                     'updated_at' => $now,
                 ]);
+
+                if ($record->user_id) {
+                    $messageId = DB::table('support_messages')->where('support_ticket_id', $record->id)->max('id');
+                    DB::table('user_notifications')->insertOrIgnore([
+                        'user_id' => $record->user_id,
+                        'event_key' => 'support-reply:'.$record->id.':'.$messageId,
+                        'type' => 'support_reply',
+                        'title' => 'Support replied to your ticket',
+                        'body' => 'An administrator replied to support ticket #'.$record->id.'.',
+                        'data' => json_encode(['ticket_id' => $record->id]),
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]);
+                }
             }
         });
 
-        if ($record->guest_email) {
+        if (!$isNote && $record->guest_email) {
             $this->emailGuestTranscript($record->id);
         }
 
-        return redirect()->route('admin.support.show', $record->id)->with('status', 'Support reply sent.');
+        return redirect()->route('admin.support.show', $record->id)
+            ->with('status', $isNote ? 'Internal note saved. Only your support team can see it.' : 'Reply sent to the customer.');
     }
 
     private function emailGuestTranscript(int $ticketId): void
@@ -111,7 +117,7 @@ class SupportController extends Controller
             return;
         }
 
-        $messages = DB::table('support_messages')->where('support_ticket_id', $ticketId)->orderBy('id')->get();
+        $messages = DB::table('support_messages')->where('support_ticket_id', $ticketId)->where('sender_role', '!=', 'note')->orderBy('id')->get();
         $lines = [
             'SHELL SUPPORT CONVERSATION',
             'Ticket: #'.$ticketId,
