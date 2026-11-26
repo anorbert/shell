@@ -2173,7 +2173,7 @@
                 const endIndex = candles.length - viewOffset;
                 const anchorIndex = endIndex - previousCount + Math.round(anchorRatio * (previousCount - 1));
                 visibleCandles = next;
-                const nextEndIndex = anchorIndex - Math.round(anchorRatio * (next - 1)) + 1;
+                const nextEndIndex = anchorIndex - Math.round(anchorRatio * (next - 1)) + next;
                 viewOffset = candles.length - nextEndIndex;
                 clampViewOffset();
                 hoveredCandleIndex = null;
