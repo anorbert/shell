@@ -230,6 +230,33 @@
         </div>
     </section>
 
+    <div class="history-detail-modal" id="history-detail-modal" role="dialog" aria-modal="true" aria-labelledby="history-detail-title" aria-hidden="true">
+        <div class="history-detail-backdrop" data-close-history-detail></div>
+        <section class="history-detail-card">
+            <button type="button" class="history-detail-close" data-close-history-detail aria-label="Close trade details">×</button>
+            <div class="history-detail-heading">
+                <span class="eyebrow">TRADE HISTORY · {{ strtoupper($selectedAccount) }} ACCOUNT</span>
+                <h2 id="history-detail-title">Position details</h2>
+                <span id="history-detail-status" class="table-status pending">LOADING</span>
+            </div>
+            <div class="history-detail-instrument"><strong id="history-detail-symbol">—</strong><span id="history-detail-direction">—</span></div>
+            <div class="history-detail-grid">
+                <div><span>Trade reference</span><strong id="history-detail-id">—</strong></div>
+                <div><span>Account</span><strong id="history-detail-account">—</strong></div>
+                <div><span>Stake</span><strong id="history-detail-stake">—</strong></div>
+                <div><span>Duration</span><strong id="history-detail-duration">—</strong></div>
+                <div><span>Opening price</span><strong id="history-detail-opening">—</strong></div>
+                <div><span>Closing price</span><strong id="history-detail-closing">—</strong></div>
+                <div><span>Opened at</span><strong id="history-detail-opened">—</strong></div>
+                <div><span>Expiry time</span><strong id="history-detail-expiry">—</strong></div>
+                <div><span>Settled at</span><strong id="history-detail-settled">—</strong></div>
+                <div><span>Total payout</span><strong id="history-detail-payout">—</strong></div>
+                <div class="history-detail-profit"><span>Net result</span><strong id="history-detail-profit">—</strong></div>
+            </div>
+            <p class="history-detail-note" id="history-detail-note">Trade details are retrieved from the recorded position.</p>
+        </section>
+    </div>
+
     <div class="position-modal" id="position-modal" role="dialog" aria-modal="true"
         aria-labelledby="position-modal-title" aria-hidden="true">
         <div class="position-modal-backdrop"></div>
@@ -506,6 +533,31 @@
         .position-feed-badge.is-live { color: #53d6aa; border-color: rgba(83,214,170,.4); }
         .position-feed-badge.is-server { color: #e6bd70; border-color: rgba(230,189,112,.4); }
         .position-feed-badge.is-reconnecting { color: #ffadad; border-color: rgba(255,137,150,.4); }
+
+        .history-detail-modal {
+            position: fixed; inset: 0; z-index: 1200; display: none;
+            align-items: center; justify-content: center; padding: 22px;
+        }
+        .history-detail-modal.is-visible { display: flex; }
+        .history-detail-backdrop { position: absolute; inset: 0; background: rgba(3, 9, 20, .78); backdrop-filter: blur(5px); }
+        .history-detail-card {
+            position: relative; z-index: 1; width: min(680px, 100%); max-height: min(88vh, 820px);
+            overflow-y: auto; padding: 28px; border: 1px solid rgba(212,168,67,.28);
+            border-radius: 20px; background: #0b1730; color: #edf3fb; box-shadow: 0 24px 80px rgba(0,0,0,.48);
+        }
+        .history-detail-close { position: absolute; top: 14px; right: 16px; border: 0; background: transparent; color: #c8d3e2; font-size: 30px; cursor: pointer; }
+        .history-detail-heading { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding-right: 28px; }
+        .history-detail-heading h2 { flex: 1 0 100%; margin: 4px 0 0; font-size: 24px; }
+        .history-detail-instrument { display: flex; align-items: center; gap: 14px; margin: 22px 0; padding: 16px; border-radius: 12px; background: rgba(255,255,255,.045); }
+        .history-detail-instrument strong { font-size: 21px; }
+        .history-detail-instrument span { color: #d4a843; font-weight: 800; }
+        .history-detail-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+        .history-detail-grid > div { min-width: 0; padding: 13px 14px; border: 1px solid rgba(166,185,211,.13); border-radius: 10px; background: rgba(255,255,255,.025); }
+        .history-detail-grid span { display: block; margin-bottom: 7px; color: #91a3bb; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+        .history-detail-grid strong { display: block; overflow-wrap: anywhere; font-size: 14px; }
+        .history-detail-grid .history-detail-profit { grid-column: 1 / -1; border-color: rgba(212,168,67,.3); }
+        .history-detail-note { margin: 18px 0 0; color: #91a3bb; font-size: 12px; line-height: 1.5; }
+        @media(max-width:520px) { .history-detail-card { padding: 22px 16px; } .history-detail-grid { grid-template-columns: 1fr; } .history-detail-grid .history-detail-profit { grid-column: auto; } }
 
         .data-table tbody tr.trade-history-row {
             cursor: pointer;
@@ -2556,9 +2608,70 @@
             // Every history row opens its persisted trade details in the same modal.
             // This includes settled positions; the server remains authoritative for the result.
             const tradeHistoryBody = document.querySelector('.data-table tbody');
-            function openHistoryTrade(row) {
+            const historyDetailModal = document.getElementById('history-detail-modal');
+            let historyDetailRequest = 0;
+            const historyDetailFields = {
+                id: 'history-detail-id', account_type: 'history-detail-account',
+                symbol: 'history-detail-symbol', direction: 'history-detail-direction',
+                stake: 'history-detail-stake', duration_seconds: 'history-detail-duration',
+                opening_price: 'history-detail-opening', closing_price: 'history-detail-closing',
+                opened_at: 'history-detail-opened', expires_at: 'history-detail-expiry',
+                settled_at: 'history-detail-settled'
+            };
+            const detailPrice = value => value === null || value === undefined ? '—' : priceText(value);
+            const detailDate = value => value ? new Date(value).toLocaleString() : '—';
+            function closeHistoryDetails() {
+                historyDetailModal.classList.remove('is-visible');
+                historyDetailModal.setAttribute('aria-hidden', 'true');
+            }
+            historyDetailModal.querySelectorAll('[data-close-history-detail]').forEach(el => el.addEventListener('click', closeHistoryDetails));
+            document.addEventListener('keydown', event => {
+                if (event.key === 'Escape' && historyDetailModal.classList.contains('is-visible')) closeHistoryDetails();
+            });
+            async function openHistoryTrade(row) {
                 if (!row) return;
-                openPositionModal(Number(row.dataset.tradeId));
+                const requestId = ++historyDetailRequest;
+                historyDetailModal.classList.add('is-visible');
+                historyDetailModal.setAttribute('aria-hidden', 'false');
+                document.getElementById('history-detail-title').textContent = 'Position details';
+                document.getElementById('history-detail-status').textContent = 'LOADING';
+                document.getElementById('history-detail-note').textContent = 'Loading the recorded trade details…';
+                try {
+                    const response = await requestJson(@json(url('/trading/paper')) + '/' + Number(row.dataset.tradeId), {
+                        method: 'GET', headers: { 'Accept': 'application/json' }
+                    });
+                    if (requestId !== historyDetailRequest) return;
+                    const trade = response.trade;
+                    Object.entries(historyDetailFields).forEach(([key, elementId]) => {
+                        const value = trade[key];
+                        const formatted = key === 'stake' ? money(value) + ' ' + trade.currency
+                            : key === 'duration_seconds' ? (Number(value) >= 3600 ? (Number(value) / 3600) + ' hour(s)' : (Number(value) / 60) + ' minute(s)')
+                            : key === 'opening_price' || key === 'closing_price' ? detailPrice(value)
+                            : key === 'opened_at' || key === 'expires_at' || key === 'settled_at' ? detailDate(value)
+                            : key === 'account_type' ? String(value || 'demo').toUpperCase()
+                            : value ?? '—';
+                        document.getElementById(elementId).textContent = formatted;
+                    });
+                    const status = String(trade.status || 'open').toUpperCase();
+                    const badge = document.getElementById('history-detail-status');
+                    badge.textContent = status === 'WON' ? 'WON' : status === 'LOST' ? 'LOST' : status === 'VOID' ? 'TIE' : 'OPEN';
+                    badge.className = 'table-status ' + (status === 'WON' ? 'verified' : status === 'LOST' ? 'rejected' : 'pending');
+                    const payout = trade.status === 'won' ? Number(trade.stake) * Number(@json((int) config('shell.paper.payout_basis_points', 18000))) / 10000
+                        : trade.status === 'void' ? Number(trade.stake) : 0;
+                    const profit = trade.status === 'won' ? payout - Number(trade.stake)
+                        : trade.status === 'lost' ? -Number(trade.stake) : 0;
+                    document.getElementById('history-detail-payout').textContent = trade.status === 'open' ? 'Pending' : money(payout) + ' ' + trade.currency;
+                    const profitEl = document.getElementById('history-detail-profit');
+                    profitEl.textContent = trade.status === 'open' ? 'Pending' : (profit > 0 ? '+' : '') + money(profit) + ' ' + trade.currency;
+                    profitEl.style.color = profit > 0 ? '#55e0ad' : profit < 0 ? '#ff8996' : '';
+                    document.getElementById('history-detail-note').textContent = trade.status === 'open'
+                        ? 'This position is still open. Its expiry and settlement continue independently; this details window will remain open until you close it.'
+                        : 'Final position details as recorded by the trading system. This window will remain open until you close it.';
+                } catch (error) {
+                    if (requestId !== historyDetailRequest) return;
+                    document.getElementById('history-detail-status').textContent = 'UNAVAILABLE';
+                    document.getElementById('history-detail-note').textContent = error.message || 'Unable to load this trade. Please try again.';
+                }
             }
             tradeHistoryBody?.addEventListener('click', event => {
                 openHistoryTrade(event.target.closest('tr[data-trade-id]'));
