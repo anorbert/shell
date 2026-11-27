@@ -103,8 +103,6 @@
                 </div>
                 <div class="chart-loading" id="chart-loading">Loading market data…</div>
             </div>
-            <div class="chart-foot"><span id="chart-last-price">Price scale · USDT</span><span id="chart-updated">Waiting
-                    for latest update</span></div>
         </section>
 
         <section class="panel trade-ticket">
