@@ -172,7 +172,7 @@
         </section>
     </div>
 
-    <section class="panel">
+    <section class="panel trade-history-panel">
         <div class="panel-head">
             <div><span class="eyebrow">YOUR POSITIONS</span>
                 <h2>Trade history</h2>
@@ -1377,8 +1377,9 @@
         .trading-chart-heading-actions { display:flex; align-items:center; gap:10px }
         .chart-mobile-toggle { display:none; border:1px solid #35445a; border-radius:7px; padding:6px 9px; background:#0b1421; color:#d9bd7e; font-size:10px; font-weight:800; cursor:pointer }
         @media (max-width: 720px) {
-            .trading-layout { display:block; margin-bottom:0; padding-bottom:calc(88px + env(safe-area-inset-bottom)); }
+            .trading-layout { display:block; margin-bottom:0; padding-bottom:0; }
             .trading-chart-panel { margin-bottom:9px; }
+            .trade-history-panel { margin-top:0; margin-bottom:calc(88px + env(safe-area-inset-bottom)); }
             .trading-chart-panel > .trading-chart-heading { min-height:0; margin-bottom:0; padding:6px 12px 2px; gap:8px; }
             .trading-chart-heading .eyebrow { font-size:9px; letter-spacing:.12em; }
             .trading-chart-panel > .chart-market-summary { margin-top:0; padding-top:4px; }
@@ -1399,7 +1400,7 @@
             .trade-ticket {
                 position:relative; z-index:1; inset:auto;
                 width:100%; max-height:none; overflow:visible;
-                margin:0 0 16px; padding:7px 12px 10px;
+                margin:0 0 4px; padding:7px 12px 8px;
                 border:1px solid rgba(201,169,106,.28); border-radius:13px;
                 background:rgba(10,19,33,.98);
                 box-shadow:0 8px 22px rgba(0,0,0,.2);
