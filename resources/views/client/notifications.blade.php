@@ -17,16 +17,16 @@
 .notification-page .np-mark-all:disabled{opacity:.55;cursor:wait}
 .notification-page .np-mark-all[hidden]{display:none}
 .notification-page .np-list{border-top:1px solid var(--line,#26364a)}
-.notification-page .np-item{display:grid;grid-template-columns:10px minmax(0,1fr) auto;align-items:start;gap:14px;padding:19px 8px;border-bottom:1px solid var(--line,#26364a)}
+.notification-page .np-item{display:grid;grid-template-columns:10px minmax(0,1fr) auto;align-items:start;gap:14px;padding:11px 8px;border-bottom:1px solid var(--line,#26364a)}
 .notification-page .np-item.is-unread{background:linear-gradient(90deg,rgba(105,184,230,.055),transparent 70%)}
 .notification-page .np-dot{width:7px;height:7px;margin:6px 0 0 1px;border-radius:50%;background:transparent}
 .notification-page .np-item.is-unread .np-dot{background:#69b8e6;box-shadow:0 0 0 3px rgba(105,184,230,.12)}
 .notification-page .np-main{min-width:0}
-.notification-page .np-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 5px;color:var(--text,#eef3f8);font-size:13px;font-weight:750;line-height:1.45}
+.notification-page .np-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 3px;color:var(--text,#eef3f8);font-size:13px;font-weight:750;line-height:1.45}
 .notification-page .np-item.is-read .np-title{font-weight:600}
 .notification-page .np-new{padding:2px 6px;border-radius:4px;background:rgba(105,184,230,.12);color:#8bcdf1;font-size:9px;font-weight:800;letter-spacing:.04em}
-.notification-page .np-body{margin:0;color:var(--muted,#91a0b5);font-size:12px;line-height:1.65;overflow-wrap:anywhere;white-space:pre-line}
-.notification-page .np-time{display:block;margin-top:7px;color:var(--muted,#8494a8);font-size:11px}
+.notification-page .np-body{margin:0;color:var(--muted,#91a0b5);font-size:12px;line-height:1.5;overflow-wrap:anywhere;white-space:pre-line}
+.notification-page .np-time{display:block;margin-top:4px;color:var(--muted,#8494a8);font-size:10px}
 .notification-page .np-action{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:8px;align-self:center}
 .notification-page .np-mark{padding:6px 0;border:0;background:none;color:#8bcdf1;font-size:11px;font-weight:700;cursor:pointer}
 .notification-page .np-mark:hover{color:#c0e7ff;text-decoration:underline}
@@ -36,7 +36,7 @@
 .notification-page .np-empty strong{display:block;margin-bottom:6px;font-size:14px}
 .notification-page .np-empty span{color:var(--muted,#91a0b5);font-size:12px}
 .notification-page .np-pagination{padding-top:16px}
-@media(max-width:600px){.notification-page .np-heading{align-items:flex-start}.notification-page .np-heading-actions{gap:10px;flex-wrap:wrap;justify-content:flex-end}.notification-page .np-item{grid-template-columns:9px minmax(0,1fr);gap:11px;padding:16px 3px}.notification-page .np-action{grid-column:2;flex-direction:row;align-items:center;justify-content:space-between;justify-self:stretch;width:100%;margin-top:2px}.notification-page .np-mark{padding:3px 0}}
+@media(max-width:600px){.notification-page .np-heading{align-items:flex-start}.notification-page .np-heading-actions{gap:10px;flex-wrap:wrap;justify-content:flex-end}.notification-page .np-item{grid-template-columns:9px minmax(0,1fr);gap:9px;padding:10px 3px}.notification-page .np-action{grid-column:2;flex-direction:row;align-items:center;justify-content:space-between;justify-self:stretch;width:100%;margin-top:2px}.notification-page .np-mark{padding:3px 0}}
 </style>
 
 <div class="notification-page">
