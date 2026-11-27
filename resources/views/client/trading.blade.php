@@ -93,6 +93,11 @@
             <div class="market-chart-wrap">
                 <canvas id="market-candles"
                     aria-label="Interactive candlestick market chart with price and time scales"></canvas>
+                <div class="chart-mobile-zoom" role="group" aria-label="Vertical chart zoom">
+                    <button type="button" data-vertical-zoom="in" aria-label="Zoom price scale in">+</button>
+                    <button type="button" data-vertical-zoom="out" aria-label="Zoom price scale out">−</button>
+                    <button type="button" data-vertical-zoom="reset" aria-label="Reset price scale">↺</button>
+                </div>
                 <div class="chart-candle-inspector" id="chart-candle-inspector" aria-live="polite">
                     <span class="inspector-time" id="inspector-time">Latest candle</span>
                     <span>O <strong id="inspector-open">—</strong></span>
@@ -772,6 +777,23 @@
             background: radial-gradient(ellipse at 50% 0%, rgba(30, 56, 79, .24), transparent 66%), #091321;
             border-top: 1px solid rgba(117, 143, 174, .13);
             border-bottom: 1px solid rgba(117, 143, 174, .13)
+        }
+
+        .chart-mobile-zoom { display:none; }
+        @media (max-width:720px) {
+            .chart-mobile-zoom {
+                position:absolute; z-index:4; right:5px; top:50%; transform:translateY(-50%);
+                display:flex; flex-direction:column; gap:4px; padding:4px;
+                border:1px solid rgba(133,157,187,.24); border-radius:9px;
+                background:rgba(7,17,31,.88); backdrop-filter:blur(8px);
+            }
+            .chart-mobile-zoom button {
+                display:grid; place-items:center; width:27px; height:27px; padding:0;
+                border:1px solid rgba(133,157,187,.2); border-radius:6px;
+                background:#142238; color:#e4c27e; font-size:17px; font-weight:800;
+                line-height:1; touch-action:manipulation; cursor:pointer;
+            }
+            .chart-mobile-zoom button:active { background:#263b58; }
         }
 
         .chart-candle-inspector {
@@ -2295,6 +2317,19 @@
                 const factor = event.deltaY < 0 ? .88 : 1.14;
                 setZoom(visibleCandles * factor, 1);
             }, { passive: false });
+
+            // Touch-friendly vertical price-scale controls for phones. The wheel
+            // gesture is not consistently available on touchscreens.
+            document.querySelectorAll('[data-vertical-zoom]').forEach(button => {
+                button.addEventListener('click', () => {
+                    if (!candles.length) return;
+                    const action = button.dataset.verticalZoom;
+                    if (action === 'reset') verticalZoom = 1;
+                    else verticalZoom = Math.max(.5, Math.min(5,
+                        verticalZoom * (action === 'in' ? 1.2 : 1 / 1.2)));
+                    draw();
+                });
+            });
 
             marketSelect.addEventListener('change', () => {
                 tradeSymbol.value = marketSelect.value;
