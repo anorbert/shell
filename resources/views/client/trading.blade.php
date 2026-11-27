@@ -75,10 +75,6 @@
             <div class="chart-market-summary" aria-live="polite">
                 <div class="chart-price-main"><strong id="chart-current-price">—</strong><span
                         id="chart-price-change">Awaiting price</span></div>
-                <div class="chart-ohlc">
-                    <span>O <b id="chart-open">—</b></span><span>H <b id="chart-high">—</b></span><span>L <b
-                            id="chart-low">—</b></span><span>C <b id="chart-close">—</b></span>
-                </div>
             </div>
             <div class="chart-toolbar">
                 <label>Market<select id="chart-market">
@@ -708,22 +704,6 @@
         .chart-price-main span {
             font-size: 11px;
             color: #8e9cb0
-        }
-
-        .chart-ohlc {
-            display: flex;
-            gap: 13px;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-            color: #8190a5;
-            font-size: 10px;
-            font-variant-numeric: tabular-nums
-        }
-
-        .chart-ohlc b {
-            color: #d9e0e9;
-            font-weight: 700;
-            margin-left: 3px
         }
 
         .chart-toolbar {
