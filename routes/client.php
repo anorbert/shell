@@ -46,6 +46,7 @@ Route::middleware(['auth', 'client', 'verified', ResolveActiveWallet::class])->g
     Route::get('/activity/export', [ActivityController::class, 'export'])->name('activity.export');
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->middleware('throttle:10,1')->name('notifications.read-all');
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->middleware('throttle:60,1')->name('notifications.read');
 
     Route::get('/support', [SupportController::class, 'index'])->name('support.index');
