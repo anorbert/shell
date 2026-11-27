@@ -65,6 +65,90 @@
 .ref-disabled{margin-top:18px;padding:12px 14px;border-radius:11px;background:rgba(210,160,53,.12);color:#f0ce82;font-size:13px}
 @media(max-width:760px){.ref-stats{grid-template-columns:1fr}.ref-stat{padding:15px}.ref-hero-top{gap:12px}.ref-hero-mark{width:45px;height:45px;flex-basis:45px}.ref-panel-head{padding:16px}.ref-table td,.ref-table th{padding:12px}}
 @media(max-width:520px){.ref-link-box{flex-direction:column}.ref-link-box .ref-copy{min-height:45px;width:100%}.ref-hero{padding:21px}.ref-rate-row{display:grid;grid-template-columns:1fr}.ref-rate{width:100%}.ref-panel-head h2{font-size:15px}.ref-count{font-size:10px}}
+
+/* Referrals page refinement */
+.ref-page{width:100%;min-width:0}
+.ref-hero{border-radius:18px;box-shadow:0 18px 42px rgba(0,0,0,.16)}
+.ref-hero p{font-size:13px}
+.ref-rate{min-height:44px}
+.ref-link-box input{height:48px}
+.ref-copy{min-height:48px;box-shadow:0 5px 14px rgba(0,0,0,.14)}
+.ref-copy:focus-visible{outline:2px solid #f3d58f;outline-offset:3px}
+.ref-stat{position:relative;transition:border-color .18s ease,transform .18s ease,background .18s ease}
+.ref-stat:hover{border-color:rgba(117,189,232,.32);transform:translateY(-2px)}
+.ref-panel{border:1px solid var(--ref-line);border-radius:16px;box-shadow:0 12px 28px rgba(0,0,0,.10)}
+.ref-panel-head{background:linear-gradient(90deg,rgba(255,255,255,.025),transparent)}
+.ref-table{min-width:680px;border-collapse:separate;border-spacing:0}
+.ref-table thead th{font-size:10px;letter-spacing:.075em;color:#91a3b9;background:rgba(7,16,29,.42);white-space:nowrap}
+.ref-table tbody tr{transition:background .16s ease}
+.ref-table tbody tr:not(:last-child) td{border-bottom:1px solid rgba(139,158,183,.09)}
+.ref-table tbody tr:hover:not(:has(.ref-empty)){background:rgba(111,163,205,.055)}
+.ref-table td{font-size:12px;vertical-align:middle}
+.ref-table td strong{font-size:12px;color:#edf3fb}
+.ref-table td small{overflow-wrap:anywhere}
+.ref-table .money{font-variant-numeric:tabular-nums}
+.ref-status{white-space:nowrap}
+.ref-note{border-radius:14px}
+@media(max-width:760px){
+ .ref-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+ .ref-stat{gap:10px;padding:13px 11px;border-radius:13px}
+ .ref-stat-icon{width:35px;height:35px;flex-basis:35px;border-radius:10px}
+ .ref-stat-icon svg{width:18px;height:18px}
+ .ref-stat small{font-size:9px;line-height:1.35;letter-spacing:.025em}
+ .ref-stat strong{font-size:clamp(15px,2.8vw,19px)}
+ .ref-panel{margin-bottom:14px}
+}
+@media(max-width:640px){
+ .ref-hero{padding:20px;margin-bottom:14px}
+ .ref-hero h2{font-size:23px}
+ .ref-hero p{font-size:12px;line-height:1.55}
+ .ref-rate-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:16px}
+ .ref-rate{min-width:0;min-height:58px;align-items:flex-start;gap:6px;padding:9px 8px;font-size:10px;line-height:1.35}
+ .ref-rate svg{width:15px;height:15px}
+ .ref-rate strong{display:block;font-size:13px;margin-top:2px}
+ .ref-link-label{margin:17px 0 7px;font-size:9px}
+ .ref-link-box{display:flex;flex-direction:row;gap:7px}
+ .ref-link-box input{height:43px;padding:10px;font-size:11px}
+ .ref-copy{min-height:43px;padding:0 12px;font-size:11px}
+ .ref-copy svg{width:15px;height:15px}
+ .ref-copy-feedback{font-size:10px}
+ .ref-stats{grid-template-columns:1fr;gap:7px;margin-bottom:14px}
+ .ref-stat{padding:11px 13px;min-height:62px}
+ .ref-stat small{font-size:10px}
+ .ref-stat strong{font-size:18px}
+ .ref-panel-head{padding:13px}
+ .ref-panel-icon{width:33px;height:33px;border-radius:9px}
+ .ref-panel-head h2{font-size:14px}
+ .ref-count{padding:5px 8px;font-size:9px}
+ .ref-table-wrap{overflow:visible;padding:10px}
+ .ref-table{display:block;width:100%;min-width:0;border-collapse:separate;border-spacing:0}
+ .ref-table thead{display:none}
+ .ref-table tbody{display:grid;gap:9px}
+ .ref-table tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 10px;padding:10px 12px;border:1px solid rgba(139,158,183,.15);border-radius:12px;background:rgba(7,16,29,.34)}
+ .ref-table tbody tr:hover:not(:has(.ref-empty)){background:rgba(111,163,205,.07)}
+ .ref-table tbody tr td{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;min-width:0;padding:9px 2px;border:0!important;font-size:11px;overflow-wrap:anywhere}
+ .ref-table tbody tr td:before{content:attr(data-label);color:var(--ref-muted);font-size:8px;font-weight:850;letter-spacing:.075em;line-height:1.3}
+ .ref-table tbody tr td.ref-primary-cell{grid-column:1/-1;padding-top:3px;padding-bottom:10px;border-bottom:1px solid rgba(139,158,183,.12)!important;margin-bottom:3px}
+ .ref-table tbody tr td.ref-primary-cell:before{content:attr(data-label)}
+ .ref-table td strong{font-size:12px}
+ .ref-table td small{font-size:10px}
+ .ref-table .ref-empty{display:block;grid-column:1/-1;padding:22px 10px!important;text-align:center}
+ .ref-table .ref-empty:before{content:none}
+ .ref-note{padding:13px;gap:9px}
+ .ref-note-icon{width:30px;height:30px}
+ .ref-note strong{font-size:12px}
+ .ref-note p{font-size:11px}
+}
+@media(max-width:380px){
+ .ref-hero-mark{display:none}
+ .ref-rate-row{grid-template-columns:1fr}
+ .ref-rate{min-height:0;align-items:center}
+ .ref-rate strong{display:inline;margin-left:3px}
+ .ref-link-box{flex-direction:column}
+ .ref-copy{width:100%}
+ .ref-table tbody tr{gap:0 7px;padding:8px 10px}
+}
+
 </style>
 <div class="ref-page">
 @if(session('status'))<div class="notice-banner"><div><strong>{{ session('status') }}</strong></div></div>@endif
@@ -105,7 +189,7 @@
     </div>
     <div class="ref-table-wrap"><table class="data-table ref-table"><thead><tr><th>CLIENT</th><th>JOINED</th><th>CONFIRMED DEPOSITS</th><th>FIRST DEPOSIT</th></tr></thead><tbody>
     @forelse($referrals as $referral)
-        <tr><td><strong>{{ $referral->name }}</strong><small>{{ $referral->email }}</small></td><td>{{ $referral->created_at ? date('d M Y', strtotime($referral->created_at)) : '—' }}</td><td>{{ number_format($referral->successful_deposits) }}</td><td>{{ $referral->first_deposit_at ? date('d M Y', strtotime($referral->first_deposit_at)) : 'Not yet' }}</td></tr>
+        <tr><td class="ref-primary-cell" data-label="CLIENT"><strong>{{ $referral->name }}</strong><small>{{ $referral->email }}</small></td><td data-label="JOINED">{{ $referral->created_at ? date('d M Y', strtotime($referral->created_at)) : '—' }}</td><td data-label="CONFIRMED DEPOSITS">{{ number_format($referral->successful_deposits) }}</td><td data-label="FIRST DEPOSIT">{{ $referral->first_deposit_at ? date('d M Y', strtotime($referral->first_deposit_at)) : 'Not yet' }}</td></tr>
     @empty
         <tr><td colspan="4" class="ref-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="8" r="4"/><path d="M2 21v-2a7 7 0 0 1 14 0v2m3-13v6m3-3h-6"/></svg><strong>No referrals yet</strong><br>Share your personal link to invite your first member to SHELL.</td></tr>
     @endforelse
@@ -120,7 +204,7 @@
     </div>
     <div class="ref-table-wrap"><table class="data-table ref-table"><thead><tr><th>REFERRED CLIENT</th><th>DEPOSIT</th><th>RATE</th><th>COMMISSION</th><th>TYPE</th><th>STATUS</th></tr></thead><tbody>
     @forelse($commissions as $commission)
-        <tr><td><strong>{{ $commission->referred_name }}</strong><small>{{ $commission->created_at ? date('d M Y H:i', strtotime($commission->created_at)) : '' }}</small></td><td class="money">${{ number_format((float) $commission->deposit_amount_usd, 2) }}</td><td>{{ number_format((float) $commission->commission_percent, 2) }}%</td><td class="money">${{ number_format((float) $commission->commission_amount_usd, 2) }}</td><td><span class="ref-type">@if($commission->commission_type === 'first')<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 2 2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5L12 2Z"/></svg>First deposit @else<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9A7 7 0 0 1 18 6l2 6M4 12l2 6a7 7 0 0 0 12.4-3"/></svg>Recurring @endif</span></td><td><span class="ref-status {{ $commission->status }}">{{ $commission->status }}</span></td></tr>
+        <tr><td class="ref-primary-cell" data-label="REFERRED CLIENT"><strong>{{ $commission->referred_name }}</strong><small>{{ $commission->created_at ? date('d M Y H:i', strtotime($commission->created_at)) : '' }}</small></td><td class="money" data-label="DEPOSIT">${{ number_format((float) $commission->deposit_amount_usd, 2) }}</td><td data-label="RATE">{{ number_format((float) $commission->commission_percent, 2) }}%</td><td class="money" data-label="COMMISSION">${{ number_format((float) $commission->commission_amount_usd, 2) }}</td><td data-label="TYPE"><span class="ref-type">@if($commission->commission_type === 'first')<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 2 2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5L12 2Z"/></svg>First deposit @else<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9A7 7 0 0 1 18 6l2 6M4 12l2 6a7 7 0 0 0 12.4-3"/></svg>Recurring @endif</span></td><td data-label="STATUS"><span class="ref-status {{ $commission->status }}">{{ $commission->status }}</span></td></tr>
     @empty
         <tr><td colspan="6" class="ref-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 3h16v18l-4-2-4 2-4-2-4 2V3Z"/><path d="M8 8h8M8 12h8"/></svg><strong>No commissions recorded</strong><br>Qualifying commissions will appear here after referred members make confirmed real-money deposits.</td></tr>
     @endforelse
