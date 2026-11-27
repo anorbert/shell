@@ -95,10 +95,6 @@
                     @endforeach
                 </div>
             </div>
-            <div class="chart-zoom" role="group" aria-label="Chart zoom"><button type="button" id="chart-zoom-out"
-                    aria-label="Zoom out">−</button><span id="chart-zoom-level">80 candles</span><button type="button"
-                    id="chart-zoom-in" aria-label="Zoom in">+</button><button type="button"
-                    id="chart-zoom-reset">Reset</button></div>
             <div class="market-chart-wrap">
                 <canvas id="market-candles"
                     aria-label="Interactive candlestick market chart with price and time scales"></canvas>
@@ -754,30 +750,6 @@
             color: #e9edf5;
             padding: 8px 10px;
             font-size: 11px
-        }
-
-        .chart-zoom {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 6px;
-            padding: 0 17px 10px;
-            color: #8f9db0;
-            font-size: 10px
-        }
-
-        .chart-zoom button {
-            border: 1px solid #35445a;
-            border-radius: 5px;
-            background: #0b1421;
-            color: #dce4ef;
-            padding: 5px 10px;
-            cursor: pointer
-        }
-
-        .chart-zoom button:hover {
-            border-color: #c8a96a;
-            color: #f0d99f
         }
 
         .chart-intervals {
@@ -1450,7 +1422,6 @@
             .trading-chart-panel.is-mobile-expanded .market-chart-wrap { height:min(54vh, 470px); }
             .trading-chart-panel.is-mobile-expanded .chart-market-summary { display:flex; }
             .trading-chart-panel.is-mobile-expanded .chart-toolbar { display:flex; }
-            .trading-chart-panel.is-mobile-expanded .chart-zoom,
             .trading-chart-panel.is-mobile-expanded .chart-foot { display:flex; }
         }
         @media (max-width: 420px) {
@@ -2274,9 +2245,6 @@
             function clampViewOffset() {
                 viewOffset = Math.max(0, Math.min(viewOffset, Math.max(0, candles.length - visibleCandles)));
             }
-            function updateZoomLabel() {
-                setText('chart-zoom-level', visibleCandles + ' candles');
-            }
             function setZoom(nextCount, anchorRatio = 1) {
                 const previousCount = visibleCandles;
                 const next = Math.max(20, Math.min(200, Math.round(nextCount)));
@@ -2288,17 +2256,8 @@
                 viewOffset = candles.length - nextEndIndex;
                 clampViewOffset();
                 hoveredCandleIndex = null;
-                updateZoomLabel();
                 draw();
             }
-            document.getElementById('chart-zoom-in').addEventListener('click', () => setZoom(visibleCandles - 10));
-            document.getElementById('chart-zoom-out').addEventListener('click', () => setZoom(visibleCandles + 10));
-            document.getElementById('chart-zoom-reset').addEventListener('click', () => {
-                visibleCandles = 80;
-                viewOffset = 0;
-                updateZoomLabel();
-                draw();
-            });
             canvas.addEventListener('wheel', event => {
                 if (!candles.length) return;
                 event.preventDefault();
@@ -2306,7 +2265,6 @@
                 const factor = event.deltaY < 0 ? .88 : 1.14;
                 setZoom(visibleCandles * factor, 1);
             }, { passive: false });
-            updateZoomLabel();
 
             marketSelect.addEventListener('change', () => {
                 tradeSymbol.value = marketSelect.value;
