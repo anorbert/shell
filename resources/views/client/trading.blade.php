@@ -1377,9 +1377,9 @@
         .trading-chart-heading-actions { display:flex; align-items:center; gap:10px }
         .chart-mobile-toggle { display:none; border:1px solid #35445a; border-radius:7px; padding:6px 9px; background:#0b1421; color:#d9bd7e; font-size:10px; font-weight:800; cursor:pointer }
         @media (max-width: 720px) {
-            .trading-layout { display:block; margin-bottom:0; }
-            .trading-chart-panel { margin-bottom:12px; }
-            .market-chart-wrap { height:205px; }
+            .trading-layout { display:block; margin-bottom:0; padding-bottom:calc(88px + env(safe-area-inset-bottom)); }
+            .trading-chart-panel { margin-bottom:9px; }
+            .market-chart-wrap { height:180px; }
             .chart-mobile-toggle { display:inline-flex; align-items:center; justify-content:center; white-space:nowrap; }
             .trading-chart-heading-actions { gap:7px; }
             .trading-chart-heading #chart-health { font-size:8px; }
@@ -1404,7 +1404,7 @@
             .direction-buttons button { min-height:48px; padding:7px 10px; border-radius:9px; font-size:14px; }
             .direction-buttons button small { display:inline; margin-left:5px; font-size:9px; }
             #trade-feedback { grid-column:1 / -1; min-height:0; margin:0; font-size:10px; line-height:1.35; }
-            .trading-chart-panel.is-mobile-expanded .market-chart-wrap { height:min(54vh, 470px); }
+            .trading-chart-panel.is-mobile-expanded .market-chart-wrap { height:min(42vh, 360px); }
             .trading-chart-panel.is-mobile-expanded .chart-market-summary { display:flex; }
             .trading-chart-panel.is-mobile-expanded .chart-toolbar { display:flex; }
             .trading-chart-panel.is-mobile-expanded .chart-foot { display:flex; }
@@ -1414,7 +1414,8 @@
             #paper-trade-form { row-gap:6px; }
             #paper-trade-form > label { gap:2px; font-size:8.5px; }
             #trade-stake, #trade-duration { min-height:33px; padding:4px 7px; font-size:12px; }
-            .trading-chart-panel.is-mobile-expanded .market-chart-wrap { height:48vh; }
+            .market-chart-wrap { height:165px; }
+            .trading-chart-panel.is-mobile-expanded .market-chart-wrap { height:40vh; }
             .chart-candle-inspector { max-width:calc(100% - 72px); gap:5px 8px; padding:6px 8px; font-size:8px; }
         }
 
@@ -1721,10 +1722,12 @@
                     ctx.fillStyle = palette.text;
                     ctx.fillText(formatAxis(value), right + 10, py);
                 }
-                // Vertical time grid and time labels.
-                const timeCount = Math.min(6, visible.length);
+                // Keep the time axis readable on phones: fewer, shorter labels.
+                const compactAxis = width < 520;
+                const timeCount = Math.min(compactAxis ? 3 : 6, visible.length);
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'top';
+                ctx.font = compactAxis ? '9px DM Sans, sans-serif' : '11px DM Sans, sans-serif';
                 for (let i = 0; i < timeCount; i++) {
                     const index = Math.round(i * (visible.length - 1) / Math.max(1, timeCount - 1));
                     const x = left + index * step + step / 2;
@@ -1734,7 +1737,10 @@
                     ctx.lineTo(x, bottom);
                     ctx.stroke();
                     ctx.fillStyle = palette.text;
-                    ctx.fillText(formatTime(visible[index].time), x, bottom + 9);
+                    const axisTime = compactAxis
+                        ? new Date(visible[index].time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+                        : formatTime(visible[index].time);
+                    ctx.fillText(axisTime, x, bottom + 9);
                 }
                 // Candlesticks.
                 visible.forEach((c, i) => {
