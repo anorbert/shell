@@ -33,6 +33,19 @@ class NotificationController extends Controller
         ));
     }
 
+    public function markAllRead(Request $request)
+    {
+        $updated = DB::table('user_notifications')
+            ->where('user_id', $request->user()->id)
+            ->whereNull('read_at')
+            ->update([
+                'read_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+        return response()->json(['read' => true, 'updated' => $updated]);
+    }
+
     public function markRead(Request $request, int $notification)
     {
         $query = DB::table('user_notifications')
