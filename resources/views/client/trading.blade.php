@@ -1427,7 +1427,7 @@
             .trading-chart-heading #chart-health { font-size:8px; }
             .trade-ticket {
                 position:fixed; z-index:900; left:0; right:0; bottom:0;
-                width:100%; max-height: min(42vh, 300px); overflow-y:auto;
+                width:100%; max-height: min(48vh, 320px); overflow-y:auto;
                 margin:0; padding:12px 14px calc(12px + env(safe-area-inset-bottom));
                 border:1px solid rgba(201,169,106,.28); border-bottom:0;
                 border-radius:16px 16px 0 0;
