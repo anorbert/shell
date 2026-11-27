@@ -67,7 +67,10 @@
                 <div><span class="eyebrow">MARKET CHART</span>
                     <h2 id="chart-symbol">{{ $symbols[0] ?? 'BTCUSDT' }}</h2>
                 </div>
-                <span class="table-status verified" id="chart-health"><i class="live-dot"></i> CONNECTING</span>
+                <div class="trading-chart-heading-actions">
+                    <button type="button" class="chart-mobile-toggle" id="chart-mobile-toggle" aria-expanded="false" aria-controls="market-candles">Expand chart</button>
+                    <span class="table-status verified" id="chart-health"><i class="live-dot"></i> CONNECTING</span>
+                </div>
             </div>
             <div class="chart-market-summary" aria-live="polite">
                 <div class="chart-price-main"><strong id="chart-current-price">—</strong><span
@@ -1411,6 +1414,59 @@
                 padding: 10px
             }
         }
+
+        /* Mobile trading terminal: keep the existing ticket controls reachable. */
+        .trading-chart-heading-actions { display:flex; align-items:center; gap:10px }
+        .chart-mobile-toggle { display:none; border:1px solid #35445a; border-radius:7px; padding:6px 9px; background:#0b1421; color:#d9bd7e; font-size:10px; font-weight:800; cursor:pointer }
+        @media (max-width: 720px) {
+            .trading-layout { display:block; margin-bottom:190px; }
+            .trading-chart-panel { margin-bottom:14px; }
+            .market-chart-wrap { height:235px; }
+            .trading-chart-panel.is-mobile-collapsed .market-chart-wrap { height:112px; }
+            .trading-chart-panel.is-mobile-collapsed .chart-zoom,
+            .trading-chart-panel.is-mobile-collapsed .chart-foot,
+            .trading-chart-panel.is-mobile-collapsed .chart-market-summary,
+            .trading-chart-panel.is-mobile-collapsed .chart-toolbar { display:none; }
+            .chart-mobile-toggle { display:inline-flex; align-items:center; justify-content:center; white-space:nowrap; }
+            .trading-chart-heading-actions { gap:7px; }
+            .trading-chart-heading #chart-health { font-size:8px; }
+            .trade-ticket {
+                position:fixed; z-index:900; left:0; right:0; bottom:0;
+                width:100%; max-height: min(42vh, 300px); overflow-y:auto;
+                margin:0; padding:12px 14px calc(12px + env(safe-area-inset-bottom));
+                border:1px solid rgba(201,169,106,.28); border-bottom:0;
+                border-radius:16px 16px 0 0;
+                background:rgba(10,19,33,.98);
+                box-shadow:0 -12px 34px rgba(0,0,0,.38);
+                backdrop-filter:blur(16px);
+            }
+            .trade-ticket-head { margin:0 0 8px; align-items:center; }
+            .trade-ticket-head > div { display:none; }
+            .account-switch { width:auto; margin-left:auto; }
+            .account-switch-option { min-height:29px; padding:5px 12px; }
+            .wallet-summary { display:none; }
+            #paper-trade-form { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px 10px; }
+            #paper-trade-form > label { min-width:0; margin:0; gap:5px; font-size:10px; }
+            #paper-trade-form > label:has(#trade-symbol),
+            .stake-presets, .payout-preview, .trade-process-hint { display:none !important; }
+            #trade-stake, #trade-duration { min-height:39px; width:100%; padding:8px 10px; font-size:13px; }
+            .direction-buttons { grid-column:1 / -1; display:grid; grid-template-columns:1fr 1fr; gap:9px; margin:0; }
+            .direction-buttons button { min-height:48px; padding:7px 10px; border-radius:9px; font-size:14px; }
+            .direction-buttons button small { display:inline; margin-left:5px; font-size:9px; }
+            #trade-feedback { grid-column:1 / -1; min-height:0; margin:0; font-size:10px; line-height:1.35; }
+            .trading-chart-panel.is-mobile-expanded .market-chart-wrap { height:min(54vh, 470px); }
+            .trading-chart-panel.is-mobile-expanded .chart-market-summary { display:flex; }
+            .trading-chart-panel.is-mobile-expanded .chart-toolbar { display:flex; }
+            .trading-chart-panel.is-mobile-expanded .chart-zoom,
+            .trading-chart-panel.is-mobile-expanded .chart-foot { display:flex; }
+        }
+        @media (max-width: 420px) {
+            .trade-ticket { padding-inline:11px; }
+            .trading-chart-panel.is-mobile-collapsed .market-chart-wrap { height:96px; }
+            .trading-chart-panel.is-mobile-expanded .market-chart-wrap { height:48vh; }
+            .chart-candle-inspector { max-width:calc(100% - 72px); gap:5px 8px; padding:6px 8px; font-size:8px; }
+        }
+
     </style>
 @endpush
 
@@ -3212,5 +3268,19 @@
                 }
             });
         })();
+
+        // Mobile chart visibility is presentation-only; chart data and controls remain intact.
+        const mobileChartToggle = document.getElementById('chart-mobile-toggle');
+        const mobileChartPanel = document.querySelector('.trading-chart-panel');
+        if (mobileChartToggle && mobileChartPanel) {
+            mobileChartPanel.classList.add('is-mobile-collapsed');
+            mobileChartToggle.addEventListener('click', () => {
+                const expanded = mobileChartPanel.classList.toggle('is-mobile-expanded');
+                mobileChartPanel.classList.toggle('is-mobile-collapsed', !expanded);
+                mobileChartToggle.textContent = expanded ? 'Collapse chart' : 'Expand chart';
+                mobileChartToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+                if (typeof draw === 'function') window.requestAnimationFrame(() => draw());
+            });
+        }
     </script>
 @endpush
