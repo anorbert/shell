@@ -317,10 +317,7 @@
                     <label>Asset / network<select name="method_id" required><option value="">Choose network</option>@foreach($methods->where('withdrawals_enabled', true) as $method)<option value="{{ $method->id }}">{{ $method->asset }} · {{ $method->network }}</option>@endforeach</select></label>
                     <label>Amount (USD)<input name="amount_usd" type="number" min="1" step="0.00000001" required></label>
                     <label>Your receiving wallet address<input name="wallet_address" maxlength="255" required></label>
-                    <label>Memo / destination tag (if required)<input name="wallet_memo" maxlength="255"></label>
-                    <label>Note (optional)<textarea name="client_note" maxlength="1000"></textarea></label>
                     <button class="button button-primary" type="submit">Request withdrawal</button>
-                    <p class="muted">Funds are reserved when you submit. If rejected, the reserve is returned. A payout is marked paid after the administrator records the transaction hash.</p>
                 </form>
             @endif
         </section>
