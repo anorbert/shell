@@ -1415,25 +1415,23 @@
             }
         }
 
-        /* Mobile trading terminal: keep the existing ticket controls reachable. */
+        /* Mobile trading terminal: chart first, compact ticket immediately below. */
         .trading-chart-heading-actions { display:flex; align-items:center; gap:10px }
         .chart-mobile-toggle { display:none; border:1px solid #35445a; border-radius:7px; padding:6px 9px; background:#0b1421; color:#d9bd7e; font-size:10px; font-weight:800; cursor:pointer }
         @media (max-width: 720px) {
-            .trading-layout { display:block; margin-bottom:190px; }
-            .trading-chart-panel { margin-bottom:14px; }
+            .trading-layout { display:block; margin-bottom:0; }
+            .trading-chart-panel { margin-bottom:12px; }
             .market-chart-wrap { height:205px; }
             .chart-mobile-toggle { display:inline-flex; align-items:center; justify-content:center; white-space:nowrap; }
             .trading-chart-heading-actions { gap:7px; }
             .trading-chart-heading #chart-health { font-size:8px; }
             .trade-ticket {
-                position:fixed; z-index:900; left:0; right:0; bottom:0;
-                width:100%; max-height: min(48vh, 320px); overflow-y:auto;
-                margin:0; padding:12px 14px calc(12px + env(safe-area-inset-bottom));
-                border:1px solid rgba(201,169,106,.28); border-bottom:0;
-                border-radius:16px 16px 0 0;
+                position:relative; z-index:1; inset:auto;
+                width:100%; max-height:none; overflow:visible;
+                margin:0 0 16px; padding:12px 14px;
+                border:1px solid rgba(201,169,106,.28); border-radius:13px;
                 background:rgba(10,19,33,.98);
-                box-shadow:0 -12px 34px rgba(0,0,0,.38);
-                backdrop-filter:blur(16px);
+                box-shadow:0 8px 22px rgba(0,0,0,.2);
             }
             .trade-ticket-head { margin:0 0 8px; align-items:center; }
             .trade-ticket-head > div { display:none; }
@@ -1456,7 +1454,7 @@
             .trading-chart-panel.is-mobile-expanded .chart-foot { display:flex; }
         }
         @media (max-width: 420px) {
-            .trade-ticket { padding-inline:11px; }
+            .trade-ticket { padding:11px; }
             .trading-chart-panel.is-mobile-expanded .market-chart-wrap { height:48vh; }
             .chart-candle-inspector { max-width:calc(100% - 72px); gap:5px 8px; padding:6px 8px; font-size:8px; }
         }
