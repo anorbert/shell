@@ -22,7 +22,7 @@
 .notification-page .np-new{padding:2px 6px;border-radius:4px;background:rgba(105,184,230,.12);color:#8bcdf1;font-size:9px;font-weight:800;letter-spacing:.04em}
 .notification-page .np-body{margin:0;color:var(--muted,#91a0b5);font-size:12px;line-height:1.65;overflow-wrap:anywhere;white-space:pre-line}
 .notification-page .np-time{display:block;margin-top:7px;color:var(--muted,#8494a8);font-size:11px}
-.notification-page .np-action{align-self:center}
+.notification-page .np-action{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:8px;align-self:center}
 .notification-page .np-mark{padding:6px 0;border:0;background:none;color:#8bcdf1;font-size:11px;font-weight:700;cursor:pointer}
 .notification-page .np-mark:hover{color:#c0e7ff;text-decoration:underline}
 .notification-page .np-mark:disabled{opacity:.55;cursor:wait}
@@ -31,7 +31,7 @@
 .notification-page .np-empty strong{display:block;margin-bottom:6px;font-size:14px}
 .notification-page .np-empty span{color:var(--muted,#91a0b5);font-size:12px}
 .notification-page .np-pagination{padding-top:16px}
-@media(max-width:600px){.notification-page .np-heading{align-items:flex-start}.notification-page .np-item{grid-template-columns:9px minmax(0,1fr);gap:11px;padding:16px 3px}.notification-page .np-action{grid-column:2;justify-self:start;margin-top:2px}.notification-page .np-mark{padding:3px 0}}
+@media(max-width:600px){.notification-page .np-heading{align-items:flex-start}.notification-page .np-item{grid-template-columns:9px minmax(0,1fr);gap:11px;padding:16px 3px}.notification-page .np-action{grid-column:2;flex-direction:row;align-items:center;justify-content:space-between;justify-self:stretch;width:100%;margin-top:2px}.notification-page .np-mark{padding:3px 0}}
 </style>
 
 <div class="notification-page">
@@ -50,9 +50,9 @@
                         @if(!$n->read_at)<span class="np-new">NEW</span>@endif
                     </h3>
                     <p class="np-body">{{ $n->body }}</p>
-                    <time class="np-time" datetime="{{ \Illuminate\Support\Carbon::parse($n->created_at)->toIso8601String() }}">{{ \Illuminate\Support\Carbon::parse($n->created_at)->format('M j, Y · g:i A') }}</time>
                 </div>
                 <div class="np-action">
+                    <time class="np-time" datetime="{{ \Illuminate\Support\Carbon::parse($n->created_at)->toIso8601String() }}">{{ \Illuminate\Support\Carbon::parse($n->created_at)->format('M j, Y · g:i A') }}</time>
                     @if(!$n->read_at)
                         <button class="np-mark" type="button" data-mark-read="{{ $n->id }}" data-read-url="{{ route('notifications.read', ['notification' => $n->id]) }}">Mark as read</button>
                     @else
