@@ -3,19 +3,6 @@
 @section('eyebrow', 'FIXED-TIME OPTIONS SIMULATOR')
 @section('heading', 'Trading terminal')
 @section('content')
-    <x-client-attention :title="$selectedAccount === 'real' ? 'Real-money trading' : 'Demo trading account'" :tag="$selectedAccount === 'real' ? 'REAL ACCOUNT' : 'PRACTICE ACCOUNT'">
-        @if ($selectedAccount === 'real')
-            @if ($hasConfirmedDeposit)
-            <p>Your deposit has been verified and credited. You can use your available real-wallet balance to place real positions.</p>
-        @else
-            <p>Your real account is ready for funding. Make your first deposit to qualify for real-money trading. Once your payment is verified and credited, you can use your available balance to place positions.</p>
-        @endif
-        @else
-            <p>Practise fixed-time UP and DOWN positions with demo credits. Demo trading is independent of deposits and KYC; positions settle against server-captured market quotes.</p>
-        @endif
-    </x-client-attention>
-
-
     @if ($selectedAccount === 'real' && ! $hasConfirmedDeposit)
         <details class="real-activation real-activation-collapsible">
             <summary class="real-activation-summary">
@@ -66,6 +53,17 @@
             <div class="panel-head trading-chart-heading">
                 <div><span class="eyebrow">MARKET CHART</span></div>
                 <div class="trading-chart-heading-actions">
+                    <x-client-attention :title="$selectedAccount === 'real' ? 'Real-money trading' : 'Demo trading account'" :tag="$selectedAccount === 'real' ? 'REAL ACCOUNT' : 'PRACTICE ACCOUNT'">
+                        @if ($selectedAccount === 'real')
+                            @if ($hasConfirmedDeposit)
+                                <p>Your deposit has been verified and credited. You can use your available real-wallet balance to place real positions.</p>
+                            @else
+                                <p>Your real account is ready for funding. Make your first deposit to qualify for real-money trading. Once your payment is verified and credited, you can use your available balance to place positions.</p>
+                            @endif
+                        @else
+                            <p>Practise fixed-time UP and DOWN positions with demo credits. Demo trading is independent of deposits and KYC; positions settle against server-captured market quotes.</p>
+                        @endif
+                    </x-client-attention>
                     <button type="button" class="chart-mobile-toggle" id="chart-mobile-toggle" aria-expanded="false" aria-controls="market-candles">Expand chart</button>
                     <span class="table-status verified" id="chart-health"><i class="live-dot"></i> CONNECTING</span>
                 </div>
