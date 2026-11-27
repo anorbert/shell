@@ -1,7 +1,6 @@
 @extends('layouts.app')
 @section('title','Security') @section('eyebrow','ACCOUNT PROTECTION') @section('heading','Security')
 @section('content')
-<x-client-attention title="Protect your account" tag="SECURITY"><p>Password changes and session controls are available here. Two-factor authentication is not enabled in this release; do not assume your account has 2FA protection.</p></x-client-attention>
 <section class="panel">
     <div class="panel-head">
         <div><span class="eyebrow">ACTIVE SESSIONS</span><h2>Signed-in devices</h2></div>
@@ -23,12 +22,12 @@
                         elseif (str_contains($ua, 'chrome/') || str_contains($ua, 'crios/')) { $browser = 'Google Chrome'; $browserKey = 'chrome'; $browserMark = 'c'; }
                         elseif (str_contains($ua, 'safari/')) { $browser = 'Safari'; $browserKey = 'safari'; $browserMark = 's'; }
                         else { $browser = 'Unknown browser'; $browserKey = 'unknown'; $browserMark = '?'; }
-                        if (str_contains($ua, 'android')) { $device = 'Android'; $deviceKey = 'android'; }
-                        elseif (str_contains($ua, 'iphone') || str_contains($ua, 'ipad') || str_contains($ua, 'ipod')) { $device = 'Apple device'; $deviceKey = 'apple'; }
-                        elseif (str_contains($ua, 'windows')) { $device = 'Windows PC'; $deviceKey = 'windows'; }
-                        elseif (str_contains($ua, 'macintosh') || str_contains($ua, 'mac os')) { $device = 'Mac'; $deviceKey = 'mac'; }
-                        elseif (str_contains($ua, 'linux')) { $device = 'Linux device'; $deviceKey = 'linux'; }
-                        else { $device = 'Unknown device'; $deviceKey = 'unknown'; }
+                        if (str_contains($ua, 'android')) { $device = 'Android'; }
+                        elseif (str_contains($ua, 'iphone') || str_contains($ua, 'ipad') || str_contains($ua, 'ipod')) { $device = 'Apple device'; }
+                        elseif (str_contains($ua, 'windows')) { $device = 'Windows PC'; }
+                        elseif (str_contains($ua, 'macintosh') || str_contains($ua, 'mac os')) { $device = 'Mac'; }
+                        elseif (str_contains($ua, 'linux')) { $device = 'Linux device'; }
+                        else { $device = 'Unknown device'; }
                     @endphp
                     <tr>
                         <td>
