@@ -1391,10 +1391,9 @@
                 background:rgba(10,19,33,.98);
                 box-shadow:0 8px 22px rgba(0,0,0,.2);
             }
-            .trade-ticket-head { margin:0 0 8px; align-items:center; }
-            .trade-ticket-head > div { display:none; }
-            .account-switch { width:auto; margin-left:auto; }
-            .account-switch-option { min-height:29px; padding:5px 12px; }
+            /* Account mode is already switchable from the mobile top navigation. */
+            .trade-ticket-head,
+            .account-switch { display:none; }
             .wallet-summary { display:none; }
             #paper-trade-form { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px 10px; }
             #paper-trade-form > label { min-width:0; margin:0; gap:5px; font-size:10px; }
