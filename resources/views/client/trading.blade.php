@@ -1379,8 +1379,9 @@
         @media (max-width: 720px) {
             .trading-layout { display:block; margin-bottom:0; padding-bottom:calc(88px + env(safe-area-inset-bottom)); }
             .trading-chart-panel { margin-bottom:9px; }
-            .trading-chart-panel > .trading-chart-heading { min-height:0; padding:8px 12px; gap:8px; }
+            .trading-chart-panel > .trading-chart-heading { min-height:0; margin-bottom:0; padding:6px 12px 2px; gap:8px; }
             .trading-chart-heading .eyebrow { font-size:9px; letter-spacing:.12em; }
+            .trading-chart-panel > .chart-market-summary { margin-top:0; padding-top:4px; }
             .market-chart-wrap { height:270px; }
             .chart-mobile-toggle { display:inline-flex; align-items:center; justify-content:center; white-space:nowrap; padding:5px 7px; font-size:9px; }
             .trading-chart-heading-actions { gap:6px; }
@@ -1422,9 +1423,9 @@
             .trading-chart-panel.is-mobile-expanded .chart-foot { display:flex; }
         }
         @media (max-width: 420px) {
-            .trading-chart-panel > .trading-chart-heading { padding:7px 10px; }
+            .trading-chart-panel > .trading-chart-heading { padding:5px 10px 1px; }
             .market-chart-wrap { height:250px; }
-            .chart-market-summary { padding:6px 10px; }
+            .chart-market-summary { padding:3px 10px 5px; }
             .chart-price-main { gap:5px 7px; }
             .chart-price-main h2 { font-size:10px; }
             .chart-price-main strong { font-size:18px; }
