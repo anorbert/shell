@@ -176,12 +176,12 @@
         <div class="panel-head">
             <div><span class="eyebrow">YOUR POSITIONS</span>
                 <h2>Trade history</h2>
-            </div><a class="button button-secondary" href="{{ route('activity.index', ['account' => $selectedAccount]) }}"><svg class="nav-icon">
+            </div><a class="button button-secondary trade-history-action" href="{{ route('activity.index', ['account' => $selectedAccount]) }}" aria-label="View all trade history" title="View all trade history"><svg class="nav-icon" aria-hidden="true">
                     <use href="#i-clock" />
-                </svg> View all trade history</a><a class="button button-secondary"
-                href="{{ route('portfolio.index') }}"><svg class="nav-icon">
+                </svg><span>View all trade history</span></a><a class="button button-secondary trade-history-action"
+                href="{{ route('portfolio.index') }}" aria-label="View portfolio" title="View portfolio"><svg class="nav-icon" aria-hidden="true">
                     <use href="#i-briefcase" />
-                </svg> View portfolio</a>
+                </svg><span>View portfolio</span></a>
         </div>
         <div class="table-wrap">
             <table class="data-table">
@@ -1370,6 +1370,38 @@
 
             .position-details-grid>div {
                 padding: 10px
+            }
+        }
+
+        @media (max-width: 720px) {
+            .trade-history-panel > .panel-head {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: nowrap;
+            }
+            .trade-history-panel > .panel-head > div {
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+            .trade-history-panel .trade-history-action {
+                flex: 0 0 36px;
+                width: 36px;
+                min-width: 36px;
+                height: 36px;
+                min-height: 36px;
+                padding: 0;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0;
+                font-size: 0;
+            }
+            .trade-history-panel .trade-history-action span { display: none; }
+            .trade-history-panel .trade-history-action .nav-icon {
+                width: 17px;
+                height: 17px;
+                margin: 0;
             }
         }
 
