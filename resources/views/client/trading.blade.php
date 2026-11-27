@@ -1492,7 +1492,9 @@
                 retryTimer = null,
                 reconnectAttempts = 0,
                 streamGeneration = 0,
-                tickerFallbackBusy = false;
+                tickerFallbackBusy = false,
+                chartRenderTimer = null,
+                pendingLivePriceEvent = null;
             intervalButtons.forEach(button => {
                 const active = button.dataset.interval === interval;
                 button.classList.toggle('active', active);
@@ -1853,6 +1855,11 @@
 
             function closeLiveStream() {
                 streamGeneration++;
+                if (chartRenderTimer) {
+                    window.clearTimeout(chartRenderTimer);
+                    chartRenderTimer = null;
+                }
+                pendingLivePriceEvent = null;
                 reconnectAttempts = 0;
                 if (reconnectTimer) {
                     window.clearTimeout(reconnectTimer);
@@ -1903,6 +1910,29 @@
                 setText('chart-updated', 'Live · ' + new Date().toLocaleTimeString());
             }
 
+            // Binance's trade stream can emit many ticks per second. Keep every
+            // tick in the candle model, but batch expensive canvas and DOM work.
+            // This preserves the latest price while limiting chart paints to ~8 FPS.
+            function scheduleLiveChartRender(symbol, price, timestamp) {
+                pendingLivePriceEvent = { symbol, price, timestamp };
+                if (chartRenderTimer || document.hidden) return;
+
+                chartRenderTimer = window.setTimeout(() => {
+                    chartRenderTimer = null;
+                    const pending = pendingLivePriceEvent;
+                    pendingLivePriceEvent = null;
+                    if (!pending || document.hidden || marketSelect.value !== pending.symbol) return;
+
+                    updateSummary();
+                    draw();
+                    window.dispatchEvent(new CustomEvent('shell:market-price', {
+                        detail: { symbol: pending.symbol, price: pending.price, source: 'websocket' }
+                    }));
+                    setText('chart-health', 'LIVE');
+                    setText('chart-updated', 'Live tick · ' + new Date(pending.timestamp).toLocaleTimeString());
+                }, 120);
+            }
+
             function applyLiveTrade(trade) {
                 const price = Number(trade.p);
                 const timestamp = Number(trade.T || Date.now());
@@ -1933,13 +1963,7 @@
 
                 if (candles.length > 1000) candles.shift();
                 failed = false;
-                updateSummary();
-                draw();
-                window.dispatchEvent(new CustomEvent('shell:market-price', {
-                    detail: { symbol: marketSelect.value, price: value, source: 'websocket' }
-                }));
-                setText('chart-health', 'LIVE');
-                setText('chart-updated', 'Live tick · ' + new Date(timestamp).toLocaleTimeString());
+                scheduleLiveChartRender(marketSelect.value, value, timestamp);
             }
 
             function connectLiveStream(symbol, selectedInterval, generation, hostIndex = 0) {
@@ -2342,7 +2366,18 @@
                 window.addEventListener('resize', draw);
             }
             draw(); // Paint the chart frame immediately, before the first network response.
-            loadCandles();
+            if (!document.hidden) loadCandles();
+
+            // A background trading tab does not need its own market socket or
+            // continuous chart work. Rehydrate candles and reconnect when visible.
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    closeLiveStream();
+                    return;
+                }
+                loadCandles();
+            });
+
             // The market WebSocket is the primary live price source. Do not
             // add a periodic ticker fetch that makes the terminal feel delayed.
             window.addEventListener('beforeunload', closeLiveStream);
@@ -2908,7 +2943,9 @@
                     if (positionClockTimer) window.clearInterval(positionClockTimer);
                     // The live market stream updates indicative prices. Expiry itself
                     // triggers an immediate server settlement request; no 2-second poll.
-                    positionClockTimer = window.setInterval(updatePositionClock, 100);
+                    // The countdown displays whole seconds; a 100ms interval did
+                // ten times more work without making the displayed clock better.
+                positionClockTimer = window.setInterval(updatePositionClock, 1000);
                     await pollPosition();
                 } catch (error) {
                     setPositionText('position-result', (error.message || 'Connection error') +
