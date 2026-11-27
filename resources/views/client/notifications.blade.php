@@ -11,6 +11,11 @@
 .notification-page .np-heading p{margin:4px 0 0;color:var(--muted,#91a0b5);font-size:13px;line-height:1.5}
 .notification-page .np-count{flex:0 0 auto;color:var(--muted,#91a0b5);font-size:12px}
 .notification-page .np-count strong{color:var(--text,#eef3f8);font-weight:750}
+.notification-page .np-heading-actions{display:flex;align-items:center;gap:14px}
+.notification-page .np-mark-all{padding:7px 0;border:0;background:none;color:#8bcdf1;font-size:11px;font-weight:750;white-space:nowrap;cursor:pointer}
+.notification-page .np-mark-all:hover{color:#c0e7ff;text-decoration:underline}
+.notification-page .np-mark-all:disabled{opacity:.55;cursor:wait}
+.notification-page .np-mark-all[hidden]{display:none}
 .notification-page .np-list{border-top:1px solid var(--line,#26364a)}
 .notification-page .np-item{display:grid;grid-template-columns:10px minmax(0,1fr) auto;align-items:start;gap:14px;padding:19px 8px;border-bottom:1px solid var(--line,#26364a)}
 .notification-page .np-item.is-unread{background:linear-gradient(90deg,rgba(105,184,230,.055),transparent 70%)}
@@ -31,13 +36,18 @@
 .notification-page .np-empty strong{display:block;margin-bottom:6px;font-size:14px}
 .notification-page .np-empty span{color:var(--muted,#91a0b5);font-size:12px}
 .notification-page .np-pagination{padding-top:16px}
-@media(max-width:600px){.notification-page .np-heading{align-items:flex-start}.notification-page .np-item{grid-template-columns:9px minmax(0,1fr);gap:11px;padding:16px 3px}.notification-page .np-action{grid-column:2;flex-direction:row;align-items:center;justify-content:space-between;justify-self:stretch;width:100%;margin-top:2px}.notification-page .np-mark{padding:3px 0}}
+@media(max-width:600px){.notification-page .np-heading{align-items:flex-start}.notification-page .np-heading-actions{gap:10px;flex-wrap:wrap;justify-content:flex-end}.notification-page .np-item{grid-template-columns:9px minmax(0,1fr);gap:11px;padding:16px 3px}.notification-page .np-action{grid-column:2;flex-direction:row;align-items:center;justify-content:space-between;justify-self:stretch;width:100%;margin-top:2px}.notification-page .np-mark{padding:3px 0}}
 </style>
 
 <div class="notification-page">
     <div class="np-heading">
         <p>Your latest account updates and activity.</p>
-        <span class="np-count"><strong>{{ number_format($unreadCount) }}</strong> unread</span>
+        <div class="np-heading-actions">
+            <span class="np-count"><strong id="np-unread-count">{{ number_format($unreadCount) }}</strong> unread</span>
+            @if($unreadCount > 0)
+                <button class="np-mark-all" id="np-mark-all" type="button" data-read-all-url="{{ route('notifications.read-all') }}">Mark all as read</button>
+            @endif
+        </div>
     </div>
 
     <div class="np-list" aria-label="Notifications">
@@ -76,6 +86,37 @@
 
 @push('scripts')
 <script>
+const markAllButton = document.getElementById('np-mark-all');
+markAllButton?.addEventListener('click', async () => {
+    if (markAllButton.disabled) return;
+    markAllButton.disabled = true;
+    try {
+        await window.shellAjax(markAllButton.dataset.readAllUrl, { method: 'POST' });
+
+        document.querySelectorAll('[data-notification].is-unread').forEach(row => {
+            row.classList.remove('is-unread');
+            row.classList.add('is-read');
+            row.querySelector('.np-new')?.remove();
+
+            const action = row.querySelector('.np-action');
+            const markButton = action?.querySelector('[data-mark-read]');
+            if (markButton) {
+                const readState = document.createElement('span');
+                readState.className = 'np-read';
+                readState.textContent = 'Read';
+                markButton.replaceWith(readState);
+            }
+        });
+
+        const unreadCount = document.getElementById('np-unread-count');
+        if (unreadCount) unreadCount.textContent = '0';
+        markAllButton.remove();
+    } catch (error) {
+        window.shellToast?.(error.message || 'Could not mark notifications as read.', 'error');
+        markAllButton.disabled = false;
+    }
+});
+
 document.querySelectorAll('[data-mark-read]').forEach(button => {
     button.addEventListener('click', async () => {
         if (button.disabled) return;
