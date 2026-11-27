@@ -1508,6 +1508,7 @@
                 hoveredCandleIndex = null,
                 visibleCandles = 80,
                 viewOffset = 0,
+                verticalZoom = 1,
                 dragState = null;
             const chartEntryPositions = new Map();
             document.querySelectorAll('tr[data-open-trade][data-entry-symbol][data-entry-price]').forEach(row => {
@@ -1721,8 +1722,10 @@
                     max = Math.max(...values);
                 const rawRange = max - min || Math.max(Math.abs(max) * .001, 1e-8);
                 const padding = rawRange * .09;
-                min -= padding;
-                max += padding;
+                const midpoint = (min + max) / 2;
+                const halfRange = (rawRange / 2 + padding) / verticalZoom;
+                min = midpoint - halfRange;
+                max = midpoint + halfRange;
                 const range = max - min;
                 const y = value => bottom - ((value - min) / range) * chartHeight;
                 const step = chartWidth / visible.length;
@@ -2277,7 +2280,17 @@
             canvas.addEventListener('wheel', event => {
                 if (!candles.length) return;
                 event.preventDefault();
-                // Keep the newest/right edge anchored while zooming, like a trading terminal.
+                const rect = canvas.getBoundingClientRect();
+                const pointerX = event.clientX - rect.left;
+                // The right-hand price scale controls vertical price zoom.
+                // The candle plot continues to control horizontal time zoom.
+                if (plot && pointerX >= plot.right) {
+                    const factor = event.deltaY < 0 ? 1.12 : .89;
+                    verticalZoom = Math.max(.5, Math.min(5, verticalZoom * factor));
+                    draw();
+                    return;
+                }
+                // Keep the newest/right edge anchored while zooming the candle history.
                 const factor = event.deltaY < 0 ? .88 : 1.14;
                 setZoom(visibleCandles * factor, 1);
             }, { passive: false });
