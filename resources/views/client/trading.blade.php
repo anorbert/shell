@@ -1386,7 +1386,7 @@
             .trade-ticket {
                 position:relative; z-index:1; inset:auto;
                 width:100%; max-height:none; overflow:visible;
-                margin:0 0 16px; padding:12px 14px;
+                margin:0 0 16px; padding:7px 12px 10px;
                 border:1px solid rgba(201,169,106,.28); border-radius:13px;
                 background:rgba(10,19,33,.98);
                 box-shadow:0 8px 22px rgba(0,0,0,.2);
@@ -1396,10 +1396,10 @@
             .account-switch { display:none; }
             .wallet-summary { display:none; }
             #paper-trade-form { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px 10px; }
-            #paper-trade-form > label { min-width:0; margin:0; gap:5px; font-size:10px; }
+            #paper-trade-form > label { min-width:0; margin:0; gap:3px; font-size:9px; }
             #paper-trade-form > label:has(#trade-symbol),
             .stake-presets, .payout-preview, .trade-process-hint { display:none !important; }
-            #trade-stake, #trade-duration { min-height:39px; width:100%; padding:8px 10px; font-size:13px; }
+            #trade-stake, #trade-duration { min-height:35px; width:100%; padding:5px 8px; font-size:12px; }
             .direction-buttons { grid-column:1 / -1; display:grid; grid-template-columns:1fr 1fr; gap:9px; margin:0; }
             .direction-buttons button { min-height:48px; padding:7px 10px; border-radius:9px; font-size:14px; }
             .direction-buttons button small { display:inline; margin-left:5px; font-size:9px; }
@@ -1410,7 +1410,10 @@
             .trading-chart-panel.is-mobile-expanded .chart-foot { display:flex; }
         }
         @media (max-width: 420px) {
-            .trade-ticket { padding:11px; }
+            .trade-ticket { padding:6px 9px 9px; }
+            #paper-trade-form { row-gap:6px; }
+            #paper-trade-form > label { gap:2px; font-size:8.5px; }
+            #trade-stake, #trade-duration { min-height:33px; padding:4px 7px; font-size:12px; }
             .trading-chart-panel.is-mobile-expanded .market-chart-wrap { height:48vh; }
             .chart-candle-inspector { max-width:calc(100% - 72px); gap:5px 8px; padding:6px 8px; font-size:8px; }
         }
