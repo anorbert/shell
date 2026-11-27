@@ -1421,12 +1421,7 @@
         @media (max-width: 720px) {
             .trading-layout { display:block; margin-bottom:190px; }
             .trading-chart-panel { margin-bottom:14px; }
-            .market-chart-wrap { height:235px; }
-            .trading-chart-panel.is-mobile-collapsed .market-chart-wrap { height:112px; }
-            .trading-chart-panel.is-mobile-collapsed .chart-zoom,
-            .trading-chart-panel.is-mobile-collapsed .chart-foot,
-            .trading-chart-panel.is-mobile-collapsed .chart-market-summary,
-            .trading-chart-panel.is-mobile-collapsed .chart-toolbar { display:none; }
+            .market-chart-wrap { height:205px; }
             .chart-mobile-toggle { display:inline-flex; align-items:center; justify-content:center; white-space:nowrap; }
             .trading-chart-heading-actions { gap:7px; }
             .trading-chart-heading #chart-health { font-size:8px; }
@@ -1462,7 +1457,6 @@
         }
         @media (max-width: 420px) {
             .trade-ticket { padding-inline:11px; }
-            .trading-chart-panel.is-mobile-collapsed .market-chart-wrap { height:96px; }
             .trading-chart-panel.is-mobile-expanded .market-chart-wrap { height:48vh; }
             .chart-candle-inspector { max-width:calc(100% - 72px); gap:5px 8px; padding:6px 8px; font-size:8px; }
         }
@@ -3273,10 +3267,8 @@
         const mobileChartToggle = document.getElementById('chart-mobile-toggle');
         const mobileChartPanel = document.querySelector('.trading-chart-panel');
         if (mobileChartToggle && mobileChartPanel) {
-            mobileChartPanel.classList.add('is-mobile-collapsed');
             mobileChartToggle.addEventListener('click', () => {
                 const expanded = mobileChartPanel.classList.toggle('is-mobile-expanded');
-                mobileChartPanel.classList.toggle('is-mobile-collapsed', !expanded);
                 mobileChartToggle.textContent = expanded ? 'Collapse chart' : 'Expand chart';
                 mobileChartToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
                 if (typeof draw === 'function') window.requestAnimationFrame(() => draw());
