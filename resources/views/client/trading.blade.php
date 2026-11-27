@@ -64,17 +64,18 @@
     <div class="trading-layout">
         <section class="panel trading-chart-panel">
             <div class="panel-head trading-chart-heading">
-                <div><span class="eyebrow">MARKET CHART</span>
-                    <h2 id="chart-symbol">{{ $symbols[0] ?? 'BTCUSDT' }}</h2>
-                </div>
+                <div><span class="eyebrow">MARKET CHART</span></div>
                 <div class="trading-chart-heading-actions">
                     <button type="button" class="chart-mobile-toggle" id="chart-mobile-toggle" aria-expanded="false" aria-controls="market-candles">Expand chart</button>
                     <span class="table-status verified" id="chart-health"><i class="live-dot"></i> CONNECTING</span>
                 </div>
             </div>
             <div class="chart-market-summary" aria-live="polite">
-                <div class="chart-price-main"><strong id="chart-current-price">—</strong><span
-                        id="chart-price-change">Awaiting price</span></div>
+                <div class="chart-price-main">
+                    <h2 id="chart-symbol">{{ $symbols[0] ?? 'BTCUSDT' }}</h2>
+                    <strong id="chart-current-price">—</strong>
+                    <span id="chart-price-change">Awaiting price</span>
+                </div>
             </div>
             <div class="chart-toolbar">
                 <label>Market<select id="chart-market">
@@ -689,8 +690,17 @@
         }
 
         .chart-price-main {
-            display: grid;
-            gap: 5px
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 8px 14px
+        }
+
+        .chart-price-main h2 {
+            margin: 0;
+            color: #dce5f1;
+            font: 750 14px/1.2 'Manrope';
+            letter-spacing: .015em
         }
 
         .chart-price-main strong {
