@@ -46,7 +46,7 @@
                             </div>
                         </td>
                         <td>{{ $session->ip_address }}</td>
-                        <td>{{ \\Illuminate\\Support\\Carbon::createFromTimestamp($session->last_activity)->toDateTimeString() }}</td>
+                        <td>{{ \Illuminate\Support\Carbon::createFromTimestamp($session->last_activity)->toDateTimeString() }}</td>
                         <td>@if($session->id===$currentSessionId)<span class="table-status verified">CURRENT</span>@else<span class="table-status pending">OTHER</span>@endif</td>
                         <td>@if($session->id!==$currentSessionId)<button class="button button-quiet" type="button" data-revoke-session="{{ $session->id }}">Revoke</button>@else — @endif</td>
                     </tr>
