@@ -1032,3 +1032,56 @@ input,select,textarea{accent-color:var(--gold)}
 .auth-password-icon-hide{display:none}
 .auth-password-toggle.is-visible .auth-password-icon-show{display:none}
 .auth-password-toggle.is-visible .auth-password-icon-hide{display:block}
+
+
+/* Authentication backdrop: decorative, non-live candlestick chart atmosphere. */
+.auth-shell{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  background:
+    radial-gradient(ellipse at 50% 12%,rgba(35,67,94,.58) 0,rgba(13,25,40,.34) 38%,transparent 70%),
+    linear-gradient(145deg,#080e19 0%,#0a1320 48%,#080d18 100%);
+}
+.auth-shell::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:0;
+  pointer-events:none;
+  opacity:.52;
+  background-image:
+    linear-gradient(rgba(119,151,184,.075) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(119,151,184,.075) 1px,transparent 1px),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='xMidYMid slice'%3E%3Cg fill='none' stroke-linecap='round'%3E%3Cpath d='M0 610 C120 575 170 640 270 555 S430 500 520 535 S680 430 780 465 S940 380 1040 425 S1220 300 1440 345' stroke='%235b9cba' stroke-opacity='.22' stroke-width='2'/%3E%3Cg stroke-width='2'%3E%3Cpath d='M85 330v95m-9-68h18v34H76z' stroke='%2359c69c' fill='%2359c69c' fill-opacity='.58'/%3E%3Cpath d='M145 300v118m-9-85h18v42h-18z' stroke='%23d2ad66' fill='%23d2ad66' fill-opacity='.55'/%3E%3Cpath d='M205 345v105m-9-74h18v38h-18z' stroke='%2359c69c' fill='%2359c69c' fill-opacity='.58'/%3E%3Cpath d='M265 265v145m-9-105h18v54h-18z' stroke='%2359c69c' fill='%2359c69c' fill-opacity='.58'/%3E%3Cpath d='M325 235v125m-9-89h18v48h-18z' stroke='%23d2ad66' fill='%23d2ad66' fill-opacity='.55'/%3E%3Cpath d='M385 255v155m-9-119h18v63h-18z' stroke='%2359c69c' fill='%2359c69c' fill-opacity='.58'/%3E%3Cpath d='M445 205v130m-9-96h18v51h-18z' stroke='%2359c69c' fill='%2359c69c' fill-opacity='.58'/%3E%3Cpath d='M505 220v155m-9-116h18v64h-18z' stroke='%23d2ad66' fill='%23d2ad66' fill-opacity='.55'/%3E%3Cpath d='M565 185v120m-9-87h18v43h-18z' stroke='%2359c69c' fill='%2359c69c' fill-opacity='.58'/%3E%3Cpath d='M625 150v145m-9-108h18v56h-18z' stroke='%2359c69c' fill='%2359c69c' fill-opacity='.58'/%3E%3Cpath d='M685 175v155m-9-118h18v62h-18z' stroke='%23d2ad66' fill='%23d2ad66' fill-opacity='.55'/%3E%3Cpath d='M745 130v125m-9-91h18v48h-18z' stroke='%2359c69c' fill='%2359c69c' fill-opacity='.58'/%3E%3Cpath d='M805 105v145m-9-107h18v57h-18z' stroke='%2359c69c' fill='%2359c69c' fill-opacity='.58'/%3E%3Cpath d='M865 135v160m-9-122h18v67h-18z' stroke='%23d2ad66' fill='%23d2ad66' fill-opacity='.55'/%3E%3Cpath d='M925 95v125m-9-91h18v48h-18z' stroke='%2359c69c' fill='%2359c69c' fill-opacity='.58'/%3E%3Cpath d='M985 115v155m-9-117h18v65h-18z' stroke='%2359c69c' fill='%2359c69c' fill-opacity='.58'/%3E%3Cpath d='M1045 80v135m-9-98h18v52h-18z' stroke='%23d2ad66' fill='%23d2ad66' fill-opacity='.55'/%3E%3Cpath d='M1105 65v155m-9-116h18v65h-18z' stroke='%2359c69c' fill='%2359c69c' fill-opacity='.58'/%3E%3Cpath d='M1165 95v130m-9-96h18v51h-18z' stroke='%2359c69c' fill='%2359c69c' fill-opacity='.58'/%3E%3Cpath d='M1225 45v150m-9-112h18v62h-18z' stroke='%23d2ad66' fill='%23d2ad66' fill-opacity='.55'/%3E%3Cpath d='M1285 35v135m-9-100h18v54h-18z' stroke='%2359c69c' fill='%2359c69c' fill-opacity='.58'/%3E%3Cpath d='M1345 55v145m-9-108h18v60h-18z' stroke='%2359c69c' fill='%2359c69c' fill-opacity='.58'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  background-size:64px 64px,64px 64px,cover;
+  background-position:center,center,center;
+  background-repeat:repeat,repeat,no-repeat;
+  mask-image:linear-gradient(to bottom,black 0%,rgba(0,0,0,.88) 58%,transparent 100%);
+}
+.auth-shell::after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  width:min(760px,90vw);
+  height:420px;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  background:radial-gradient(ellipse,rgba(34,91,119,.16) 0%,rgba(16,39,60,.08) 42%,transparent 72%);
+}
+.auth-shell>*{position:relative;z-index:1}
+.auth-card{
+  background:linear-gradient(145deg,rgba(17,28,44,.97),rgba(12,21,34,.97));
+  border-color:rgba(105,132,161,.32);
+  box-shadow:0 28px 90px rgba(0,0,0,.58),0 0 50px rgba(47,101,131,.08);
+  backdrop-filter:blur(12px);
+}
+@media(max-width:600px){
+  .auth-shell::before{opacity:.31;background-position:center,center,58% center}
+  .auth-card{backdrop-filter:blur(8px)}
+}
+@media(prefers-reduced-motion:reduce){
+  .auth-shell::before,.auth-shell::after{transition:none}
+}
