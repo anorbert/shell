@@ -62,3 +62,43 @@ window.shellToast = (message, type = 'success') => {
     region.appendChild(toast);
     window.setTimeout(() => toast.remove(), 4200);
 };
+
+
+// Desktop sidebar collapse. The mobile bottom navigation is deliberately unaffected.
+(() => {
+    const desktop = window.matchMedia('(min-width: 721px)');
+    const toggle = document.querySelector('[data-sidebar-toggle]');
+    if (!toggle) return;
+
+    const root = document.documentElement;
+    const storageKey = 'shell.sidebar.collapsed';
+
+    const syncSidebar = () => {
+        const collapsed = desktop.matches && root.classList.contains('shell-sidebar-collapsed');
+        toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        toggle.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+        toggle.setAttribute('title', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+
+        document.querySelectorAll('.sidebar .side-nav a').forEach((link) => {
+            const label = link.querySelector('span:not(.nav-count)')?.textContent?.trim();
+            if (label) {
+                link.setAttribute('aria-label', label);
+                if (collapsed) link.setAttribute('title', label);
+                else link.removeAttribute('title');
+            }
+        });
+    };
+
+    toggle.addEventListener('click', () => {
+        if (!desktop.matches) return;
+        const collapsed = !root.classList.contains('shell-sidebar-collapsed');
+        root.classList.toggle('shell-sidebar-collapsed', collapsed);
+        try {
+            localStorage.setItem(storageKey, collapsed ? '1' : '0');
+        } catch (error) { /* The control still works for this page if storage is unavailable. */ }
+        syncSidebar();
+    });
+
+    desktop.addEventListener('change', syncSidebar);
+    syncSidebar();
+})();
