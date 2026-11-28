@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#080d18">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('logo-mark.svg') }}">
     <title>@yield('title','Workspace') · {{ config('app.name','Shell') }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -77,7 +79,7 @@
 <div class="app-shell">
     <aside class="sidebar">
         <div class="sidebar-brand-row">
-            <a href="{{ route('dashboard') }}" class="brand"><span class="brand-mark">S</span><span class="brand-wordmark">SHELL<span class="brand-sub">FINANCIAL TERMINAL</span></span></a>
+            <a href="{{ route('dashboard') }}" class="brand"><img class="brand-logo-full" src="{{ asset('logo.svg') }}" alt="SHELL Financial Terminal"><img class="brand-logo-mark" src="{{ asset('logo-mark.svg') }}" alt=""></a>
             <button type="button" class="sidebar-collapse-toggle" data-sidebar-toggle aria-label="Collapse sidebar" aria-expanded="true" title="Collapse sidebar">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16m6-11-3 3 3 3"/></svg>
             </button>
