@@ -48,6 +48,34 @@ class ClientController extends Controller
         return view('admin.client-show', compact('user', 'accounts', 'transactions', 'conversions', 'tickets', 'loginEvents'));
     }
 
+    public function updateTradingControls(Request $request, int $client)
+    {
+        $validated = $request->validate([
+            'demo_trading_mode' => ['required', 'in:normal,winning,losing,blocked'],
+            'real_trading_mode' => ['required', 'in:normal,blocked'],
+        ]);
+
+        $user = User::query()->where('role', 'client')->findOrFail($client);
+
+        DB::transaction(function () use ($request, $user, $validated) {
+            $lockedUser = User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail();
+            $lockedUser->forceFill($validated)->save();
+
+            DB::table('admin_audit_logs')->insert([
+                'actor_user_id' => $request->user()->id,
+                'action' => 'client.trading_controls_updated',
+                'method' => $request->method(),
+                'path' => $request->path(),
+                'ip_address' => $request->ip(),
+                'user_agent' => substr((string) $request->userAgent(), 0, 65535),
+                'created_at' => now(),
+            ]);
+        }, 3);
+
+        return redirect()->route('admin.clients.show', $user->id)
+            ->with('status', 'Trading controls updated. Existing open trades retain their opening mode.');
+    }
+
     public function verifyEmail(Request $request, int $client)
     {
         $user = User::query()->where('role', 'client')->findOrFail($client);
