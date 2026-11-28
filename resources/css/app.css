@@ -1221,3 +1221,7 @@ input,select,textarea{accent-color:var(--gold)}
     display: none !important;
   }
 }
+
+/* SHELL shield-and-S brand assets */
+.brand-logo-full{display:block;width:178px;height:auto;max-width:100%;object-fit:contain;object-position:left center}.brand-logo-mark{display:none;width:42px;height:46px;object-fit:contain;flex:0 0 auto}.sidebar .brand{display:flex;align-items:center;min-width:0;padding:0 4px 34px;gap:0}.sidebar .sidebar-brand-row .brand{padding:0;flex:1;overflow:hidden}.sidebar .brand-logo-full{width:172px;max-width:100%}.auth-brand{display:flex;justify-content:center;width:220px;height:58px;margin-bottom:28px}.auth-brand .brand-logo-full{width:100%;height:100%;object-position:center}.marketing-nav>.brand{display:flex;align-items:center;width:206px;height:58px;gap:0}.marketing-nav>.brand .brand-logo-full{width:100%;height:100%;object-position:left center}.shell-sidebar-collapsed .sidebar .brand-logo-full{display:none}.shell-sidebar-collapsed .sidebar .brand-logo-mark{display:block}.shell-sidebar-collapsed .sidebar .sidebar-brand-row .brand{justify-content:center}.shell-sidebar-collapsed .sidebar .brand{padding-left:0;padding-right:0}
+@media(max-width:720px){.auth-brand{width:205px;height:54px}.marketing-nav>.brand{width:156px;height:48px}.sidebar .brand-logo-full{width:170px}}
