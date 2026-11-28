@@ -2573,8 +2573,12 @@
                 }
             }
             const savedTradingPreferences = readTradingPreferences();
+            function limitStakePrecision(value) {
+                const amount = Number(value);
+                return Number.isFinite(amount) ? Math.trunc((amount + Number.EPSILON) * 100) / 100 : NaN;
+            }
             const rawSavedStake = Number(savedTradingPreferences.stake);
-            const savedStake = Number.isFinite(rawSavedStake) ? Number(rawSavedStake.toFixed(2)) : NaN;
+            const savedStake = limitStakePrecision(rawSavedStake);
             const minimumStake = Number(stakeInput.min);
             const maximumStake = Number(stakeInput.max);
             if (Number.isFinite(savedStake) && savedStake >= minimumStake && savedStake <= maximumStake) {
@@ -2593,14 +2597,13 @@
                 }).format(stake * payoutRate);
             }
             function normalizeStakeInput() {
-                const value = Number(stakeInput.value);
+                const value = limitStakePrecision(stakeInput.value);
                 if (stakeInput.value !== '' && Number.isFinite(value)) {
                     stakeInput.value = value.toFixed(2);
                 }
             }
             function rememberStake() {
-                const rawStake = Number(stakeInput.value);
-                const stake = Number.isFinite(rawStake) ? Number(rawStake.toFixed(2)) : NaN;
+                const stake = limitStakePrecision(stakeInput.value);
                 if (stakeInput.value !== '' && Number.isFinite(stake) &&
                     stake >= minimumStake && stake <= maximumStake) {
                     saveTradingPreferences({ stake });
