@@ -27,11 +27,16 @@ class RegisteredUserController extends Controller
 
     public function store(Request $request, LedgerService $ledger): RedirectResponse
     {
+        $request->merge([
+            'referral_code' => strtoupper(trim((string) $request->input('referral_code', ''))),
+        ]);
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'country_code' => ['required', 'string', 'size:2', Rule::in(array_keys(config('phone-countries', [])))],
             'phone_number' => ['required', 'string', 'regex:/^[+0-9().\s-]{6,25}$/'],
+            'referral_code' => ['nullable', 'string', 'max:20', Rule::exists('users', 'referral_code')->where(fn ($query) => $query->where('role', 'client'))],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -65,8 +70,11 @@ class RegisteredUserController extends Controller
             ])->withInput();
         }
 
-        $referralCode = $request->session()->pull('referral_code');
-        $referrerId = $referralCode ? DB::table('users')->where('referral_code', $referralCode)->where('role', 'client')->value('id') : null;
+        $referralCode = $validated['referral_code'] ?: null;
+        $referrerId = $referralCode
+            ? DB::table('users')->where('referral_code', $referralCode)->where('role', 'client')->value('id')
+            : null;
+        $request->session()->forget('referral_code');
 
         $user = DB::transaction(function () use ($validated, $phoneE164, $ledger, $referrerId) {
             do {
