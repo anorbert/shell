@@ -25,6 +25,13 @@ class PaperTradingService
             throw new RuntimeException('Invalid trading account.');
         }
 
+        $accountMode = $environment === 'real'
+            ? ($user->real_trading_mode ?? 'normal')
+            : ($user->demo_trading_mode ?? 'normal');
+        if ($accountMode === 'blocked') {
+            throw new RuntimeException('Trading is currently disabled for this account. Please contact support.');
+        }
+
         if ($environment === 'real' && !app(ManualWalletService::class)->hasSuccessfulDeposit($user)) {
             throw new RuntimeException('Real trading unlocks after your first deposit has been verified and credited to your real wallet.');
         }
@@ -110,6 +117,7 @@ class PaperTradingService
                 'stake' => $stake,
                 'wallet_currency' => $currency,
                 'account_type' => $environment,
+                'demo_outcome_mode' => $environment === 'demo' ? ($user->demo_trading_mode ?? 'normal') : 'normal',
                 'payout_basis_points' => $payoutBasisPoints,
                 'opening_price' => (string) $quote->price,
                 'duration_seconds' => $duration,
@@ -273,6 +281,18 @@ class PaperTradingService
                 $won = ($trade->direction === 'UP' && $comparison > 0)
                     || ($trade->direction === 'DOWN' && $comparison < 0);
                 $tie = $comparison === 0;
+
+                // Demo outcome simulation is isolated from real-money settlement.
+                if (!$isReal) {
+                    $demoMode = $trade->demo_outcome_mode ?? 'normal';
+                    if ($demoMode === 'winning') {
+                        $won = true;
+                        $tie = false;
+                    } elseif ($demoMode === 'losing') {
+                        $won = false;
+                        $tie = false;
+                    }
+                }
 
                 $entries[] = ['account_id' => $escrow, 'side' => 'debit', 'amount' => (string) $trade->stake];
 
