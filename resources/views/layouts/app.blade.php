@@ -11,6 +11,13 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css','resources/js/site.js'])
     @stack('styles')
+    <script>
+        try {
+            if (window.innerWidth > 720 && localStorage.getItem('shell.sidebar.collapsed') === '1') {
+                document.documentElement.classList.add('shell-sidebar-collapsed');
+            }
+        } catch (error) { /* Storage may be unavailable; keep the expanded default. */ }
+    </script>
     <style>
         /* Wallet switcher layout is kept with the shell so stale compiled CSS cannot put the menu in the header flow. */
         .topbar-right{display:flex;align-items:center;justify-content:flex-end;gap:12px;min-width:0}
@@ -69,7 +76,12 @@
 </svg>
 <div class="app-shell">
     <aside class="sidebar">
-        <a href="{{ route('dashboard') }}" class="brand"><span class="brand-mark">S</span><span>SHELL<span class="brand-sub">FINANCIAL TERMINAL</span></span></a>
+        <div class="sidebar-brand-row">
+            <a href="{{ route('dashboard') }}" class="brand"><span class="brand-mark">S</span><span class="brand-wordmark">SHELL<span class="brand-sub">FINANCIAL TERMINAL</span></span></a>
+            <button type="button" class="sidebar-collapse-toggle" data-sidebar-toggle aria-label="Collapse sidebar" aria-expanded="true" title="Collapse sidebar">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16m6-11-3 3 3 3"/></svg>
+            </button>
+        </div>
         <div class="sidebar-label">MAIN MENU</div>
         <nav class="side-nav" aria-label="Primary navigation">
             @if(auth()->user()->role==='admin')
