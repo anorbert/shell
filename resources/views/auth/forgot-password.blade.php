@@ -1,7 +1,7 @@
 @extends('layouts.guest')
 @section('title', 'Reset password · Shell')
 @section('content')
-<div class="auth-shell"><a class="brand auth-brand" href="{{ route('home') }}"><span class="brand-mark">S</span><span>SHELL<span class="brand-sub">FINANCIAL TERMINAL</span></span></a><div class="auth-card"><span class="eyebrow">ACCOUNT RECOVERY</span><h1>Reset your password</h1><p class="muted">Enter your account email and we will send a reset link if it exists.</p>@if(session('status'))
+<div class="auth-shell"><a class="brand auth-brand" href="{{ route('home') }}"><img class="brand-logo-full" src="{{ asset('logo.svg') }}" alt="SHELL Financial Terminal"></a><div class="auth-card"><span class="eyebrow">ACCOUNT RECOVERY</span><h1>Reset your password</h1><p class="muted">Enter your account email and we will send a reset link if it exists.</p>@if(session('status'))
     <div class="alert alert-success">{{ session('status') }}</div>
 @endif
 @if($errors->any())
