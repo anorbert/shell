@@ -138,7 +138,7 @@
                     </select>
                 </label>
                 <label>Stake ({{ $currency }})<input id="trade-stake" name="stake" type="number" inputmode="decimal"
-                        min="0.00000001" max="{{ config('shell.paper.max_stake') }}" step="0.00000001" value="10"
+                        min="0.01" max="{{ config('shell.paper.max_stake') }}" step="0.01" value="10"
                         required></label>
                 <div class="stake-presets"><button type="button" data-stake="10">$10</button><button type="button"
                         data-stake="25">$25</button><button type="button" data-stake="50">$50</button><button
@@ -2573,7 +2573,8 @@
                 }
             }
             const savedTradingPreferences = readTradingPreferences();
-            const savedStake = Number(savedTradingPreferences.stake);
+            const rawSavedStake = Number(savedTradingPreferences.stake);
+            const savedStake = Number.isFinite(rawSavedStake) ? Number(rawSavedStake.toFixed(2)) : NaN;
             const minimumStake = Number(stakeInput.min);
             const maximumStake = Number(stakeInput.max);
             if (Number.isFinite(savedStake) && savedStake >= minimumStake && savedStake <= maximumStake) {
@@ -2591,14 +2592,26 @@
                     maximumFractionDigits: 2
                 }).format(stake * payoutRate);
             }
+            function normalizeStakeInput() {
+                const value = Number(stakeInput.value);
+                if (stakeInput.value !== '' && Number.isFinite(value)) {
+                    stakeInput.value = value.toFixed(2);
+                }
+            }
             function rememberStake() {
-                const stake = Number(stakeInput.value);
+                const rawStake = Number(stakeInput.value);
+                const stake = Number.isFinite(rawStake) ? Number(rawStake.toFixed(2)) : NaN;
                 if (stakeInput.value !== '' && Number.isFinite(stake) &&
                     stake >= minimumStake && stake <= maximumStake) {
                     saveTradingPreferences({ stake });
                 }
             }
             stakeInput.addEventListener('input', () => {
+                updatePayout();
+                rememberStake();
+            });
+            stakeInput.addEventListener('blur', () => {
+                normalizeStakeInput();
                 updatePayout();
                 rememberStake();
             });
@@ -3244,6 +3257,7 @@
                 const form = event.currentTarget,
                     submitter = event.submitter;
                 if (form.dataset.submitting === 'true') return;
+                normalizeStakeInput();
                 const stake = Number(stakeInput.value),
                     maxStake = Number(stakeInput.max);
                 if (!Number.isFinite(stake) || stake <= 0) {
