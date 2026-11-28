@@ -76,3 +76,48 @@ test('registration rejects a pasted international number that conflicts with sel
 
     $response->assertRedirect('/register')->assertSessionHasErrors('phone_number');
 });
+
+
+test('registration form displays an optional referral code from an invitation link', function () {
+    User::factory()->create(['role' => 'client', 'referral_code' => 'SHELL12345']);
+
+    $response = $this->get('/register?ref=SHELL12345');
+
+    $response->assertOk()
+        ->assertSee('name="referral_code"', false)
+        ->assertSee('value="SHELL12345"', false)
+        ->assertSee('(optional)');
+});
+
+test('new users can manually enter a referral code and are attributed to its owner', function () {
+    $referrer = User::factory()->create(['role' => 'client', 'referral_code' => 'FRIEND1234']);
+
+    $response = $this->post('/register', [
+        'name' => 'Referred User',
+        'email' => 'referred@example.com',
+        'country_code' => 'RW',
+        'phone_number' => '0788 123 456',
+        'referral_code' => ' friend1234 ',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ]);
+
+    $response->assertRedirect(route('dashboard', absolute: false));
+    $user = User::where('email', 'referred@example.com')->firstOrFail();
+    expect((int) $user->referred_by_user_id)->toBe((int) $referrer->id);
+});
+
+test('registration rejects an invalid manual referral code', function () {
+    $response = $this->from('/register')->post('/register', [
+        'name' => 'Unknown Referral',
+        'email' => 'unknown-referral@example.com',
+        'country_code' => 'RW',
+        'phone_number' => '0788 123 456',
+        'referral_code' => 'NOTAREALCODE',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ]);
+
+    $response->assertRedirect('/register')->assertSessionHasErrors('referral_code');
+    expect(User::where('email', 'unknown-referral@example.com')->exists())->toBeFalse();
+});
