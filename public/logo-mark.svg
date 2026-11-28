@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 104" role="img" aria-labelledby="title">
+<title id="title">SHELL shield S mark</title>
+<defs><linearGradient id="gold" x1="14" y1="8" x2="80" y2="96" gradientUnits="userSpaceOnUse"><stop stop-color="#F2D99A"/><stop offset=".52" stop-color="#D4A843"/><stop offset="1" stop-color="#A87927"/></linearGradient></defs>
+<path d="M48 5 84 19v27c0 25-14.7 42.1-36 53C26.7 88.1 12 71 12 46V19L48 5Z" fill="#101B2B" stroke="url(#gold)" stroke-width="4" stroke-linejoin="round"/>
+<path d="M67.5 30.5c-5.2-5.1-11.3-7.6-19.2-7.6-11.2 0-19.1 6.2-19.1 15.2 0 8.1 5.8 12.1 18.5 14.5 10.2 1.9 14.1 4.1 14.1 8.6 0 5.1-5.1 8.5-13.2 8.5-8.4 0-14.7-3-20.2-9.1" fill="none" stroke="url(#gold)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<g stroke="#E7C778" stroke-width="2.4" stroke-linecap="round"><path d="M26 31v-8m0 25V39"/><path d="M22.5 28h7v11h-7z" fill="#D4A843" stroke-linejoin="round"/><path d="M72 68V52m0 29V74"/><path d="M68.5 57h7v15h-7z" fill="#D4A843" stroke-linejoin="round"/></g>
+<path d="M48 82v-8m0-8v-7" stroke="#D4A843" stroke-width="2.2" stroke-linecap="round" opacity=".9"/>
+</svg>
