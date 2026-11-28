@@ -7,6 +7,8 @@
     <meta name="theme-color" content="#080d18">
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <link rel="apple-touch-icon" href="{{ asset('logo-mark.svg') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('logo-mark.svg') }}">
     <title>@yield('title','Workspace') · {{ config('app.name','Shell') }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
