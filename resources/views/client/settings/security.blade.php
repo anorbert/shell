@@ -62,9 +62,52 @@
         </form>
     @endif
 </section>
+
+<section class="panel password-security-panel">
+    <div class="panel-head">
+        <div><span class="eyebrow">PASSWORD &amp; ACCESS</span><h2>Change password</h2><p class="security-muted">Update your password to keep your account protected.</p></div>
+    </div>
+    <div class="security-password-body">
+        @if(session('status') === 'password-updated')
+            <div class="security-success" role="status">Your password has been updated successfully.</div>
+        @endif
+        @if($errors->any())
+            <div class="security-error" role="alert">{{ $errors->first() }}</div>
+        @endif
+        <form method="POST" action="{{ route('password.update') }}" class="security-password-form">
+            @csrf
+            @method('PUT')
+            <label>Current password
+                <input type="password" name="current_password" required autocomplete="current-password">
+                @error('current_password')<small class="field-error">{{ $message }}</small>@enderror
+            </label>
+            <label>New password
+                <input type="password" name="password" required autocomplete="new-password">
+                @error('password')<small class="field-error">{{ $message }}</small>@enderror
+            </label>
+            <label>Confirm new password
+                <input type="password" name="password_confirmation" required autocomplete="new-password">
+                @error('password_confirmation')<small class="field-error">{{ $message }}</small>@enderror
+            </label>
+            <div><button class="button button-primary" type="submit">Update password</button></div>
+        </form>
+    </div>
+</section>
 @endsection
 @push('styles')
 <style>
+.security-password-body{padding:20px}
+.security-password-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.security-password-form label{display:grid;gap:7px;color:var(--muted,#9aabc0);font-size:12px;font-weight:700}
+.security-password-form label:nth-child(3){grid-column:1/-1}
+.security-password-form input{width:100%;min-height:43px;border:1px solid var(--line,#33445b);border-radius:10px;padding:10px 12px;background:var(--panel,#101b2b);color:inherit}
+.security-password-form input:focus{outline:2px solid rgba(89,153,192,.35);border-color:#5799c0}
+.security-muted{margin:5px 0 0;color:var(--muted,#9aabc0);font-size:12px}
+.security-success,.security-error{margin:0 0 14px;padding:11px 13px;border-radius:9px;font-size:12px}
+.security-success{background:rgba(64,190,132,.12);color:#75d9aa}
+.security-error{background:rgba(225,90,100,.12);color:#f08c95}
+.field-error{color:#f08c95;font-size:11px;font-weight:500}
+@media(max-width:650px){.security-password-form{grid-template-columns:1fr}.security-password-form label:nth-child(3){grid-column:auto}.security-password-body{padding:15px}}
 .session-device{display:flex;align-items:center;gap:11px;min-width:170px}
 .session-device-icon{width:36px;height:36px;display:grid;place-items:center;flex:0 0 36px;border:1px solid var(--border-color,rgba(148,163,184,.2));border-radius:10px;background:rgba(148,163,184,.07);color:var(--text-secondary,#94a3b8)}
 .session-device-icon svg{width:20px;height:20px}
