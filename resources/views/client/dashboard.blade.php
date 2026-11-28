@@ -80,7 +80,7 @@
     <section class="dash-hero">
         <div class="dash-hero-copy">
             <h2>Your {{ $selectedAccount === 'real' ? 'real' : 'demo' }} trading command center</h2>
-            <p>Review your {{ $selectedAccount }}-account performance, monitor recent activity and continue trading. Demo and real funds remain separate.</p>
+            <p>Review your {{ $selectedAccount }}-account performance, monitor recent activity and continue trading.</p>
         </div>
         <div class="dash-actions">
             <a href="{{ route('trading.index') }}" class="button button-primary button-large"><svg class="nav-icon"><use href="#i-chart"/></svg> Open trading</a>
