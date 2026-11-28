@@ -26,7 +26,8 @@ class DashboardController extends Controller
         $quotes = $markets->freshQuotes();
         $dashboardSymbols = array_slice(config('shell.market.symbols', []), 0, 4);
 
-        $tradeQuery = DB::table('paper_trades')->where('user_id', $user->id);
+        $selectedAccount = $request->session()->get('active_wallet', 'demo') === 'real' ? 'real' : 'demo';
+        $tradeQuery = DB::table('paper_trades')->where('user_id', $user->id)->where('account_type', $selectedAccount);
         $tradeStats = (clone $tradeQuery)
             ->selectRaw('COUNT(*) as total, SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as won, SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as lost, SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as open', ['won', 'lost', 'open'])
             ->first();
@@ -76,6 +77,7 @@ class DashboardController extends Controller
 
         return view('client.dashboard', [
             'user' => $user,
+            'selectedAccount' => $selectedAccount,
             'quotes' => $quotes,
             'dashboardSymbols' => $dashboardSymbols,
             'candlesUrl' => route('markets.candles'),
