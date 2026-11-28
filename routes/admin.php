@@ -12,6 +12,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin', 'verified']
     Route::get('/', DashboardController::class)->name('dashboard');
     Route::get('/clients', [ClientController::class, 'index'])->name('clients');
     Route::get('/clients/{client}/wallets/{account}/statement', [ClientController::class, 'walletStatement'])->whereNumber('client')->whereNumber('account')->name('clients.wallets.statement');
+    Route::post('/clients/{client}/trading-controls', [ClientController::class, 'updateTradingControls'])->whereNumber('client')->middleware('throttle:10,1')->name('clients.trading-controls');
     Route::post('/clients/{client}/verify-email', [ClientController::class, 'verifyEmail'])->whereNumber('client')->name('clients.verify-email');
     Route::get('/clients/{client}', [ClientController::class, 'show'])->whereNumber('client')->name('clients.show');
     Route::get('/operations', OperationsController::class)->name('operations');
