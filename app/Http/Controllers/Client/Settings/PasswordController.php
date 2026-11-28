@@ -12,7 +12,9 @@ class PasswordController extends Controller
 {
     public function edit(Request $request)
     {
-        return view('client.settings.profile');
+        return $request->user()->role === 'client'
+            ? redirect()->route('security.index')
+            : view('client.settings.profile');
     }
 
     public function update(Request $request): RedirectResponse
