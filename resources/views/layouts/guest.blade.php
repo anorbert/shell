@@ -19,6 +19,24 @@
 <body class="shell-body">
     @yield('content')
     <div id="toast-region" class="toast-region" aria-live="polite"></div>
+
+    <script>
+    (() => {
+        document.querySelectorAll('[data-password-toggle]').forEach(button => {
+            const input = document.getElementById(button.dataset.passwordToggle);
+            if (!input) return;
+
+            button.addEventListener('click', () => {
+                const reveal = input.type === 'password';
+                input.type = reveal ? 'text' : 'password';
+                button.classList.toggle('is-visible', reveal);
+                button.setAttribute('aria-label', reveal ? 'Hide password' : 'Show password');
+                button.setAttribute('aria-pressed', reveal ? 'true' : 'false');
+                input.focus();
+            });
+        });
+    })();
+    </script>
     @stack('scripts')
 </body>
 </html>
