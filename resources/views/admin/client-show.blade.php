@@ -28,6 +28,21 @@
     .client-metrics .metric-card:nth-child(3){--metric-accent:#8b5cf6}
     .client-metrics .metric-card:nth-child(4){--metric-accent:#f59e0b}
     .client-metrics .metric-card strong{font-variant-numeric:tabular-nums}
+    .cp-trades .form-field{display:flex;flex-direction:column;gap:8px;min-width:0;color:var(--text,#e2e8f0);font-size:12px;font-weight:700;letter-spacing:.035em}
+    .cp-trades .form-field select{
+        display:block;width:100%;min-height:48px;padding:0 42px 0 14px;
+        border:1px solid rgba(148,163,184,.38);border-radius:10px;
+        background-color:#111c31;color:#f8fafc;color-scheme:dark;
+        font:600 14px/1.4 inherit;letter-spacing:normal;
+        appearance:auto;-webkit-appearance:menulist;
+        box-shadow:inset 0 1px 2px rgba(0,0,0,.18);
+        cursor:pointer;outline:none;
+    }
+    .cp-trades .form-field select:focus{border-color:#8b5cf6;box-shadow:0 0 0 3px rgba(139,92,246,.2)}
+    .cp-trades .form-field select option{background:#111c31;color:#f8fafc}
+    .cp-trades .form-field select option:checked{background:#433078;color:#fff}
+    .cp-trades form .btn{min-height:48px;white-space:nowrap}
+    @media(max-width:700px){.cp-trades form{grid-template-columns:minmax(0,1fr)!important}.cp-trades form .btn{width:100%}}
     .cp-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
     .cp-section-head .eyebrow{display:flex;align-items:center;gap:8px}
     .cp-dot{width:8px;height:8px;border-radius:50%;display:inline-block;background:var(--section-accent,#64748b);box-shadow:0 0 0 4px color-mix(in srgb,var(--section-accent,#64748b) 15%,transparent)}
