@@ -101,6 +101,27 @@
         <p class="cp-audit-note">Account inspection only. This page does not provide controls to alter wallet balances or trade outcomes.</p>
     </div>
 
+    <section class="panel cp-trades">
+        <div class="panel-head cp-section-head"><div><div class="cp-section-title"><span class="cp-heading-icon"><svg class="cp-icon" aria-hidden="true"><use href="#i-activity"/></svg></span><div><span class="eyebrow">TRADING PERMISSIONS</span><h2>Trading controls</h2></div></div></div><span class="cp-badge cp-info">ACCOUNT LEVEL</span></div>
+        <div style="padding:0 22px 20px">
+            <form method="POST" action="{{ route('admin.clients.trading-controls', $user->id) }}" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px">
+                @csrf
+                <label class="form-field"><span>DEMO ACCOUNT MODE</span><select name="demo_trading_mode" required>
+                    <option value="normal" @selected(($user->demo_trading_mode ?? 'normal') === 'normal')>Normal — market simulation</option>
+                    <option value="winning" @selected(($user->demo_trading_mode ?? 'normal') === 'winning')>Winning — demo simulation</option>
+                    <option value="losing" @selected(($user->demo_trading_mode ?? 'normal') === 'losing')>Losing — demo simulation</option>
+                    <option value="blocked" @selected(($user->demo_trading_mode ?? 'normal') === 'blocked')>Blocked — no new trades</option>
+                </select></label>
+                <label class="form-field"><span>REAL ACCOUNT MODE</span><select name="real_trading_mode" required>
+                    <option value="normal" @selected(($user->real_trading_mode ?? 'normal') === 'normal')>Normal — verified market settlement</option>
+                    <option value="blocked" @selected(($user->real_trading_mode ?? 'normal') === 'blocked')>Blocked — no new trades</option>
+                </select></label>
+                <div style="display:flex;align-items:end"><button type="submit" class="btn btn-primary">Save trading controls</button></div>
+            </form>
+            <p class="cp-audit-note" style="margin:14px 0 0">Demo simulation applies only to demo positions opened after saving. Real positions always settle against verified market prices. Blocking prevents new positions; already-open positions settle normally.</p>
+        </div>
+    </section>
+
     <section class="panel cp-ledger"><div class="panel-head cp-section-head"><div><div class="cp-section-title"><span class="cp-heading-icon"><svg class="cp-icon" aria-hidden="true"><use href="#i-wallet"/></svg></span><div><span class="eyebrow">LEDGER ACCOUNTS</span><h2>Wallet balances</h2></div></div></div><span class="cp-badge cp-info">{{ $accounts->count() }} ACCOUNTS</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>ACCOUNT</th><th>CURRENCY</th><th>NORMAL SIDE</th><th>LEDGER BALANCE</th><th>STATEMENT</th></tr></thead><tbody>
     @forelse($accounts as $account)<tr><td class="cp-cell-main">{{ $account->code }}</td><td>{{ $account->currency }}</td><td><span class="cp-badge cp-neutral">{{ strtoupper($account->normal_side) }}</span></td><td class="cp-amount">@money($account->balance)</td><td><a class="btn btn-secondary cp-statement-link" href="{{ route('admin.clients.wallets.statement', ['client' => $user->id, 'account' => $account->id]) }}"><svg class="cp-icon" aria-hidden="true"><use href="#i-receipt"/></svg>View statement</a></td></tr>@empty<tr><td colspan="5" class="table-empty cp-empty">No ledger accounts provisioned.</td></tr>@endforelse
     </tbody></table></div></section>
