@@ -1687,6 +1687,16 @@
                 const el = document.getElementById(id);
                 if (el) el.textContent = value;
             };
+            // Keep the global header and account switcher in sync with the
+            // server-confirmed balance returned by trade/settlement endpoints.
+            const syncWalletBalance = (value, currency = '{{ $currency }}') => {
+                const formatted = money(value);
+                setText('wallet-balance', formatted + ' ' + currency);
+                const headerBalance = document.querySelector('[data-wallet-current-balance]');
+                if (headerBalance) headerBalance.textContent = formatted;
+                const selectedWalletBalance = document.querySelector('[data-wallet-balance="{{ $selectedAccount }}"]');
+                if (selectedWalletBalance) selectedWalletBalance.textContent = formatted;
+            };
 
             function dimensions() {
                 const width = canvas.clientWidth || 700,
@@ -2834,7 +2844,7 @@
                 setPositionText('position-live-outcome', (settledNet > 0 ? '+' : settledNet < 0 ? '−' : '') +
                     money(Math.abs(settledNet)) + ' ' + trade.currency);
                 if (trade.wallet_balance !== undefined && trade.wallet_balance !== null) {
-                    setText('wallet-balance', money(trade.wallet_balance) + ' ' + trade.currency);
+                    syncWalletBalance(trade.wallet_balance, trade.currency);
                 }
                 const historyRow = document.querySelector('[data-open-trade="' + trade.id + '"]');
                 if (historyRow) {
@@ -3202,7 +3212,7 @@
                         timeoutMs: 40000, retries: 2
                     });
                     if (response.wallet_balance !== undefined && response.wallet_balance !== null) {
-                        setText('wallet-balance', money(response.wallet_balance) + ' {{ $currency }}');
+                        syncWalletBalance(response.wallet_balance, '{{ $currency }}');
                     }
                     // Reconcile even when this request settled zero rows: the
                     // scheduler may already have committed the result just before us.
@@ -3279,7 +3289,7 @@
                             : 'trade-' + Date.now() + '-' + Math.random().toString(36).slice(2, 12);
                     }
                     if (result.wallet_balance !== undefined && result.wallet_balance !== null) {
-                        setText('wallet-balance', money(result.wallet_balance) + ' {{ $currency }}');
+                        syncWalletBalance(result.wallet_balance, '{{ $currency }}');
                     }
                     if (result.trade_id) {
                         if (result.trade) upsertTradeRow(result.trade);
