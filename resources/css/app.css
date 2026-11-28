@@ -1025,6 +1025,10 @@ input,select,textarea{accent-color:var(--gold)}
 /* Password visibility controls on guest authentication forms */
 .auth-password-wrap{position:relative;display:block;width:100%}
 .form-stack .auth-password-wrap input{padding-right:72px}
-.auth-password-toggle{position:absolute;right:9px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--gold2);font:700 11px 'Manrope',sans-serif;padding:7px 5px;cursor:pointer;border-radius:5px}
-.auth-password-toggle:hover{color:#fff}
+.auth-password-toggle{position:absolute;right:9px;top:50%;transform:translateY(-50%);width:34px;height:34px;display:grid;place-items:center;border:0;background:transparent;color:var(--gold2);padding:6px;cursor:pointer;border-radius:6px}
+.auth-password-toggle:hover{color:#fff;background:#ffffff0c}
 .auth-password-toggle:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.auth-password-icon{width:19px;height:19px;display:block}
+.auth-password-icon-hide{display:none}
+.auth-password-toggle.is-visible .auth-password-icon-show{display:none}
+.auth-password-toggle.is-visible .auth-password-icon-hide{display:block}
