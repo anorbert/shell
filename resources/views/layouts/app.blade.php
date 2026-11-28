@@ -119,7 +119,7 @@
                     <details class="topbar-wallet-menu">
                         <summary class="topbar-wallet-balance" aria-label="Current {{ strtoupper($activeWalletType) }} account balance; open account switcher">
                             <span class="topbar-wallet-meta"><i></i>{{ strtoupper($activeWalletType) }} ACCOUNT <span class="wallet-switch-chevron">⌄</span></span>
-                            <strong>@money($activeWalletBalance) <small>{{ $activeWalletCurrency }}</small></strong>
+                            <strong><span data-wallet-current-balance>@money($activeWalletBalance)</span> <small>{{ $activeWalletCurrency }}</small></strong>
                         </summary>
                         <div class="wallet-switch-dropdown">
                             <div class="wallet-switch-heading">
@@ -136,7 +136,7 @@
                                     <button type="submit" class="wallet-switch-option {{ $activeWalletType === $walletKey ? 'is-active' : '' }}">
                                         <span class="wallet-switch-icon {{ $walletKey }}"><svg class="nav-icon"><use href="#i-wallet"/></svg></span>
                                         <span class="wallet-switch-copy"><strong>{{ $walletOption['label'] }}</strong><small>{{ $walletOption['description'] }}</small></span>
-                                        <span class="wallet-switch-amount"><strong>@money($walletOption['balance'])</strong><small>{{ $activeWalletCurrency }}</small></span>
+                                        <span class="wallet-switch-amount"><strong data-wallet-balance="{{ $walletKey }}">@money($walletOption['balance'])</strong><small>{{ $activeWalletCurrency }}</small></span>
                                         @if ($activeWalletType === $walletKey)<span class="wallet-switch-check">✓</span>@endif
                                     </button>
                                 </form>
