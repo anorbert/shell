@@ -28,8 +28,8 @@
                 <div class="phone-input-wrap"><span class="phone-prefix" id="phone-prefix">{{ config('phone-countries')[old('country_code', 'US')] ?? '+1' }}</span><input id="phone_number" type="tel" name="phone_number" value="{{ old('phone_number') }}" required autocomplete="tel-national" inputmode="tel" placeholder="202 555 0100" maxlength="25" aria-describedby="phone-help"></div>
                 <small class="field-hint" id="phone-help">Enter your phone number without the country calling code.</small>
             </div>
-            <label>Password<input type="password" name="password" required autocomplete="new-password"></label>
-            <label>Confirm password<input type="password" name="password_confirmation" required autocomplete="new-password"></label>
+            <label>Password<span class="auth-password-wrap"><input id="register-password" type="password" name="password" required autocomplete="new-password"><button class="auth-password-toggle" type="button" data-password-toggle="register-password" aria-controls="register-password" aria-label="Show password" aria-pressed="false">Show</button></span></label>
+            <label>Confirm password<span class="auth-password-wrap"><input id="register-password-confirmation" type="password" name="password_confirmation" required autocomplete="new-password"><button class="auth-password-toggle" type="button" data-password-toggle="register-password-confirmation" aria-controls="register-password-confirmation" aria-label="Show password" aria-pressed="false">Show</button></span></label>
             <button class="button button-primary button-full" type="submit">Create client account</button>
         </form>
         <div class="auth-bottom">Already registered? <a href="{{ route('login') }}">Sign in</a></div>
