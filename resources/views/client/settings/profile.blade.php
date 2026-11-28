@@ -24,13 +24,5 @@
     <div class="panel-body"><div class="info-grid"><div class="info-item"><small>COUNTRY / REGION</small><strong>{{ auth()->user()->country_code ?? 'Not provided' }}</strong></div><div class="info-item"><small>INTERNATIONAL PHONE</small><strong>{{ auth()->user()->phone_e164 ?? 'Not provided' }}</strong></div></div><p class="muted" style="margin-top:13px">Phone ownership is not verified by registration. Do not use this number for security-sensitive SMS actions until a phone verification process is enabled.</p></div>
 </section>
 
-<section class="panel">
-    <div class="panel-head"><div><span class="eyebrow">ACCOUNT SECURITY</span><h2>Change password</h2><p class="muted">Use a strong, unique password to protect your account.</p></div></div>
-    <div class="panel-body"><form method="POST" action="{{ route('password.update') }}" class="form-stack">@csrf @method('PUT')
-        <div class="profile-grid"><label>Current password<input type="password" name="current_password" required autocomplete="current-password"></label><label>New password<input type="password" name="password" required autocomplete="new-password"></label></div>
-        <label>Confirm new password<input type="password" name="password_confirmation" required autocomplete="new-password"></label>
-        <div><button class="button button-secondary" type="submit">Update password</button></div>
-    </form></div>
-</section>
 </div>
 @endsection
