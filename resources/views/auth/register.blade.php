@@ -2,7 +2,7 @@
 @section('title', 'Create account · Shell')
 @section('content')
 <div class="auth-shell">
-    <a class="brand auth-brand" href="{{ route('home') }}"><span class="brand-mark">S</span><span>SHELL<span class="brand-sub">FINANCIAL TERMINAL</span></span></a>
+    <a class="brand auth-brand" href="{{ route('home') }}"><img class="brand-logo-full" src="{{ asset('logo.svg') }}" alt="SHELL Financial Terminal"></a>
     <div class="auth-card auth-card-international">
         <h1>Create your account</h1>
         @if(session('referral_error'))<div class="alert alert-error">{{ session('referral_error') }}</div>@endif
