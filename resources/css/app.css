@@ -1213,3 +1213,11 @@ input,select,textarea{accent-color:var(--gold)}
     transition: none !important;
   }
 }
+
+
+/* Keep the existing mobile bottom dock exactly as before after wrapping the desktop brand row. */
+@media (max-width: 720px) {
+  .sidebar > .sidebar-brand-row {
+    display: none !important;
+  }
+}
