@@ -126,7 +126,7 @@
                     </a>
                 </nav>
             </div>
-            <div class="wallet-summary"><span>AVAILABLE {{ strtoupper($selectedAccount) }} BALANCE</span><strong id="wallet-balance" aria-live="polite">@decimal($balance)
+            <div class="wallet-summary"><span>AVAILABLE {{ strtoupper($selectedAccount) }} BALANCE</span><strong id="wallet-balance" aria-live="polite">@money($balance)
                     {{ $currency }}</strong></div>
             <form id="paper-trade-form" class="form-stack">
                 <input type="hidden" name="account_type" value="{{ $selectedAccount }}">
@@ -2631,9 +2631,9 @@
                 hasPositionPrice = false,
                 positionPricePollBusy = false;
             const positionPriceCache = new Map();
-            const money = (value, maximum = 8) => new Intl.NumberFormat(undefined, {
+            const money = (value) => new Intl.NumberFormat(undefined, {
                 minimumFractionDigits: 2,
-                maximumFractionDigits: maximum
+                maximumFractionDigits: 2
             }).format(Number(value) || 0);
             const priceText = value => {
                 const n = Number(value);
