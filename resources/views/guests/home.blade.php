@@ -3,7 +3,7 @@
 @section('content')
 <div class="marketing-shell shell-home" id="top">
     <header class="marketing-nav">
-        <a class="brand" href="{{ route('home') }}" aria-label="SHELL home"><span class="brand-mark">S</span><span>SHELL<span class="brand-sub">MARKET & TRADING PLATFORM</span></span></a>
+        <a class="brand" href="{{ route('home') }}" aria-label="SHELL home"><img class="brand-logo-full" src="{{ asset('logo.svg') }}" alt="SHELL Financial Terminal"></a>
         <nav aria-label="Main navigation"><a href="#how-it-works">How it works</a><a href="#faq">FAQs</a></nav>
         <div class="nav-actions"><a class="button button-quiet" href="{{ route('login') }}">Sign in</a><a class="button button-primary" href="{{ route('register') }}">Get started <span>↗</span></a></div>
     </header>
