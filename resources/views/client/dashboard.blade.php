@@ -79,12 +79,16 @@
 @section('content')
     <section class="dash-hero">
         <div class="dash-hero-copy">
-            <h2>Your trading command center</h2>
-            <p>Monitor your demo performance, check wallet activity and get straight to the next action. Demo and real funds remain separate.</p>
+            <h2>Your {{ $selectedAccount === 'real' ? 'real' : 'demo' }} trading command center</h2>
+            <p>Review your {{ $selectedAccount }}-account performance, monitor recent activity and continue trading. Demo and real funds remain separate.</p>
         </div>
         <div class="dash-actions">
             <a href="{{ route('trading.index') }}" class="button button-primary button-large"><svg class="nav-icon"><use href="#i-chart"/></svg> Open trading</a>
-            <a href="{{ route('wallet-requests.index', ['account' => 'real']) }}#deposit-form" class="button button-quiet"> <svg class="nav-icon"><use href="#i-wallet"/></svg> Deposit funds</a>
+            @if($selectedAccount === 'real')
+                <a href="{{ route('wallet-requests.index', ['account' => 'real']) }}#deposit-form" class="button button-quiet"><svg class="nav-icon"><use href="#i-wallet"/></svg> Deposit funds</a>
+            @else
+                <a href="{{ route('portfolio.index') }}" class="button button-quiet"><svg class="nav-icon"><use href="#i-wallet"/></svg> Manage demo wallet</a>
+            @endif
         </div>
     </section>
 
@@ -151,7 +155,7 @@
                     </div>
                     <div class="dash-chart-legend"><i></i> Positions opened per day</div>
                 @else
-                    <div class="dash-empty">No trades in the last seven days. Open a demo position to start building your activity history.</div>
+                    <div class="dash-empty">No {{ $selectedAccount }} trades in the last seven days. Open a {{ $selectedAccount }} position to start building this activity history.</div>
                 @endif
             </section>
 
@@ -186,11 +190,11 @@
             <section class="panel dash-panel">
                 <div class="panel-head"><div><span class="eyebrow">QUICK ACCESS</span><h2>What would you like to do?</h2></div></div>
                 <div class="dash-quick-grid">
-                    <a class="dash-quick-link" href="{{ route('trading.index') }}"><span class="dash-quick-icon"><svg><use href="#i-chart"/></svg></span><span><strong>Trade demo</strong><small>Open a position</small></span><b class="dash-quick-arrow">↗</b></a>
+                    <a class="dash-quick-link" href="{{ route('trading.index') }}"><span class="dash-quick-icon"><svg><use href="#i-chart"/></svg></span><span><strong>Trade {{ $selectedAccount }}</strong><small>Open a {{ $selectedAccount }} position</small></span><b class="dash-quick-arrow">↗</b></a>
                     <a class="dash-quick-link" href="{{ route('wallet-requests.index', ['account' => 'real']) }}#deposit-form"><span class="dash-quick-icon"><svg><use href="#i-wallet"/></svg></span><span><strong>Deposit funds</strong><small>Fund real wallet</small></span><b class="dash-quick-arrow">↗</b></a>
                     <a class="dash-quick-link" href="{{ route('portfolio.index') }}"><span class="dash-quick-icon"><svg><use href="#i-briefcase"/></svg></span><span><strong>My wallets</strong><small>Review balances</small></span><b class="dash-quick-arrow">↗</b></a>
                     <a class="dash-quick-link" href="{{ route('markets.index') }}"><span class="dash-quick-icon"><svg><use href="#i-chart"/></svg></span><span><strong>Explore markets</strong><small>Check available pairs</small></span><b class="dash-quick-arrow">↗</b></a>
-                    <a class="dash-quick-link" href="{{ route('convert.index') }}"><span class="dash-quick-icon"><svg><use href="#i-repeat"/></svg></span><span><strong>Convert assets</strong><small>Demo wallet conversions</small></span><b class="dash-quick-arrow">↗</b></a>
+                    <a class="dash-quick-link" href="{{ route('convert.index') }}"><span class="dash-quick-icon"><svg><use href="#i-repeat"/></svg></span><span><strong>Convert assets</strong><small>Convert supported wallet assets</small></span><b class="dash-quick-arrow">↗</b></a>
                     <a class="dash-quick-link" href="{{ route('activity.index') }}"><span class="dash-quick-icon"><svg><use href="#i-receipt"/></svg></span><span><strong>Trade history</strong><small>Review past results</small></span><b class="dash-quick-arrow">↗</b></a>
                 </div>
             </section>
