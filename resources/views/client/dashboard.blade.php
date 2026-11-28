@@ -199,32 +199,7 @@
                 </div>
             </section>
 
-            <section class="panel dash-panel">
-                <div class="panel-head"><div><span class="eyebrow">WALLET OPERATIONS</span><h2>Request status</h2></div><a href="{{ route('wallet-requests.index') }}" class="dash-link">Open wallet ↗</a></div>
-                <div class="dash-pending-list">
-                    <div class="dash-pending-row"><span><strong>Deposit requests</strong><small>Awaiting verification</small></span><span class="dash-status {{ $pendingDeposits > 0 ? 'open' : '' }}">{{ $pendingDeposits }} pending</span></div>
-                    <div class="dash-pending-row"><span><strong>Withdrawal requests</strong><small>Awaiting processing</small></span><span class="dash-status {{ $pendingWithdrawals > 0 ? 'open' : '' }}">{{ $pendingWithdrawals }} pending</span></div>
-                </div>
-                <p class="dash-market-note">Real-wallet requests are not credited or paid until the required checks and administrator processing are complete.</p>
-            </section>
 
-            <section class="panel dash-panel">
-                <div class="panel-head"><div><span class="eyebrow">MARKET DATA</span><h2>Market availability</h2></div><span class="dash-status {{ $marketConnected ? 'won' : 'open' }}">{{ $marketConnected ? 'AVAILABLE' : 'LIMITED' }}</span></div>
-                <div class="dash-pending-row"><span><strong>{{ $quotes->count() }} fresh pairs</strong><small>{{ $marketConnected ? 'Server market quotes available' : 'No fresh provider quotes currently available' }}</small></span><a href="{{ route('markets.index') }}" class="dash-link">Markets ↗</a></div>
-                @if($marketConnected)
-                    <div class="table-wrap" style="margin-top:10px">
-                        <table class="data-table">
-                            <thead><tr><th>PAIR</th><th>LAST PRICE</th></tr></thead>
-                            <tbody>
-                                @foreach($quotes->take(5) as $quote)
-                                    <tr><td><strong>{{ $quote->symbol }}</strong></td><td>@decimal($quote->price)</td></tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @endif
-                <p class="dash-market-note">Prices shown here are recent server-captured quotes, not a guarantee of execution price. Confirm the live quote on the trading screen before opening a position.</p>
-            </section>
         </div>
     </div>
 @endsection
